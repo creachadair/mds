@@ -54,7 +54,7 @@ func (q *Queue[T]) Pop() (T, bool) {
 func (q *Queue[T]) Add(v T) {
 	n := len(q.data)
 	q.data = append(q.data, v)
-	q.pushDown(q.pushUp(n))
+	q.pushUp(n)
 }
 
 // Set replaces the contents of q with the specified values. Any previous
