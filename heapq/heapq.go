@@ -99,8 +99,8 @@ func (q *Queue[T]) pop(i int) T {
 	} else {
 		q.data[i] = q.data[n]
 		q.data = q.data[:n]
+		q.pushDown(i)
 	}
-	q.pushDown(i)
 	return out
 }
 
