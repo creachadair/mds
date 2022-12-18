@@ -1,7 +1,12 @@
 // Package heapq implements a generic heap-structured priority queue.
 package heapq
 
-// A Queue is a heap-structured priority queue.
+// A Queue is a heap-structured priority queue. The contents of a Queue are
+// partially ordered, and the minimum element is accessible in constant time.
+// Adding or removing an element has worst-case time complexity O(lg n).
+//
+// The order of elements in the Queue is determined by a comparison function
+// provided when the queue is constructed.
 type Queue[T any] struct {
 	data []T
 	less func(a, b T) bool
