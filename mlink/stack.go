@@ -12,6 +12,9 @@ func NewStack[T any]() *Stack[T] { return new(Stack[T]) }
 // Push adds an entry for v to the top of s.
 func (s *Stack[T]) Push(v T) { s.list = append(s.list, v) }
 
+// Add is a synonym for Push.
+func (s *Stack[T]) Add(v T) { s.list = append(s.list, v) }
+
 // IsEmpty reports whether s is empty.
 func (s *Stack[T]) IsEmpty() bool { return len(s.list) == 0 }
 
