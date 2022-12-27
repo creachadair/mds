@@ -34,6 +34,11 @@ func TestHeap(t *testing.T) {
 			t.Errorf("Len: got %v, want %v", got, len(want))
 		}
 	}
+	checkAdd := func(v, want int) {
+		if got := q.Add(v); got != want {
+			t.Errorf("Add(%v): got %v, want %v", v, got, want)
+		}
+	}
 	checkPop := func(want int, wantok bool) {
 		got, ok := q.Pop()
 		if got != want || ok != wantok {
@@ -44,12 +49,17 @@ func TestHeap(t *testing.T) {
 	check()
 	checkPop(0, false)
 
-	q.Add(10)
+	checkAdd(10, 0)
 	check(10)
-	q.Add(5)
+	checkAdd(5, 0)
 	check(5, 10)
-	q.Add(3)
+	checkAdd(3, 0)
 	check(3, 5, 10)
+	checkAdd(4, 1)
+	check(3, 4, 10, 5)
+	q.Update(1, 0)
+	check(0, 3, 10, 5)
+	checkPop(0, true)
 
 	checkPop(3, true)
 	checkPop(5, true)
@@ -59,6 +69,12 @@ func TestHeap(t *testing.T) {
 
 	q.Set([]int{1, 2, 3, 4, 5})
 	check(1, 2, 3, 4, 5)
+	q.Update(2, 0)
+	check(0, 1, 2, 4, 5)
+	q.Update(1, 6)
+	check(0, 4, 2, 6, 5)
+	checkPop(0, true)
+
 	q.Clear()
 	check()
 
