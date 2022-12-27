@@ -1,6 +1,6 @@
 // Package mlink implements basic linked container data structures.
 //
-// The types in this package share certain common behaviors:
+// Most types in this package share certain common behaviors:
 //
 //   - A Clear method that discards all the contents of the container.
 //   - A Peek method that returns an order statistic of the container.
