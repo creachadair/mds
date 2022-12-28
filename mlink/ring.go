@@ -66,10 +66,10 @@ func RingOf[T any](vs ...T) *Ring[T] {
 //
 //	[r1 s1 ... sm r2 ... rn]
 //
-// In this case Join returns the ring [r2 ... ].
+// In this case Join returns the ring [r2 ... rn r1 ... sm].
 //
 // If r and s belong to the same ring, [r1 r2 ... ri s1 ... sm ... rn], then
-// the loop of the ring from r2 ... si is spliced out of r and the resulting
+// the loop of the ring from r2 ... ri is spliced out of r and the resulting
 // ring is:
 //
 //	[r1 s1 ... sm ... rn]
