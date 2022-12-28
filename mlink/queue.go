@@ -23,12 +23,12 @@ func (q *Queue[T]) IsEmpty() bool { return q.list.IsEmpty() }
 // Clear discards all the values in q, leaving it empty.
 func (q *Queue[T]) Clear() { q.list.Clear(); q.back = q.list.End(); q.size = 0 }
 
-// Front reports whether q is non-empty, and if so returns its frontmost
-// (oldest) value.
-func (q *Queue[T]) Front() (T, bool) { return q.list.Peek(0) }
+// Front returns the frontmost (oldest) element of the queue. If the queue is
+// empty, it returns a zero value (oldest) value.
+func (q *Queue[T]) Front() T { v, _ := q.list.Peek(0); return v }
 
 // Peek reports whether q has a value at offset n from the front of the queue,
-// and if so returns its value. Peek(0) is equivalent to Front.
+// and if so returns its value. Peek(0) returns the same value as Front.
 //
 // Peek will panic if n < 0.
 func (q *Queue[T]) Peek(n int) (T, bool) { return q.list.Peek(n) }

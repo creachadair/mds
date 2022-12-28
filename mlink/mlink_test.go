@@ -43,11 +43,14 @@ func TestStack(t *testing.T) {
 	check := checker(t, s)
 
 	// Top and Pop of an empty stack report no value.
-	if v, ok := s.Top(); ok {
-		t.Errorf("Top: got (%v, %v), want (0, false)", v, ok)
+	if v := s.Top(); v != 0 {
+		t.Errorf("Top: got %v, want 0", v)
+	}
+	if v, ok := s.Peek(0); ok || v != 0 {
+		t.Errorf("Peek(0): got (%v, %v), want (0, false)", v, ok)
 	}
 	if v, ok := s.Pop(); ok {
-		t.Errorf("Pop: got (%v, %v), want (0, valse)", v, ok)
+		t.Errorf("Pop: got (%v, %v), want (0, false)", v, ok)
 	}
 
 	check()
@@ -73,9 +76,9 @@ func TestStack(t *testing.T) {
 		t.Errorf("Len: got %d, want 3", n)
 	}
 
-	top, ok := s.Top()
-	if !ok || top != 3 {
-		t.Errorf("Top: got (%v, %v), want (3, true)", top, ok)
+	top := s.Top()
+	if top != 3 {
+		t.Errorf("Top: got %v, want 3", top)
 	}
 	if v, ok := s.Peek(0); !ok || v != top {
 		t.Errorf("Peek(0): got (%v, %v), want (%v, true)", v, ok, top)
@@ -101,8 +104,8 @@ func TestQueue(t *testing.T) {
 	check := checker(t, q)
 
 	// Front and Pop of an empty queue report no value.
-	if v, ok := q.Front(); ok {
-		t.Errorf("Front: got (%v, %v), want (0, false)", v, ok)
+	if v := q.Front(); v != 0 {
+		t.Errorf("Front: got %v, want 0", v)
 	}
 	if v, ok := q.Pop(); ok {
 		t.Errorf("Pop: got (%v, %v), want (0, false)", v, ok)
@@ -131,9 +134,9 @@ func TestQueue(t *testing.T) {
 		t.Errorf("Len: got %d, want 3", n)
 	}
 
-	front, ok := q.Front()
-	if !ok || front != 1 {
-		t.Errorf("Top: got (%v, %v), want (1, true)", front, ok)
+	front := q.Front()
+	if front != 1 {
+		t.Errorf("Front: got %v, want 1", front)
 	}
 	if v, ok := q.Peek(0); !ok || v != front {
 		t.Errorf("Peek(0): got (%v, %v), want (%v, true)", v, ok, front)

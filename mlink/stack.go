@@ -21,21 +21,22 @@ func (s *Stack[T]) IsEmpty() bool { return len(s.list) == 0 }
 // Clear discards all the values in s, leaving it empty.
 func (s *Stack[T]) Clear() { s.list = s.list[:0] }
 
-// Top reports whether s is non-empty, and if so returns its top value.
-func (s *Stack[T]) Top() (T, bool) {
+// Top returns the top element of the stack. If the stack is empty, it returns
+// a zero value.
+func (s *Stack[T]) Top() T {
 	if len(s.list) == 0 {
 		var zero T
-		return zero, false
+		return zero
 	}
-	return s.list[len(s.list)-1], true
+	return s.list[len(s.list)-1]
 }
 
 // Peek reports whether s has value at offset n from the top of the stack, and
-// if so returns its value. Peek(0) is equivalent to Top.
+// if so returns its value. Peek(0) returns the same value as Top.
 //
 // Peek will panic if n < 0.
 func (s *Stack[T]) Peek(n int) (T, bool) {
-	if n > len(s.list) {
+	if n >= len(s.list) {
 		var zero T
 		return zero, false
 	}
@@ -45,7 +46,7 @@ func (s *Stack[T]) Peek(n int) (T, bool) {
 // Pop reports whether s is non-empty, and if so it removes and returns its top
 // value.
 func (s *Stack[T]) Pop() (T, bool) {
-	out, ok := s.Top()
+	out, ok := s.Peek(0)
 	if ok {
 		s.list = s.list[:len(s.list)-1]
 	}
