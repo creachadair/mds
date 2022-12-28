@@ -7,13 +7,11 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestRing(t *testing.T) {
-	var r *mlink.Ring[int]
-
-	rcheck := func(r *mlink.Ring[int], want ...int) {
+func rchecker[T any](t *testing.T) func(r *mlink.Ring[T], want ...T) {
+	return func(r *mlink.Ring[T], want ...T) {
 		t.Helper()
-		var got []int
-		r.Each(func(v int) bool {
+		var got []T
+		r.Each(func(v T) bool {
 			got = append(got, v)
 			return true
 		})
@@ -24,31 +22,33 @@ func TestRing(t *testing.T) {
 			t.Errorf("Wrong length: got %v, want %v", got, len(want))
 		}
 	}
-	check := func(want ...int) { t.Helper(); rcheck(r, want...) }
+}
+
+func TestRing(t *testing.T) {
+	rcheck := rchecker[int](t)
 
 	t.Run("Initialize", func(t *testing.T) {
-		check()
+		rcheck(nil)
 		rcheck(mlink.NewRing[int](0))
 		rcheck(mlink.RingOf[int]())
 		rcheck(mlink.NewRing[int](4), 0, 0, 0, 0)
-
-		r = mlink.RingOf(0)
-		check(0)
+		rcheck(mlink.RingOf(0), 0)
 	})
 
 	t.Run("Joining", func(t *testing.T) {
+		r := mlink.NewRing[int](1)
 		r.Join(mlink.RingOf(1, 2, 3))
-		check(0, 1, 2, 3)
+		rcheck(r, 0, 1, 2, 3)
 
 		// Joining r to itself should do nothing.
 		r.Join(r)
-		check(0, 1, 2, 3)
+		rcheck(r, 0, 1, 2, 3)
 
 		// Test adding items to various places in the ring.
 		r.Next().Join(mlink.RingOf(4, 5, 6))
-		check(0, 1, 4, 5, 6, 2, 3)
+		rcheck(r, 0, 1, 4, 5, 6, 2, 3)
 		r.Prev().Join(mlink.RingOf(7))
-		check(0, 1, 4, 5, 6, 2, 3, 7)
+		rcheck(r, 0, 1, 4, 5, 6, 2, 3, 7)
 	})
 
 	t.Run("Popping", func(t *testing.T) {
@@ -62,37 +62,48 @@ func TestRing(t *testing.T) {
 	})
 
 	t.Run("Circularity", func(t *testing.T) {
-		r = r.Next().Next()
-		check(4, 5, 6, 2, 3, 7, 0, 1)
-		r = r.Prev()
-		check(1, 4, 5, 6, 2, 3, 7, 0)
-		r.Next().Join(r.At(4))
-		check(1, 4, 2, 3, 7, 0)
+		r := mlink.RingOf(1, 3, 5, 7, 9)
+		rcheck(r, 1, 3, 5, 7, 9)
+		rcheck(r.Next().Next(), 5, 7, 9, 1, 3)
+		rcheck(r.Prev(), 9, 1, 3, 5, 7)
+		r.Next().Join(r.Prev())
+		rcheck(r, 1, 3, 9)
 	})
 
-	s := mlink.RingOf(10, 20, 30)
-	rcheck(s, 10, 20, 30)
-
 	t.Run("SplicingIn", func(t *testing.T) {
+		s := mlink.RingOf(10, 20, 30)
+		rcheck(s, 10, 20, 30)
+		r := mlink.RingOf(1, 2, 3, 4, 5, 6)
+
 		x := r.Next().Join(s)
-		check(1, 4, 10, 20, 30, 2, 3, 7, 0)
-		//    ^- r  ^- s        ^- x
-		rcheck(s, 10, 20, 30, 2, 3, 7, 0, 1, 4)
+		rcheck(r, 1, 2, 10, 20, 30, 3, 4, 5, 6)
+		//        ^- r  ^- s        ^- x
+		rcheck(s, 10, 20, 30, 3, 4, 5, 6, 1, 2)
 		//        ^- s        ^- x        ^- r
-		rcheck(x, 2, 3, 7, 0, 1, 4, 10, 20, 30)
+		rcheck(x, 3, 4, 5, 6, 1, 2, 10, 20, 30)
 		//        ^- x        ^- r  ^- s
 	})
 
 	t.Run("SplicingOut", func(t *testing.T) {
-		rcheck(r.Join(s), 4) // just the excised part
-		check(1, 10, 20, 30, 2, 3, 7, 0)
+		r := mlink.RingOf(1, 20, 30, 40, 5, 6)
+		tail := r.At(4)
+		rcheck(r.Join(tail), 20, 30, 40) // just the excised part
+		rcheck(r, 1, 5, 6)
 
 		rcheck(r.Join(r.Next())) // nothing was removed
-		check(1, 10, 20, 30, 2, 3, 7, 0)
+		rcheck(r, 1, 5, 6)
+
+		rc := rchecker[string](t)
+		q := mlink.RingOf("fat", "cats", "get", "dizzy", "after", "eating", "beans")
+		s := q.At(2).Join(q.Prev())
+
+		rc(q, "fat", "cats", "get", "beans")
+		rc(s, "dizzy", "after", "eating")
 	})
 
 	t.Run("Peek", func(t *testing.T) {
-		checkPeek := func(n, want int, wantok bool) {
+		r := mlink.RingOf("kingdom", "phylum", "class", "order", "family", "genus", "species")
+		checkPeek := func(n int, want string, wantok bool) {
 			t.Helper()
 			got, ok := r.Peek(n)
 			if got != want || ok != wantok {
@@ -100,12 +111,11 @@ func TestRing(t *testing.T) {
 			}
 		}
 
-		checkPeek(0, 1, true)
-		checkPeek(-2, 7, true)
-		checkPeek(3, 30, true)
-		checkPeek(6, 7, true)
-		checkPeek(7, 0, true)
-		checkPeek(8, 0, false)
-		checkPeek(-10, 0, false)
+		checkPeek(0, "kingdom", true)
+		checkPeek(-2, "genus", true)
+		checkPeek(3, "order", true)
+		checkPeek(6, "species", true)
+		checkPeek(7, "", false)
+		checkPeek(-10, "", false)
 	})
 }
