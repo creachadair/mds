@@ -80,35 +80,64 @@ func TestHeap(t *testing.T) {
 
 	q.Set([]int{15, 3, 9, 4, 8, 2, 11, 20, 11, 17, 1})
 	check(1, 3, 2, 4, 8, 9, 11, 20, 11, 17, 15) // constructed by hand
-	checkOrdered(t, q)
+	if got := extract(q); !sort.IntsAreSorted(got) {
+		t.Errorf("Queue contents are out of order: %v", got)
+	}
 }
 
 func TestOrder(t *testing.T) {
-	const inputSize = 500
-	const inputRange = 1000
-	const numTests = 5
+	const inputSize = 5000
+	const inputRange = 100000
 
-	for i := 0; i < numTests; i++ {
+	makeInput := func() []int {
 		input := make([]int, inputSize)
 		for i := range input {
 			input[i] = rand.Intn(inputRange) - (inputRange / 2)
 		}
-
-		q := heapq.New(func(i, j int) bool { return i < j })
-		q.Set(input)
-
-		checkOrdered(t, q)
+		return input
 	}
+
+	t.Run("Ascending", func(t *testing.T) {
+		q := heapq.New(func(i, j int) bool { return i < j })
+		q.Set(makeInput())
+		if got := extract(q); !sort.IntsAreSorted(got) {
+			t.Errorf("Queue contents are out of order: %v", got)
+		}
+	})
+
+	t.Run("Descending", func(t *testing.T) {
+		q := heapq.New(func(i, j int) bool { return i > j })
+		q.Set(makeInput())
+		got := extract(q)
+		if !sort.IsSorted(sort.Reverse(sort.IntSlice(got))) {
+			t.Errorf("Queue contents are out of order: %v", got)
+		}
+	})
+
+	t.Run("Reorder", func(t *testing.T) {
+		q := heapq.New(func(i, j int) bool { return i < j })
+		q.Set([]int{17, 3, 11, 2, 7, 5, 13})
+		if got, want := q.Front(), 2; got != want {
+			t.Errorf("Front: got %v, want %v", got, want)
+		}
+
+		q.Reorder(func(i, j int) bool { return i > j })
+		if got, want := q.Front(), 17; got != want {
+			t.Errorf("Front: got %v, want %v", got, want)
+		}
+
+		got := extract(q)
+		if !sort.IsSorted(sort.Reverse(sort.IntSlice(got))) {
+			t.Errorf("Results are out of order: %v", got)
+		}
+	})
 }
 
-func checkOrdered(t *testing.T, q *heapq.Queue[int]) {
-	t.Helper()
-	var all []int
+func extract[T any](q *heapq.Queue[T]) []T {
+	all := make([]T, 0, q.Len())
 	for !q.IsEmpty() {
 		all = append(all, q.Front())
 		q.Pop()
 	}
-	if !sort.IntsAreSorted(all) {
-		t.Errorf("Queue contents out of order: %v", all)
-	}
+	return all
 }

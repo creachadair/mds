@@ -67,7 +67,8 @@ func (q *Queue[T]) Update(i int, v T) int {
 }
 
 // Set replaces the contents of q with the specified values. Any previous
-// values in the queue are discarded.
+// values in the queue are discarded. This operation takes time proportional to
+// len(vs) to restore heap order.
 func (q *Queue[T]) Set(vs []T) {
 	// Copy the values so we do not alias the original slice.
 	// If the existing buffer already has enough space, reslice it; otherwise
@@ -78,6 +79,16 @@ func (q *Queue[T]) Set(vs []T) {
 		q.data = q.data[:len(vs)]
 	}
 	copy(q.data, vs)
+	for i := len(q.data) / 2; i >= 0; i-- {
+		q.pushDown(i)
+	}
+}
+
+// Reorder replaces the ordering function for q with a new function. This
+// operation takes time proportional to the length of the queue to restore the
+// (hew) heap order. The queue retains the same elements.
+func (q *Queue[T]) Reorder(lessThan func(a, b T) bool) {
+	q.less = lessThan
 	for i := len(q.data) / 2; i >= 0; i-- {
 		q.pushDown(i)
 	}
