@@ -86,7 +86,7 @@ func (q *Queue[T]) Set(vs []T) {
 
 // Reorder replaces the ordering function for q with a new function. This
 // operation takes time proportional to the length of the queue to restore the
-// (hew) heap order. The queue retains the same elements.
+// (new) heap order. The queue retains the same elements.
 func (q *Queue[T]) Reorder(lessThan func(a, b T) bool) {
 	q.less = lessThan
 	for i := len(q.data) / 2; i >= 0; i-- {
