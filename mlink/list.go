@@ -101,13 +101,13 @@ func (lst *List[T]) Find(f func(T) bool) *Cursor[T] {
 // A Cursor represents a location in a list.  A nil *Cursor is not valid, and
 // operations on it will panic.
 type Cursor[T any] struct {
-	// prec points to the entry prior to the target, so that the cursor can
+	// pred points to the entry prior to the target, so that the cursor can
 	// splice an element out of the list.
 	//
 	//   pred--->[_, link]--->[X, _]-- ...
-	//                         ^ prec denotes this value
+	//                         ^ pred denotes this value
 	//
-	// If prec.link == nil, the cursor indicates the position past the end of
+	// If pred.link == nil, the cursor indicates the position past the end of
 	// the list.
 	pred *entry[T]
 }
