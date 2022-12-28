@@ -111,8 +111,8 @@ func (r *Ring[T]) Next() *Ring[T] { return r.next }
 func (r *Ring[T]) Prev() *Ring[T] { return r.prev }
 
 // At returns the entry at offset n from r.  Negative values of n are
-// permitted. If r == nil or the absolute value of n is greater than the length
-// of the ring, At returns nil.
+// permitted, and r.At(0) == r. If r == nil or the absolute value of n is
+// greater than the length of the ring, At returns nil.
 func (r *Ring[T]) At(n int) *Ring[T] {
 	if r == nil {
 		return nil
