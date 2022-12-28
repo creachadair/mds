@@ -1,5 +1,9 @@
 package mlink
 
+import (
+	"fmt"
+)
+
 // A Ring is a doubly-linked circular chain of data items.  There is no
 // designated beginning or end of a ring; each element is a valid entry point
 // for the entire ring. A ring with no elements is represented as nil.
@@ -7,6 +11,23 @@ type Ring[T any] struct {
 	Value T
 
 	prev, next *Ring[T]
+}
+
+func (r *Ring[T]) ptr(p *Ring[T]) string {
+	if p == nil {
+		return "-"
+	} else if p == r {
+		return "@"
+	} else {
+		return "*"
+	}
+}
+
+func (r *Ring[T]) String() string {
+	if r == nil {
+		return "Ring(empty)"
+	}
+	return fmt.Sprintf("Ring(%v, %v%v)", r.Value, r.ptr(r.prev), r.ptr(r.next))
 }
 
 // NewRing constructs a new ring with n zero-valued elements.
@@ -37,20 +58,6 @@ func RingOf[T any](vs ...T) *Ring[T] {
 	}
 	return r
 }
-
-// Len reports the number of elements in r. If r == nil, Len is 0.
-// This operation takes time proportional to the size of the ring.
-func (r *Ring[T]) Len() int {
-	if r == nil {
-		return 0
-	}
-	var n int
-	scan(r, func(*Ring[T]) bool { n++; return true })
-	return n
-}
-
-// IsEmpty reports whether r is the empty ring.
-func (r *Ring[T]) IsEmpty() bool { return r == nil }
 
 // Join splices ring s into a non-empty ring r. There are two cases:
 //
@@ -103,12 +110,63 @@ func (r *Ring[T]) Next() *Ring[T] { return r.next }
 // This will panic if r == nil.
 func (r *Ring[T]) Prev() *Ring[T] { return r.prev }
 
+// At returns the entry at offset n from r.  Negative values of n are
+// permitted. If r == nil or the absolute value of n is greater than the length
+// of the ring, At returns nil.
+func (r *Ring[T]) At(n int) *Ring[T] {
+	if r == nil {
+		return nil
+	}
+
+	next := (*Ring[T]).Next
+	if n < 0 {
+		n = -n
+		next = (*Ring[T]).Prev
+	}
+
+	cur := r
+	for n > 0 {
+		cur = next(cur)
+		if cur == r {
+			return nil
+		}
+		n--
+	}
+	return cur
+}
+
+// Peek reports whether the ring has a value at offset n from r, and if so
+// returns its value. Negative values of n are permitted. If the absolute value
+// of n is greater than the length of the ring, Peek reports a zero value.
+func (r *Ring[T]) Peek(n int) (T, bool) {
+	cur := r.At(n)
+	if cur == nil {
+		var zero T
+		return zero, false
+	}
+	return cur.Value, true
+}
+
 // Each calls f with each value in r, in circular order. If f returns false,
 // Each stops and returns false.  Otherwise, Each returns true after visiting
 // all elements of r.
 func (r *Ring[T]) Each(f func(v T) bool) bool {
 	return scan(r, func(cur *Ring[T]) bool { return f(cur.Value) })
 }
+
+// Len reports the number of elements in r. If r == nil, Len is 0.
+// This operation takes time proportional to the size of the ring.
+func (r *Ring[T]) Len() int {
+	if r == nil {
+		return 0
+	}
+	var n int
+	scan(r, func(*Ring[T]) bool { n++; return true })
+	return n
+}
+
+// IsEmpty reports whether r is the empty ring.
+func (r *Ring[T]) IsEmpty() bool { return r == nil }
 
 func scan[T any](r *Ring[T], f func(*Ring[T]) bool) bool {
 	if r == nil {
