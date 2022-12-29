@@ -9,10 +9,21 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+func intLess(a, b int) bool { return a < b }
+
 func TestHeap(t *testing.T) {
-	q := heapq.New(func(a, b int) bool {
-		return a < b
+	t.Run("New", func(t *testing.T) {
+		runTests(t, heapq.New(intLess))
 	})
+	t.Run("NewWithData", func(t *testing.T) {
+		buf := make([]int, 0, 64)
+		runTests(t, heapq.NewWithData(intLess, buf))
+	})
+}
+
+func runTests(t *testing.T, q *heapq.Queue[int]) {
+	t.Helper()
+
 	check := func(want ...int) {
 		t.Helper()
 		var got []int
@@ -131,6 +142,42 @@ func TestOrder(t *testing.T) {
 			t.Errorf("Results are out of order: %v", got)
 		}
 	})
+}
+
+func TestNewWithData(t *testing.T) {
+	const bufSize = 100 // N.B. must be even, so we can fill halves
+
+	// Preallocate a buffer and populate part of it with some data.
+	buf := make([]int, 0, bufSize)
+
+	var want []int
+	for i := 0; i < bufSize/2; i++ {
+		z := rand.Intn(500) - 250
+		buf = append(buf, z)
+		want = append(want, z) // keep track of what we added.
+	}
+
+	// Give buf over to the queue, then add more stuff so we can check that the
+	// queue took over the array correctly.
+	q := heapq.NewWithData(intLess, buf)
+
+	// Add some more stuff via the queue.
+	for i := 0; i < bufSize/2; i++ {
+		z := rand.Intn(500) - 250
+		q.Add(z)
+		want = append(want, z)
+	}
+
+	// Check that the queue used the same array.  You are specifically NOT
+	// supposed to do this, messing with the array outside the queue, but here
+	// we need to check that the queue did the right thing.
+	got := buf[:len(want)]
+	sort.Ints(got)
+	sort.Ints(want)
+
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("Queue contents (+want, -got):\n%s", diff)
+	}
 }
 
 func extract[T any](q *heapq.Queue[T]) []T {

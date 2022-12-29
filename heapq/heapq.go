@@ -15,13 +15,19 @@ type Queue[T any] struct {
 // New constructs an empty Queue with the given comparison function.
 func New[T any](lessThan func(a, b T) bool) *Queue[T] { return &Queue[T]{less: lessThan} }
 
-// NewSize constructs an empty Queue with the given comparison function, and a
-// queue buffer pre-allocated to size slots.
-func NewSize[T any](lessThan func(a, b T) bool, size int) *Queue[T] {
-	return &Queue[T]{
-		data: make([]T, 0, size),
-		less: lessThan,
+// NewWithData constructs an empty Queue with the given comparison function
+// that uses the given slice as storage.  This allows the caller to initialize
+// a heap with existing data without copying, or to preallocate storage. To do
+// this, allocate a slice with 0 length and the desired capacity.
+//
+// The resulting queue takes ownership of the slice, and the caller should not
+// use data after the call.
+func NewWithData[T any](lessThan func(a, b T) bool, data []T) *Queue[T] {
+	q := &Queue[T]{data: data, less: lessThan}
+	for i := len(q.data) / 2; i >= 0; i-- {
+		q.pushDown(i)
 	}
+	return q
 }
 
 // Len reports the number of elements in the queue. This is a constant-time operation.
