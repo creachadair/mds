@@ -27,14 +27,15 @@ const (
 	fracLimit  = 2 * maxBalance
 )
 
-// New returns *Tree with the given balancing factor 0 ≤ β ≤ 1000. The order of
-// elements is determined by the provided comparison function.
+// New returns a new tree with the given balancing factor 0 ≤ β ≤ 1000. The
+// order of elements stored in the tree is provided by the comparison function.
 //
 // If any keys are given, the tree is initialized to contain them, otherwise an
-// empty tree is created.  This allocates storage more efficiently than adding
-// the keys separately after construction.
+// empty tree is created.  For keys that are known in advance it is more
+// efficient to allocate storage for them at construction time, versus adding
+// them separately later.
 //
-// The balancing factor represents how unbalanced the tree is permitted to be,
+// The balancing factor controls how unbalanced the tree is permitted to be,
 // with 0 being strictest (as near as possible to 50% weight balance) and 1000
 // being loosest (no rebalancing). Stricter balance incurs more overhead for
 // rebalancing, but provides faster lookups. A good default is 250.
