@@ -1,7 +1,9 @@
 // Package stree implements the Scapegoat Tree, an approximately-balanced
-// binary search tree structure with worst-case O(lg n) lookup and amortized
-// O(lg n) insertion and delection (the worst-case cost of a single insert or
-// delete operation is O(n)).
+// binary search tree.
+//
+// A scapegoat tree supports worst-case O(lg n) lookup and amortized O(lg n)
+// insertion and delection (the worst-case cost of a single insert or delete
+// operation is O(n)).
 //
 // Scapegoat trees are relatively memory-efficient, as interior nodes do not
 // require any ancillary metadata for balancing purposes, and the tree itself
