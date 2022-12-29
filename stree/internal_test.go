@@ -79,7 +79,7 @@ func TestBasicProperties(t *testing.T) {
 		t.Fatalf("Reading text: %v", err)
 	}
 	tree, words := makeTree(*strictness, string(text))
-	t.Logf("Final tree has size %d; height %d", tree.Len(), tree.root.height())
+	t.Logf("%v has height %d", tree, tree.root.height())
 	dumpTree(tree)
 
 	got := allWords(tree)

@@ -18,6 +18,7 @@
 package stree
 
 import (
+	"fmt"
 	"math"
 	"sort"
 )
@@ -226,6 +227,10 @@ func (n *node[T]) remove(key T, lessThan func(a, b T) bool) (_ *node[T], ok bool
 	goat := popMinRight(n)
 	n.X = goat.X
 	return n, true
+}
+
+func (t *Tree[T]) String() string {
+	return fmt.Sprintf("stree.Tree(β=%d:size=%d)", t.β, t.size)
 }
 
 // Len reports the number of elements stored in the tree. This is a
