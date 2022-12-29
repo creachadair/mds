@@ -140,6 +140,10 @@ func (t *Tree[T]) insert(key T, replace bool, root *node[T], limit int) (ins *no
 	// Descending phase: Insert the key into the tree structure.
 	var sib *node[T]
 	if root == nil {
+		// This is the base case where we add mass to the tree.  If we exceeded
+		// the depth limit reaching this point, flag it to the caller by
+		// returning a non-zero size. The 1 accounts for the node we just
+		// inserted; the caller will update it as we unwind the insertion.
 		if limit < 0 {
 			size = 1
 		}
@@ -164,7 +168,7 @@ func (t *Tree[T]) insert(key T, replace bool, root *node[T], limit int) (ins *no
 	}
 
 	// Ascending phase, a.k.a., goat rodeo.
-	// Uses the selection strategy from section 4.6 of Galperin & Rivest .
+	// Uses the selection strategy from section 4.6 of Galperin & Rivest.
 
 	// If size != 0, we exceeded the depth limit and are looking for a goat.
 	// Note: size == ins.size() not root.size() at this point.
@@ -173,7 +177,9 @@ func (t *Tree[T]) insert(key T, replace bool, root *node[T], limit int) (ins *no
 		rootSize := sibSize + 1 + size // new size of root
 
 		if bw := t.limit(rootSize); height <= bw {
-			size = rootSize // not the goat you're looking for; move along
+			// Update the size to include the rest of the current root, but this
+			// is not the scapegoat yet. Keep unwinding.
+			size = rootSize
 		} else {
 			// root is the goat; rewrite it and signal the activations above us
 			// to stop looking by setting size to 0.
