@@ -13,21 +13,26 @@ type Pair struct {
 	V int
 }
 
-func (p Pair) less(q Pair) bool { return p.X < q.X }
+func (p Pair) Less(q Pair) bool { return p.X < q.X }
 
 func ExampleTree_Add() {
-	tree := stree.New[string](200, stringLess)
-	tree.Add("never")
-	tree.Add("say")
-	tree.Add("never")
-	fmt.Println("tree.Len() =", tree.Len())
+	tree := stree.New(200, stringLess)
+
+	fmt.Println("inserted:", tree.Add("never"))
+	fmt.Println("inserted:", tree.Add("say"))
+	fmt.Println("re-inserted:", tree.Add("never"))
+	fmt.Println("items:", tree.Len())
 	// Output:
-	// tree.Len() = 2
+	// inserted: true
+	// inserted: true
+	// re-inserted: false
+	// items: 2
 }
 
 func ExampleTree_Remove() {
 	const key = "Aloysius"
-	tree := stree.New[string](1, stringLess)
+	tree := stree.New(1, stringLess)
+
 	fmt.Println("inserted:", tree.Add(key))
 	fmt.Println("removed:", tree.Remove(key))
 	fmt.Println("re-removed:", tree.Remove(key))
@@ -38,17 +43,20 @@ func ExampleTree_Remove() {
 }
 
 func ExampleTree_Get() {
-	tree := stree.New(1, Pair.less, []Pair{{
-		X: "mom",
-		V: 1,
-	}}...)
-	hit, ok := tree.Get(Pair{X: "mom"})
-	fmt.Printf("%v, %v\n", hit.V, ok)
-	miss, ok := tree.Get(Pair{X: "dad"})
-	fmt.Printf("%v, %v\n", miss.V, ok)
+	tree := stree.New(1, Pair.Less,
+		Pair{X: "angel", V: 5},
+		Pair{X: "devil", V: 7},
+		Pair{X: "human", V: 13},
+	)
+
+	for _, key := range []string{"angel", "apple", "human"} {
+		hit, ok := tree.Get(Pair{X: key})
+		fmt.Println(hit.V, ok)
+	}
 	// Output:
-	// 1, true
-	// 0, false
+	// 5 true
+	// 0 false
+	// 13 true
 }
 
 func ExampleTree_Inorder() {
