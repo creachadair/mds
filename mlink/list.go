@@ -59,14 +59,14 @@ func (lst *List[T]) At(n int) *Cursor[T] {
 		panic("index out of range")
 	}
 
-	cur := &Cursor[T]{pred: &lst.first}
+	cur := lst.cfirst()
 	for ; !cur.AtEnd(); cur.Next() {
 		if n == 0 {
 			break
 		}
 		n--
 	}
-	return cur
+	return &cur
 }
 
 // Last returns a cursor to the last element of the list. If lst is empty, it
@@ -88,14 +88,14 @@ func (lst *List[T]) End() *Cursor[T] { c := lst.Last(); c.Next(); return c }
 // true. If no such element is found, the resulting cursor is at the end of the
 // list.
 func (lst *List[T]) Find(f func(T) bool) *Cursor[T] {
-	cur := lst.At(0)
+	cur := lst.cfirst()
 	for !cur.AtEnd() {
 		if f(cur.Get()) {
 			break
 		}
 		cur.Next()
 	}
-	return cur
+	return &cur
 }
 
 func (lst *List[T]) cfirst() Cursor[T] { return Cursor[T]{pred: &lst.first} }
