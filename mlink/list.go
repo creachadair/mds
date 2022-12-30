@@ -33,7 +33,7 @@ func (lst *List[T]) Peek(n int) (T, bool) {
 // If f returns false, Each stops and returns false.
 // Otherwise, Each returns true after visiting all elements of lst.
 func (lst *List[T]) Each(f func(T) bool) bool {
-	for cur := lst.At(0); !cur.AtEnd(); cur.Next() {
+	for cur := lst.cfirst(); !cur.AtEnd(); cur.Next() {
 		if !f(cur.Get()) {
 			return false
 		}
@@ -97,6 +97,8 @@ func (lst *List[T]) Find(f func(T) bool) *Cursor[T] {
 	}
 	return cur
 }
+
+func (lst *List[T]) cfirst() Cursor[T] { return Cursor[T]{pred: &lst.first} }
 
 // A Cursor represents a location in a list.  A nil *Cursor is not valid, and
 // operations on it will panic.

@@ -4,21 +4,21 @@ package mlink
 // ready for use.
 type Queue[T any] struct {
 	list List[T]
-	back *Cursor[T]
+	back Cursor[T]
 	size int
 }
 
 // NewQueue returns a new empty FIFO queue.
 func NewQueue[T any]() *Queue[T] {
 	q := new(Queue[T])
-	q.back = q.list.End()
+	q.back = q.list.cfirst()
 	return q
 }
 
 // Add adds v to the end of q.
 func (q *Queue[T]) Add(v T) {
-	if q.back == nil {
-		q.back = q.list.End()
+	if q.back.pred == nil {
+		q.back = q.list.cfirst()
 	}
 	q.back.Add(v)
 	q.size++
@@ -28,7 +28,7 @@ func (q *Queue[T]) Add(v T) {
 func (q *Queue[T]) IsEmpty() bool { return q.list.IsEmpty() }
 
 // Clear discards all the values in q, leaving it empty.
-func (q *Queue[T]) Clear() { q.list.Clear(); q.back = q.list.End(); q.size = 0 }
+func (q *Queue[T]) Clear() { q.list.Clear(); q.back = q.list.cfirst(); q.size = 0 }
 
 // Front returns the frontmost (oldest) element of the queue. If the queue is
 // empty, it returns a zero value.
@@ -43,15 +43,17 @@ func (q *Queue[T]) Peek(n int) (T, bool) { return q.list.Peek(n) }
 // Pop reports whether q is non-empty, and if so removes and returns its
 // frontmost (oldest) value.
 func (q *Queue[T]) Pop() (T, bool) {
-	out, ok := q.list.Peek(0)
-	if ok {
-		q.list.At(0).Remove()
-		q.size--
-		if q.list.IsEmpty() {
-			q.back = q.list.End()
-		}
+	cur := q.list.cfirst()
+	out := cur.Get()
+	if cur.AtEnd() {
+		return out, false
 	}
-	return out, ok
+	cur.Remove()
+	q.size--
+	if q.list.IsEmpty() {
+		q.back = q.list.cfirst()
+	}
+	return out, true
 }
 
 // Each calls f with each value in q, in order from oldest to newest.
