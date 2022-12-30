@@ -24,7 +24,7 @@ func (q *Queue[T]) IsEmpty() bool { return q.list.IsEmpty() }
 func (q *Queue[T]) Clear() { q.list.Clear(); q.back = q.list.End(); q.size = 0 }
 
 // Front returns the frontmost (oldest) element of the queue. If the queue is
-// empty, it returns a zero value (oldest) value.
+// empty, it returns a zero value.
 func (q *Queue[T]) Front() T { v, _ := q.list.Peek(0); return v }
 
 // Peek reports whether q has a value at offset n from the front of the queue,
