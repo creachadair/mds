@@ -251,7 +251,3 @@ func (c *Cursor[T]) Truncate() { c.pred.link = nil }
 // Copy returns a copy of c pointing to the same location. Changes to c do not
 // affect the copy and vice versa.
 func (c *Cursor[T]) Copy() *Cursor[T] { return &Cursor[T]{pred: c.pred} }
-
-// TODO: Benchmark allocations to see if it makes sense to have internal
-// methods that fill a preallocated cursor, so paths where we don't need to
-// allocate a fresh cursor can avoid doing so.
