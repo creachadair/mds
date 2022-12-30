@@ -31,7 +31,7 @@ func (r *Ring[T]) String() string {
 }
 
 // NewRing constructs a new ring with n zero-valued elements.
-// If n <= 0, NewRing returns nil.
+// If n ≤ 0, NewRing returns nil.
 func NewRing[T any](n int) *Ring[T] {
 	if n <= 0 {
 		return nil
