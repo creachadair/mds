@@ -100,8 +100,8 @@ func TestStack(t *testing.T) {
 }
 
 func TestQueue(t *testing.T) {
-	q := mlink.NewQueue[int]()
-	check := checker(t, q)
+	var q mlink.Queue[int]
+	check := checker(t, &q)
 
 	// Front and Pop of an empty queue report no value.
 	if v := q.Front(); v != 0 {

@@ -1,6 +1,7 @@
 package mlink
 
-// A Queue is a linked first-in, first out sequence of values.
+// A Queue is a linked first-in, first out sequence of values.  A zero value is
+// ready for use.
 type Queue[T any] struct {
 	list List[T]
 	back *Cursor[T]
@@ -15,7 +16,13 @@ func NewQueue[T any]() *Queue[T] {
 }
 
 // Add adds v to the end of q.
-func (q *Queue[T]) Add(v T) { q.back.Add(v); q.size++ }
+func (q *Queue[T]) Add(v T) {
+	if q.back == nil {
+		q.back = q.list.End()
+	}
+	q.back.Add(v)
+	q.size++
+}
 
 // IsEmpty reports whether q is empty.
 func (q *Queue[T]) IsEmpty() bool { return q.list.IsEmpty() }
