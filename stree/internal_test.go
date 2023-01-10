@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/creachadair/mds/mapset"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -22,17 +23,8 @@ var (
 
 func lessString(a, b string) bool { return a < b }
 
-func sortedUnique(ws []string, drop func(string) bool) []string {
-	m := make(map[string]struct{})
-	for _, w := range ws {
-		if drop == nil || !drop(w) {
-			m[w] = struct{}{}
-		}
-	}
-	out := make([]string, 0, len(m))
-	for key := range m {
-		out = append(out, key)
-	}
+func sortedUnique(ws []string) []string {
+	out := mapset.New[string](ws...).Slice()
 	sort.Strings(out)
 	return out
 }
@@ -83,7 +75,7 @@ func TestBasicProperties(t *testing.T) {
 	dumpTree(tree)
 
 	got := allWords(tree)
-	want := sortedUnique(words, nil)
+	want := sortedUnique(words)
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("Inorder produced unexpected output (-want, +got)\n%s", diff)
 	}

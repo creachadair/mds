@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/creachadair/mds/mapset"
 	"github.com/creachadair/mds/stree"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -20,17 +21,8 @@ func allWords(tree *stree.Tree[string]) []string {
 	return got
 }
 
-func sortedUnique(ws []string, drop func(string) bool) []string {
-	m := make(map[string]struct{})
-	for _, w := range ws {
-		if drop == nil || !drop(w) {
-			m[w] = struct{}{}
-		}
-	}
-	out := make([]string, 0, len(m))
-	for key := range m {
-		out = append(out, key)
-	}
+func sortedUnique(ws []string, drop mapset.Set[string]) []string {
+	out := mapset.New[string](ws...).RemoveAll(drop).Slice()
 	sort.Strings(out)
 	return out
 }
@@ -68,7 +60,7 @@ func TestRemoval(t *testing.T) {
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("Original input differs from expected (-want, +got)\n%s", diff)
 	}
-	drop := map[string]bool{"a": true, "is": true, "of": true, "the": true}
+	drop := mapset.New("a", "is", "of", "the")
 	for w := range drop {
 		if !tree.Remove(w) {
 			t.Errorf("Remove(%q) returned false, wanted true", w)
@@ -76,9 +68,7 @@ func TestRemoval(t *testing.T) {
 	}
 
 	got = allWords(tree)
-	want = sortedUnique(words, func(w string) bool {
-		return drop[w]
-	})
+	want = sortedUnique(words, drop)
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("Tree after removal is incorrect (-want, +got)\n%s", diff)
 	}
