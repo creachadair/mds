@@ -28,6 +28,8 @@ func (s Set[T]) Len() int { return len(s) }
 // Clear removes all elements from s and returns s.
 func (s Set[T]) Clear() Set[T] {
 	for item := range s {
+		// N.B.: This has the usual limitations with weird values like NaN;
+		// see https://github.com/golang/go/issues/56351.
 		delete(s, item)
 	}
 	return s
