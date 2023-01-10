@@ -137,6 +137,34 @@ func TestCompare(t *testing.T) {
 		}
 	})
 
+	t.Run("IsSubset", func(t *testing.T) {
+		s1 := check(t, mapset.New(1, 2, 3, 4, 5, 6, 7), 1, 2, 3, 4, 5, 6, 7)
+		s2 := check(t, mapset.New(2, 3, 5, 7), 2, 3, 5, 7)
+		s3 := check(t, mapset.New(1, 3, 9), 1, 3, 9)
+		s4 := check(t, mapset.New[int]())
+
+		tests := []struct {
+			a, b mapset.Set[int]
+			want bool
+		}{
+			{s1, s1, true},
+			{s1, s2, false},
+			{s2, s1, true},
+			{s3, s1, false},
+			{s3, s2, false},
+			{s2, s3, false},
+			{s4, s1, true},
+			{s1, s4, false},
+			{s4, s4, true},
+		}
+
+		for _, test := range tests {
+			if eq := test.a.IsSubset(test.b); eq != test.want {
+				t.Errorf("IsSubset: got %v, want %v\na = %+v\nb = %+v", eq, test.want, test.a, test.b)
+			}
+		}
+	})
+
 	t.Run("Equals", func(t *testing.T) {
 		s1 := check(t, mapset.New(1, 2, 3), 1, 2, 3)
 		t.Logf("Test needle: %+v", s1)

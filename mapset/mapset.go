@@ -124,6 +124,16 @@ func (s Set[T]) Intersects(t Set[T]) bool {
 	return false
 }
 
+// IsSubset reports whether s is a subset of t.
+func (s Set[T]) IsSubset(t Set[T]) bool {
+	for item := range s {
+		if !t.Has(item) {
+			return false
+		}
+	}
+	return true
+}
+
 // Equals reports whether s and t contain exactly the same elements.
 func (s Set[T]) Equals(t Set[T]) bool {
 	if len(s) != len(t) {
