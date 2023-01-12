@@ -11,3 +11,7 @@ This repository defines generic data structures in Go.
 - [mapset](./mapset) a basic map-based set implementation ([package docs](https://godoc.org/github.com/creachadair/mds/mapset))
 - [mlink](./mlink) basic linked sequences (stack, queue, list, ring) ([package docs](https://godoc.org/github.com/creachadair/mds/mlink))
 - [stree](./stree) self-balancing binary-search tree ([package docs](https://godoc.org/github.com/creachadair/mds/stree))
+
+## Utilities
+
+- [slice](./slice) helpful functions for manipulating slices ([package docs](https://godoc.org/github.com/creachadair/mds/slice))
