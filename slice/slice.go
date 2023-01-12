@@ -74,7 +74,7 @@ func Partition[V any](vs []V, keep func(V) bool) int {
 // direction), the elements of the prefix are exactly the unique first elements
 // of the input.
 func Dedup[T comparable](vs []T) []T {
-	if len(vs) == 0 {
+	if len(vs) <= 1 {
 		return vs
 	}
 

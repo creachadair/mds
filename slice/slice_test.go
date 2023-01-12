@@ -60,6 +60,7 @@ func TestDedup(t *testing.T) {
 	for _, test := range []testCase[int]{
 		{"Nil", nil, nil, 0, nil},
 		{"Empty", []int{}, nil, 0, nil},
+		{"One", []int{100}, []int{100}, 1, nil},
 		{"NoRuns", []int{1, 3, 2, 4}, []int{1, 3, 2, 4}, 4, nil},
 		{"Single", []int{5, 5, 5, 5, 5}, []int{5}, 1, nil},
 		{"Two", []int{2, 2, 2, 3, 3, 3}, []int{2, 3}, 2, nil},
