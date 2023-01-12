@@ -19,16 +19,6 @@ func New[T comparable](items ...T) Set[T] {
 // NewSize constructs a new set preallocated to have space for n items.
 func NewSize[T comparable](n int) Set[T] { return make(Set[T], n) }
 
-// FromSlice constructs a set from the values returned by f for each element of
-// the given input slice.
-func FromSlice[X any, T comparable](xs []X, f func(X) T) Set[T] {
-	out := make(Set[T], len(xs))
-	for _, x := range xs {
-		out.Add(f(x))
-	}
-	return out
-}
-
 // IsEmpty reports whether s is empty.
 func (s Set[T]) IsEmpty() bool { return len(s) == 0 }
 
