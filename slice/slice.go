@@ -3,12 +3,11 @@ package slice
 
 // Partition rearranges the elements of vs in-place so that all the elements v
 // for which keep(v) is true precede all those for which it is false.  It
-// returns the number i of kept elements. It takes time proportional to len(vs)
-// and does not allocate storage outside the slice.
+// returns the prefix of vs that contains the kept elements.  It takes time
+// proportional to len(vs) and does not allocate storage outside the slice.
 //
-// The input order of the kept elements (those at indexes < i) is preserved,
-// but the unkept elements (indexes ≥ i) are permuted arbitrarily. For example,
-// given the input:
+// The input order of the kept elements s preserved, but the unkept elements
+// are permuted arbitrarily. For example, given the input:
 //
 //	[6, 1, 3, 2, 8, 4, 5]
 //
@@ -16,12 +15,15 @@ package slice
 //
 //	func keep(v int) bool { return v%2 == 0 }
 //
-// the resulting partition returns 4 and the resulting slice looks like
+// after partition vs looks like:
 //
 //	[6, 2, 8, 4, ...]
 //
-// where "..." containts the elements 1, 3, and 5 in unspecified order.
-func Partition[V any](vs []V, keep func(V) bool) int {
+// where "..." contains the elements 1, 3, and 5 in unspecified order, and the
+// returned slice is:
+//
+//	[6, 2, 8, 4]
+func Partition[T any](vs []T, keep func(T) bool) []T {
 	n := len(vs)
 
 	// Invariant: Everything to the left of i is kept.
@@ -42,7 +44,7 @@ func Partition[V any](vs []V, keep func(V) bool) int {
 			// If the right cursor reached the end, we're done: Everything left
 			// of i is kept, everything ≥ i is unkept.
 			if j == n {
-				return i
+				return vs[:i]
 			}
 		}
 
@@ -61,7 +63,7 @@ func Partition[V any](vs []V, keep func(V) bool) int {
 		i++
 		j++
 	}
-	return i
+	return vs[:i]
 }
 
 // Dedup rearranges the elements of vs in-place to deduplicate consecutive runs
