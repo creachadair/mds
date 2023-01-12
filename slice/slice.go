@@ -63,3 +63,58 @@ func Partition[V any](vs []V, keep func(V) bool) int {
 	}
 	return i
 }
+
+// Dedup rearranges the elements of vs in-place to deduplicate consecutive runs
+// of identical elements.  It returns a prefix of vs that contains the first
+// element of each run found, in their original relative order.  It takes time
+// proportional to len(vs) and does not allocate storage outside the slice.
+//
+// The returned slice will contain (non-consecutive) duplicates if and only if
+// vs is not in sorted order at input. If vs is sorted at input (in either
+// direction), the elements of the prefix are exactly the unique first elements
+// of the input.
+func Dedup[T comparable](vs []T) []T {
+	if len(vs) == 0 {
+		return vs
+	}
+
+	// Setup:
+	//   i  : the location of the first element of the next run
+	//   j  : runs forward from i looking for the end of the run
+	//
+	i, j := 0, 1
+	for {
+		// Scan forward from i for an element different from vs[i].
+		for j < len(vs) && vs[i] == vs[j] {
+			j++
+		}
+
+		// If there are no further distinct elements, we're done.  The item at
+		// position i is the beginning of the last run in the slice.
+		if j == len(vs) {
+			return vs[:i+1]
+		}
+
+		// Reaching here, the slice looks like this:
+		//
+		//   [a b c d d d d d d d e ? ? ?]
+		//    0     i             j       n
+		//
+		// where a, b, c, d are distinct from their neighbors.
+
+		// Otherwise, we have found the first item of a new run at j.
+		// Move i forward to the next slot and (if necessary) swap vs[j] into it.
+		i++
+		if j > i {
+			// A swap is unnecessary (though harmless) if j is already the next slot.
+			vs[i], vs[j] = vs[j], vs[i]
+		}
+		j++
+
+		// Now:
+		//               swapped
+		//            v-----------v
+		//   [a b c d e d d d d d d ? ? ?]
+		//    0       i             j     n
+	}
+}
