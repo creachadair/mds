@@ -24,28 +24,29 @@ package slice
 //
 //	[6, 2, 8, 4]
 func Partition[T any](vs []T, keep func(T) bool) []T {
-	n := len(vs)
+	if len(vs) == 0 {
+		return vs
+	}
 
 	// Invariant: Everything to the left of i is kept.
 	// Initialize left cursor (i) by scanning forward for an unkept element.
 	i := 0
-	for i < n && keep(vs[i]) {
+	for i < len(vs) && keep(vs[i]) {
 		i++
 	}
 	// Initialize right cursor (j). If there is an out-of-place kept element,
 	// it must be after i.
 	j := i + 1
 
-	for i < n && j < n {
+	for i < len(vs) {
 		// Right: Scan forward for a kept element.
-		for !keep(vs[j]) {
+		for j < len(vs) && !keep(vs[j]) {
 			j++
-
-			// If the right cursor reached the end, we're done: Everything left
-			// of i is kept, everything ≥ i is unkept.
-			if j == n {
-				return vs[:i]
-			}
+		}
+		// If the right cursor reached the end, we're done: Everything left of i
+		// is kept, everything ≥ i is unkept.
+		if j == len(vs) {
+			return vs[:i]
 		}
 
 		// Reaching here, the elements under both cursors are out of
