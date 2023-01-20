@@ -128,6 +128,8 @@ func (s Set[T]) Intersects(t Set[T]) bool {
 func (s Set[T]) IsSubset(t Set[T]) bool {
 	if len(t) == 0 {
 		return len(s) == 0
+	} else if len(s) > len(t) {
+		return false
 	}
 	for item := range s {
 		if !t.Has(item) {
