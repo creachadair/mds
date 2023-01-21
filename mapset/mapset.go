@@ -126,8 +126,8 @@ func (s Set[T]) Intersects(t Set[T]) bool {
 
 // IsSubset reports whether s is a subset of t.
 func (s Set[T]) IsSubset(t Set[T]) bool {
-	if len(t) == 0 {
-		return len(s) == 0
+	if len(s) == 0 {
+		return true
 	} else if len(s) > len(t) {
 		return false
 	}
