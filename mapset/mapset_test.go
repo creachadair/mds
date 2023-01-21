@@ -184,6 +184,7 @@ func TestCompare(t *testing.T) {
 			{s1, s4, true},
 			{s1, s5, false},
 			{s1, s6, false},
+			{s4, s6, false},
 
 			// Various permutations of empty.
 			{mapset.Set[int](nil), mapset.Set[int](nil), true}, // both nil
