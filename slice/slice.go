@@ -121,3 +121,35 @@ func Dedup[T comparable](vs []T) []T {
 		//    0       i             j     n
 	}
 }
+
+// Remove removes the element at position i of vs, slides the following
+// elements down to fill the space, and returns the shortened slice.
+//
+// If i == len(vs), the input slice is returned without change.
+// Remove will panic if i < 0 or i > len(vs).
+func Remove[T any](vs []T, i int) []T {
+	n := len(vs)
+	if i == n {
+		return vs
+	}
+	if i < n-1 {
+		copy(vs[i:], vs[i+1:])
+	}
+	return vs[:n-1]
+}
+
+// Insert inserts v at position i of vs, moving the existing elements up and
+// extending the slice by one element. It returns the extended slice.
+//
+// If i == len(vs), this is equivalent to append(vs, v).
+// Insert will panic if i < 0 or i > len(vs).
+func Insert[T any](vs []T, v T, i int) []T {
+	if i < 0 || i > len(vs) {
+		panic("index out of range")
+	}
+	out := append(vs, v)
+	for j := len(vs); j > i; j-- {
+		out[j], out[j-1] = out[j-1], out[j]
+	}
+	return out
+}

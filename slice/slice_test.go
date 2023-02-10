@@ -80,6 +80,55 @@ func TestDedup(t *testing.T) {
 	}
 }
 
+func TestRemove(t *testing.T) {
+	tests := []struct {
+		name  string
+		input []int
+		pos   int
+		want  []int
+	}{
+		{"Nil", nil, 0, nil},
+		{"Empty", []int{}, 0, []int{}},
+		{"End", []int{1, 2, 3}, 3, []int{1, 2, 3}},
+		{"Last", []int{1, 2, 3}, 2, []int{1, 2}},
+		{"Middle", []int{1, 2, 3}, 1, []int{1, 3}},
+		{"First", []int{1, 2, 3}, 0, []int{2, 3}},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := slice.Remove(test.input, test.pos)
+			if diff := cmp.Diff(test.want, got); diff != "" {
+				t.Errorf("Remove(%v, %d) result (-want, +got)\n%s", test.input, test.pos, diff)
+			}
+		})
+	}
+}
+
+func TestInsert(t *testing.T) {
+	tests := []struct {
+		name  string
+		input []int
+		value int
+		pos   int
+		want  []int
+	}{
+		{"Nil", nil, 10, 0, []int{10}},
+		{"Empty", []int{}, 20, 0, []int{20}},
+		{"End", []int{1, 2}, 3, 2, []int{1, 2, 3}},
+		{"Middle", []int{1, 3}, 2, 1, []int{1, 2, 3}},
+		{"First", []int{2, 3}, 1, 0, []int{1, 2, 3}},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := slice.Insert(test.input, test.value, test.pos)
+			if diff := cmp.Diff(test.want, got); diff != "" {
+				t.Errorf("Insert(%v, %v, %d) result (-want, +got)\n%s",
+					test.input, test.value, test.pos, diff)
+			}
+		})
+	}
+}
+
 func (tc *testCase[T]) partition(t *testing.T) {
 	t.Helper()
 
