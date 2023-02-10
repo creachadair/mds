@@ -138,7 +138,7 @@ func Remove[T any](vs []T, i int) []T {
 	return vs[:n-1]
 }
 
-// Insert inserts v at position i of vs, moving the existing elements up and
+// Insert inserts v at position i of vs, moving the following elements up and
 // extending the slice by one element. It returns the extended slice.
 //
 // If i == len(vs), this is equivalent to append(vs, v).
