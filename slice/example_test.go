@@ -32,7 +32,7 @@ func ExampleRemove() {
 
 func ExampleInsert() {
 	vs := []string{"three", "kittens"}
-	fmt.Println(slice.Insert(vs, "fuzzy", 1))
+	fmt.Println(slice.Insert(vs, 1, "fuzzy"))
 	// Output:
 	// [three fuzzy kittens]
 }
@@ -41,7 +41,7 @@ func ExampleInsert_remove() {
 	vs := []string{"three", "cute", "kittens"}
 	ws := slice.Remove(vs, 1)
 	fmt.Println(ws)
-	xs := slice.Insert(ws, "fuzzy", 1)
+	xs := slice.Insert(ws, 1, "fuzzy")
 	fmt.Println(xs)
 	// Output:
 	// [three kittens]

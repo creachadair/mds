@@ -143,7 +143,7 @@ func Remove[T any](vs []T, i int) []T {
 //
 // If i == len(vs), this is equivalent to append(vs, v).
 // Insert will panic if i < 0 or i > len(vs).
-func Insert[T any](vs []T, v T, i int) []T {
+func Insert[T any](vs []T, i int, v T) []T {
 	if i < 0 || i > len(vs) {
 		panic("index out of range")
 	}

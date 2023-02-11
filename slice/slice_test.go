@@ -120,7 +120,7 @@ func TestInsert(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got := slice.Insert(test.input, test.value, test.pos)
+			got := slice.Insert(test.input, test.pos, test.value)
 			if diff := cmp.Diff(test.want, got); diff != "" {
 				t.Errorf("Insert(%v, %v, %d) result (-want, +got)\n%s",
 					test.input, test.value, test.pos, diff)
