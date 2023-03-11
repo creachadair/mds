@@ -63,15 +63,6 @@ func (q *Queue[T]) Add(v T) int {
 	return q.pushUp(n)
 }
 
-// Update replaces the item at index i of q with v, and restores heap order.
-// It returns the new location of v. If i < 0 or i ≥ q.Len(), Update panics.
-func (q *Queue[T]) Update(i int, v T) int {
-	q.data[i] = v
-
-	// At most one of these will move any elements of q.
-	return q.pushDown(q.pushUp(i))
-}
-
 // Set replaces the contents of q with the specified values. Any previous
 // values in the queue are discarded. This operation takes time proportional to
 // len(vs) to restore heap order.
@@ -164,3 +155,4 @@ func (q *Queue[T]) pushDown(i int) int {
 	}
 	return i
 }
+

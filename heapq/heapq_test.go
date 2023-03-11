@@ -68,11 +68,9 @@ func runTests(t *testing.T, q *heapq.Queue[int]) {
 	check(3, 5, 10)
 	checkAdd(4, 1)
 	check(3, 4, 10, 5)
-	q.Update(1, 0)
-	check(0, 3, 10, 5)
-	checkPop(0, true)
-
 	checkPop(3, true)
+
+	checkPop(4, true)
 	checkPop(5, true)
 	checkPop(10, true)
 	checkPop(0, false)
@@ -80,11 +78,7 @@ func runTests(t *testing.T, q *heapq.Queue[int]) {
 
 	q.Set([]int{1, 2, 3, 4, 5})
 	check(1, 2, 3, 4, 5)
-	q.Update(2, 0)
-	check(0, 1, 2, 4, 5)
-	q.Update(1, 6)
-	check(0, 4, 2, 6, 5)
-	checkPop(0, true)
+	checkPop(1, true)
 
 	q.Clear()
 	check()
