@@ -2,6 +2,7 @@ package slice_test
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/creachadair/mds/slice"
 )
@@ -46,4 +47,14 @@ func ExampleInsert_remove() {
 	// Output:
 	// [three kittens]
 	// [three fuzzy kittens]
+}
+
+func ExampleReverse() {
+	vs := []string{"red", "yellow", "blue", "green"}
+	fmt.Println("before:", strings.Join(vs, " "))
+	slice.Reverse(vs)
+	fmt.Println("after:", strings.Join(vs, " "))
+	// Ouput:
+	// before: red yellow blue green
+	// after: green blue yellow red
 }
