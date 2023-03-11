@@ -22,6 +22,47 @@ func check[T comparable](t *testing.T, s mapset.Set[T], want ...T) mapset.Set[T]
 	return s
 }
 
+func TestIntersect(t *testing.T) {
+	e1 := check(t, mapset.New[int]())
+	nat := check(t, mapset.New(1, 2, 3, 4, 5, 6), 1, 2, 3, 4, 5, 6)
+	odd := check(t, mapset.New(1, 3, 5, 7, 9, 11), 1, 3, 5, 7, 9, 11)
+	evn := check(t, mapset.New(2, 4, 6, 8, 10), 2, 4, 6, 8, 10)
+	prm := check(t, mapset.New(2, 3, 5, 7, 11, 13), 2, 3, 5, 7, 11, 13)
+
+	tests := []struct {
+		lhs, rhs mapset.Set[int]
+		want     []int
+	}{
+		// Various empty cases.
+		{nil, nil, nil},
+		{e1, e1, nil},
+		{e1, nil, nil},
+		{nil, e1, nil},
+
+		// Intersection with empty is empty.
+		{nat, nil, nil},
+		{nil, nat, nil},
+
+		// Intersection with disjoint is empty.
+		{odd, evn, nil},
+		{evn, odd, nil},
+
+		// Intersection should be commutative.
+		{nat, odd, []int{1, 3, 5}},
+		{odd, nat, []int{1, 3, 5}},
+		{nat, prm, []int{2, 3, 5}},
+		{odd, prm, []int{3, 5, 7, 11}},
+
+		// Self-intersection should be self.
+		{nat, nat, nat.Slice()},
+		{odd, odd, odd.Slice()},
+	}
+	for _, tc := range tests {
+		got := mapset.Intersect(tc.lhs, tc.rhs)
+		check(t, got, tc.want...)
+	}
+}
+
 func TestBasic(t *testing.T) {
 	t.Run("Empty", func(t *testing.T) {
 		check(t, mapset.New[string]())

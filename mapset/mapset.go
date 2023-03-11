@@ -177,3 +177,22 @@ func (s Set[T]) Slice() []T {
 	}
 	return items
 }
+
+// Intersect constructs a new set containing the intersection of the specified
+// sets.  The result is never nil, even if the given sets are empty.
+func Intersect[T comparable](s1, s2 Set[T]) Set[T] {
+	n1, n2 := len(s1), len(s2)
+	if n1 == 0 || n2 == 0 {
+		return make(Set[T])
+	}
+	if n1 > n2 {
+		s1, s2 = s2, s1
+	}
+	out := make(Set[T], len(s1))
+	for v := range s1 {
+		if s2.Has(v) {
+			out.Add(v)
+		}
+	}
+	return out
+}
