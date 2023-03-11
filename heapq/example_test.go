@@ -2,35 +2,35 @@ package heapq_test
 
 import (
 	"fmt"
-	"math/rand"
-	"sort"
 
 	"github.com/creachadair/mds/heapq"
 )
 
-func Example_inPlaceHeapSort() {
-	// Fill a buffer with some random data for example purposes.
-	buf := make([]int, 25)
-	for i := range buf {
-		buf[i] = rand.Intn(100) - 25
-	}
-	fmt.Println("sorted before:", sort.IntsAreSorted(buf))
+func ExampleNew() {
+	q := heapq.New(func(a, b int) bool {
+		return a < b
+	})
 
-	// Put the data into a heap. Note that the comparison function here puts
-	// greater elements at the top.
-	q := heapq.NewWithData(func(a, b int) bool {
-		return a > b
-	}, buf)
+	q.Add(8)
+	q.Add(6)
+	q.Add(7)
+	q.Add(5)
+	q.Add(3)
+	q.Add(0)
+	q.Add(9)
 
-	// Pull the items off the heap. Because the heap is using the buffer we
-	// already allocated, each item removed leaves an empty slot at the end of
-	// the array.
-	for i := len(buf) - 1; !q.IsEmpty(); i-- {
-		v, _ := q.Pop()
-		buf[i] = v // N.B. Order matters here: Pop before update!
-	}
-	fmt.Println("sorted after:", sort.IntsAreSorted(buf))
+	fmt.Println("length before", q.Len())
+	fmt.Println(q.Pop())
+	fmt.Println(q.Pop())
+	fmt.Println(q.Pop())
+	fmt.Println("length after", q.Len())
+	fmt.Println("front", q.Front())
+
 	// Output:
-	// sorted before: false
-	// sorted after: true
+	// length before 7
+	// 0 true
+	// 3 true
+	// 5 true
+	// length after 4
+	// front 6
 }
