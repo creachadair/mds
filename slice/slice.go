@@ -153,3 +153,11 @@ func Insert[T any](vs []T, i int, v T) []T {
 	}
 	return out
 }
+
+// Reverse reverses the contents of vs in-place.
+func Reverse[T any](vs []T) {
+	for i, j := 0, len(vs)-1; i < j; i++ {
+		vs[i], vs[j] = vs[j], vs[i]
+		j--
+	}
+}
