@@ -137,6 +137,27 @@ func TestCompare(t *testing.T) {
 		}
 	})
 
+	t.Run("HasAny", func(t *testing.T) {
+		s1 := check(t, mapset.New(1, 2, 3, 4), 1, 2, 3, 4)
+		var s2 mapset.Set[int]
+
+		if check(t, mapset.New[int]()).HasAny(1) {
+			t.Error("Empty set should not have any elements")
+		}
+		if s2.HasAny(1) {
+			t.Error("Nil set should not have any elements")
+		}
+		if s1.HasAny() {
+			t.Error("Empty elements should report false")
+		}
+		if !s1.HasAny(9, 2, 8, 4) {
+			t.Errorf("Set %v should contain 2 and 4", s1)
+		}
+		if s1.HasAny(7, 5, 6) {
+			t.Errorf("Set %v should not contain 7, 5, or 6", s1)
+		}
+	})
+
 	t.Run("IsSubset", func(t *testing.T) {
 		s1 := check(t, mapset.New(1, 2, 3, 4, 5, 6, 7), 1, 2, 3, 4, 5, 6, 7)
 		s2 := check(t, mapset.New(2, 3, 5, 7), 2, 3, 5, 7)
