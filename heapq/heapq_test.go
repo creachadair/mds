@@ -174,6 +174,42 @@ func TestNewWithData(t *testing.T) {
 	}
 }
 
+func TestSort(t *testing.T) {
+	longIn := make([]int, 50)
+	for i := range longIn {
+		longIn[i] = rand.Intn(1000) - 250
+	}
+	longOut := make([]int, len(longIn))
+	copy(longOut, longIn)
+	sort.Ints(longOut)
+
+	lt := func(a, b int) bool { return a < b }
+	gt := func(a, b int) bool { return a > b }
+	_, _ = lt, gt
+	tests := []struct {
+		name        string
+		cmp         func(a, b int) bool
+		input, want []int
+	}{
+		{"Nil", lt, nil, nil},
+		{"Empty", lt, []int{}, nil},
+		{"Single-LT", lt, []int{11}, []int{11}},
+		{"Single-GT", gt, []int{11}, []int{11}},
+		{"Ascend", lt, []int{9, 1, 4, 11}, []int{1, 4, 9, 11}},
+		{"Descend", gt, []int{9, 1, 4, 11}, []int{11, 9, 4, 1}},
+		{"Long", lt, longIn, longOut},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			in := append([]int(nil), tc.input...)
+			heapq.Sort(tc.cmp, in)
+			if diff := cmp.Diff(tc.want, in); diff != "" {
+				t.Errorf("Sort (-want, +got):\n%s", diff)
+			}
+		})
+	}
+}
+
 func extract[T any](q *heapq.Queue[T]) []T {
 	all := make([]T, 0, q.Len())
 	for !q.IsEmpty() {

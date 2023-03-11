@@ -156,3 +156,16 @@ func (q *Queue[T]) pushDown(i int) int {
 	return i
 }
 
+// Sort reorders the contents of vs in-place using the heap-sort algorithm, in
+// non-decreasing order by the comparison function provided.
+func Sort[T any](lessThan func(a, b T) bool, vs []T) {
+	if len(vs) < 2 {
+		return
+	}
+	cmp := func(b, a T) bool { return lessThan(a, b) }
+	q := NewWithData(cmp, vs)
+	for i := len(vs) - 1; !q.IsEmpty(); i-- {
+		v, _ := q.Pop()
+		vs[i] = v
+	}
+}
