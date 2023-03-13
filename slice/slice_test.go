@@ -152,6 +152,27 @@ func TestReverse(t *testing.T) {
 	}
 }
 
+func TestMapKeys(t *testing.T) {
+	cmpStrings := func(a, b string) bool { return a < b }
+
+	tests := []struct {
+		input map[string]int
+		want  []string
+	}{
+		{nil, nil},
+		{map[string]int{}, nil},
+		{map[string]int{"a": 1, "b": 2, "c": 3}, []string{"a", "b", "c"}},
+	}
+	for _, tc := range tests {
+		got := slice.MapKeys(tc.input)
+		diff := cmp.Diff(tc.want, got, cmpopts.SortSlices(cmpStrings))
+		if diff != "" {
+			t.Logf("Input: %v", tc.input)
+			t.Errorf("MapKeys (-want, +got):\n%s", diff)
+		}
+	}
+}
+
 func (tc *testCase[T]) partition(t *testing.T) {
 	t.Helper()
 

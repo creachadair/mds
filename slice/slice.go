@@ -161,3 +161,16 @@ func Reverse[T any](vs []T) {
 		j--
 	}
 }
+
+// MapKeys extracts a slice of the keys from a map.  The resulting slice is in
+// arbitrary order.
+func MapKeys[T comparable, U any](m map[T]U) []T {
+	if len(m) == 0 {
+		return nil
+	}
+	keys := make([]T, 0, len(m))
+	for key := range m {
+		keys = append(keys, key)
+	}
+	return keys
+}
