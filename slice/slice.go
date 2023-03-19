@@ -72,7 +72,7 @@ func Partition[T any](vs []T, keep func(T) bool) []T {
 // element of each run found, in their original relative order.  It takes time
 // proportional to len(vs) and does not allocate storage outside the slice.
 //
-// The returned slice will contain (non-consecutive) duplicates if and only if
+// The returned slice will contain (non-consecutive) duplicates only if
 // vs is not in sorted order at input. If vs is sorted at input (in either
 // direction), the elements of the prefix are exactly the unique first elements
 // of the input.
