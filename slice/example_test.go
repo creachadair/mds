@@ -24,31 +24,6 @@ func ExampleDedup() {
 	// [1 3 2 4 5 1 3]
 }
 
-func ExampleRemove() {
-	vs := []string{"three", "fuzzy", "kittens"}
-	fmt.Println(slice.Remove(vs, 1))
-	// Output:
-	// [three kittens]
-}
-
-func ExampleInsert() {
-	vs := []string{"three", "kittens"}
-	fmt.Println(slice.Insert(vs, 1, "fuzzy"))
-	// Output:
-	// [three fuzzy kittens]
-}
-
-func ExampleInsert_remove() {
-	vs := []string{"three", "cute", "kittens"}
-	ws := slice.Remove(vs, 1)
-	fmt.Println(ws)
-	xs := slice.Insert(ws, 1, "fuzzy")
-	fmt.Println(xs)
-	// Output:
-	// [three kittens]
-	// [three fuzzy kittens]
-}
-
 func ExampleReverse() {
 	vs := []string{"red", "yellow", "blue", "green"}
 	fmt.Println("before:", strings.Join(vs, " "))
