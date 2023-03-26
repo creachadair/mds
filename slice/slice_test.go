@@ -106,13 +106,19 @@ func TestReverse(t *testing.T) {
 func TestMapKeys(t *testing.T) {
 	cmpStrings := func(a, b string) bool { return a < b }
 
-	tests := []struct {
-		input map[string]int
-		want  []string
-	}{
-		{nil, nil},
+	type testCase[K comparable, V any, T ~map[K]V] struct {
+		input T
+		want  []K
+	}
+	type TM map[string]int
+
+	tests := []testCase[string, int, map[string]int]{
+		{map[string]int(nil), nil},
 		{map[string]int{}, nil},
 		{map[string]int{"a": 1, "b": 2, "c": 3}, []string{"a", "b", "c"}},
+		{TM(nil), nil},
+		{TM{}, nil},
+		{TM{"a": 1, "b": 2, "c": 3}, []string{"a", "b", "c"}},
 	}
 	for _, tc := range tests {
 		got := slice.MapKeys(tc.input)
