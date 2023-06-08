@@ -6,7 +6,7 @@ package slice
 // returns the prefix of vs that contains the kept elements.  It takes time
 // proportional to len(vs) and does not allocate storage outside the slice.
 //
-// The input order of the kept elements s preserved, but the unkept elements
+// The input order of the kept elements is preserved, but the unkept elements
 // are permuted arbitrarily. For example, given the input:
 //
 //	[6, 1, 3, 2, 8, 4, 5]
