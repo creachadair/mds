@@ -178,6 +178,26 @@ func TestCompare(t *testing.T) {
 		}
 	})
 
+	t.Run("HasAll", func(t *testing.T) {
+		s1 := check(t, mapset.New(1, 2, 3, 4), 1, 2, 3, 4)
+
+		if s0 := check(t, mapset.New[int]()); !s0.HasAll() {
+			t.Error("Empty set should have all of no elements")
+		} else if s0.HasAll(1) {
+			t.Error("Empty set should have none of no elements")
+		}
+
+		if !s1.HasAll() {
+			t.Error("Empty elements should report true")
+		}
+		if !s1.HasAll(1, 3) {
+			t.Errorf("Set %v should contain 1 and 3", s1)
+		}
+		if s1.HasAll(1, 4, 5) {
+			t.Errorf("Set %v should not contain 5", s1)
+		}
+	})
+
 	t.Run("HasAny", func(t *testing.T) {
 		s1 := check(t, mapset.New(1, 2, 3, 4), 1, 2, 3, 4)
 		var s2 mapset.Set[int]

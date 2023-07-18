@@ -124,8 +124,24 @@ func (s Set[T]) Intersects(t Set[T]) bool {
 	return false
 }
 
-// HasAny reports whether s contains any element of ts. It returns false if
-// len(ts) == 0.
+// HasAll reports whether s contains all the elements of ts. Semantically, this
+// is equivalent to IsSubset, but does not construct an intermediate set.
+// It returns true if len(ts) == 0.
+func (s Set[T]) HasAll(ts ...T) bool {
+	if len(s) == 0 {
+		return len(ts) == 0
+	}
+	for _, t := range ts {
+		if !s.Has(t) {
+			return false
+		}
+	}
+	return true
+}
+
+// HasAny reports whether s contains any element of ts. Semantically, this is
+// equivalent to Intersects, but does not construct an intermediate set.
+// It returns false if len(ts) == 0.
 func (s Set[T]) HasAny(ts ...T) bool {
 	if len(s) == 0 {
 		return false
