@@ -46,6 +46,21 @@ func (q *Queue[T]) Front() T {
 	return q.data[0]
 }
 
+// Peek reports whether q has a value at offset n from the front of the queue,
+// and if so returns its value. Peek(0) returns the same value as Front.  The
+// order of elements at offsets n > 0 is unspecified.
+//
+// Peek will panic if n < 0.
+func (q *Queue[T]) Peek(n int) (T, bool) {
+	if n < 0 {
+		panic("index out of range")
+	} else if n >= len(q.data) {
+		var zero T
+		return zero, false
+	}
+	return q.data[n], true
+}
+
 // Pop reports whether the queue contains any elements, and if so removes and
 // returns the frontmost element.  It returns a zero value if q is empty.
 func (q *Queue[T]) Pop() (T, bool) {
@@ -61,6 +76,20 @@ func (q *Queue[T]) Add(v T) int {
 	n := len(q.data)
 	q.data = append(q.data, v)
 	return q.pushUp(n)
+}
+
+// Remove reports whether q has a value at offset n from the front of the
+// queue, and if so removes and returns it. Remove(0) is equivalent to Pop().
+//
+// Remove will panic if n < 0.
+func (q *Queue[T]) Remove(n int) (T, bool) {
+	if n < 0 {
+		panic("index out of range")
+	} else if n >= len(q.data) {
+		var zero T
+		return zero, false
+	}
+	return q.pop(n), true
 }
 
 // Set replaces the contents of q with the specified values. Any previous

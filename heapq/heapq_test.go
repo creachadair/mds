@@ -56,6 +56,12 @@ func runTests(t *testing.T, q *heapq.Queue[int]) {
 			t.Errorf("Pop: got (%v, %v), want (%v, %v)", got, ok, want, wantok)
 		}
 	}
+	checkRemove := func(n, want int, wantok bool) {
+		got, ok := q.Remove(n)
+		if got != want || ok != wantok {
+			t.Errorf("Remove(%d): got (%v, %v), want (%v, %v)", n, got, ok, want, wantok)
+		}
+	}
 
 	check()
 	checkPop(0, false)
@@ -79,6 +85,11 @@ func runTests(t *testing.T, q *heapq.Queue[int]) {
 	q.Set([]int{1, 2, 3, 4, 5})
 	check(1, 2, 3, 4, 5)
 	checkPop(1, true)
+
+	q.Set([]int{1, 2, 3, 4, 5, 6})
+	checkRemove(0, 1, true)
+	checkRemove(2, 3, true)
+	checkRemove(5, 0, false)
 
 	q.Clear()
 	check()
