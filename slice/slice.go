@@ -142,14 +142,3 @@ func MapKeys[T comparable, U any](m map[T]U) []T {
 	}
 	return keys
 }
-
-// NIndex returns the index of the first element of vs for which f reports a
-// false value, or else -1 indicating no such element exists.
-func NIndex[T any](vs []T, f func(T) bool) int {
-	for i, v := range vs {
-		if !f(v) {
-			return i
-		}
-	}
-	return -1
-}

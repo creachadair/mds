@@ -130,38 +130,6 @@ func TestMapKeys(t *testing.T) {
 	}
 }
 
-func TestNIndex(t *testing.T) {
-	allTrue := func(int) bool { return true }
-	allFalse := func(int) bool { return false }
-	isEven := func(z int) bool { return z%2 == 0 }
-	type testCase[T any] struct {
-		name  string
-		input []T
-		want  T
-		f     func(T) bool
-	}
-	tests := []testCase[int]{
-		{"NilTrue", nil, -1, allTrue},
-		{"NilFalse", nil, -1, allFalse},
-		{"Empty", []int{}, -1, isEven},
-		{"OneYes", []int{0}, -1, allTrue},
-		{"OneNo", []int{0}, 0, allFalse},
-
-		{"None", []int{1, 3, 5}, 0, isEven},
-		{"Some2", []int{2, 4, 5}, 2, isEven},
-		{"Some0", []int{1, 4, 5}, 0, isEven},
-		{"All", []int{2, 4, 6}, -1, isEven},
-	}
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			got := slice.NIndex(tc.input, tc.f)
-			if got != tc.want {
-				t.Fatalf("NIndex(%+v): got %v, want %v", tc.input, got, tc.want)
-			}
-		})
-	}
-}
-
 func (tc *testCase[T]) partition(t *testing.T) {
 	t.Helper()
 
