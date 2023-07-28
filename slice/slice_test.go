@@ -137,7 +137,7 @@ func TestNIndex(t *testing.T) {
 	type testCase[T any] struct {
 		name  string
 		input []T
-		want  int
+		want  T
 		f     func(T) bool
 	}
 	tests := []testCase[int]{
