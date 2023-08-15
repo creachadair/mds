@@ -138,6 +138,8 @@ func TestSplit(t *testing.T) {
 		lhs, rhs []string
 	}{
 		{"", 0, nil, nil},
+		{"a", 0, nil, []string{"a"}},
+		{"a", 1, []string{"a"}, nil},
 		{"a b c", 0, nil, []string{"a", "b", "c"}},
 		{"a b c", 1, []string{"a"}, []string{"b", "c"}},
 		{"a b c", 2, []string{"a", "b"}, []string{"c"}},
