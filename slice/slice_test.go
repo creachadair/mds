@@ -1,6 +1,7 @@
 package slice_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/creachadair/mds/slice"
@@ -130,6 +131,40 @@ func TestMapKeys(t *testing.T) {
 	}
 }
 
+func TestSplit(t *testing.T) {
+	tests := []struct {
+		input    string
+		i        int
+		lhs, rhs []string
+	}{
+		{"", 0, nil, nil},
+		{"a b c", 0, nil, []string{"a", "b", "c"}},
+		{"a b c", 1, []string{"a"}, []string{"b", "c"}},
+		{"a b c", 2, []string{"a", "b"}, []string{"c"}},
+		{"a b c", 3, []string{"a", "b", "c"}, nil},
+		{"a b c d", -1, []string{"a", "b", "c"}, []string{"d"}},
+		{"a b c d", -2, []string{"a", "b"}, []string{"c", "d"}},
+		{"a b c d", -3, []string{"a"}, []string{"b", "c", "d"}},
+		{"a b c d", -4, nil, []string{"a", "b", "c", "d"}},
+	}
+	for _, tc := range tests {
+		input := strings.Fields(tc.input)
+		lhs, rhs := slice.Split(input, tc.i)
+		if diff := cmp.Diff(tc.lhs, lhs, cmpopts.EquateEmpty()); diff != "" {
+			t.Errorf("Split %q %d lhs (-want, +got):\n%s", input, tc.i, diff)
+		}
+		if diff := cmp.Diff(tc.rhs, rhs, cmpopts.EquateEmpty()); diff != "" {
+			t.Errorf("Split %q %d rhs (-want, +got):\n%s", input, tc.i, diff)
+		}
+	}
+	t.Run("Range", func(t *testing.T) {
+		mustPanic(t, func() { slice.Split([]string(nil), 1) })
+		mustPanic(t, func() { slice.Split([]string(nil), -1) })
+		mustPanic(t, func() { slice.Split([]int{1, 2, 3}, 4) })
+		mustPanic(t, func() { slice.Split([]int{1, 2, 3}, -4) })
+	})
+}
+
 func (tc *testCase[T]) partition(t *testing.T) {
 	t.Helper()
 
@@ -162,4 +197,14 @@ func copyOf[T any](vs []T) []T {
 	out := make([]T, len(vs))
 	copy(out, vs)
 	return out
+}
+
+func mustPanic(t *testing.T, f func()) {
+	defer func() {
+		if x := recover(); x != nil {
+			t.Logf("Panic recovered (OK): %v", x)
+		}
+	}()
+	f()
+	t.Fatal("Expected panic did not occur")
 }

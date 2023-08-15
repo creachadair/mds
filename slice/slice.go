@@ -142,3 +142,17 @@ func MapKeys[T comparable, U any](m map[T]U) []T {
 	}
 	return keys
 }
+
+// Split partitions a slice into two subslices around index i, the first
+// containing the elements prior to i, the second containing the elements from
+// i to the end. If i < 0, offsets are counted backward from the end.
+// If i is out of range, Split will panic.
+func Split[T any, Slice ~[]T](ss Slice, i int) (lhs, rhs Slice) {
+	if i < 0 {
+		i += len(ss)
+	}
+	if i < 0 || i > len(ss) {
+		panic("index out of range")
+	}
+	return ss[:i], ss[i:]
+}
