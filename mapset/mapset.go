@@ -26,14 +26,7 @@ func (s Set[T]) IsEmpty() bool { return len(s) == 0 }
 func (s Set[T]) Len() int { return len(s) }
 
 // Clear removes all elements from s and returns s.
-func (s Set[T]) Clear() Set[T] {
-	for item := range s {
-		// N.B.: This has the usual limitations with weird values like NaN;
-		// see https://github.com/golang/go/issues/56351.
-		delete(s, item)
-	}
-	return s
-}
+func (s Set[T]) Clear() Set[T] { clear(s); return s }
 
 // Clone returns a new set with the same contents as s.
 // The value returned is never nil.
