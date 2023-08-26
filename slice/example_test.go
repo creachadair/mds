@@ -33,3 +33,16 @@ func ExampleReverse() {
 	// before: red yellow blue green
 	// after: green blue yellow red
 }
+
+func ExampleSplit() {
+	vs := []int{1, 2, 3, 4, 5, 6, 7, 8}
+
+	fmt.Println("input:", vs)
+	lhs, rhs := slice.Split(vs, 3)
+	fmt.Println("lhs:", lhs)
+	fmt.Println("rhs:", rhs)
+	// Output:
+	// input: [1 2 3 4 5 6 7 8]
+	// lhs: [1 2 3]
+	// rhs: [4 5 6 7 8]
+}
