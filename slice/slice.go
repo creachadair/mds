@@ -166,3 +166,15 @@ func SplitLast[T any, Slice ~[]T](ss Slice) (Slice, T) {
 	}
 	return ss[:len(ss)-1], ss[len(ss)-1]
 }
+
+// MatchingKeys returns a slice of the keys k of m for which f(m[k]) is true.
+// The resulting slice is in arbitrary order.
+func MatchingKeys[T comparable, U any](m map[T]U, f func(U) bool) []T {
+	var out []T
+	for k, v := range m {
+		if f(v) {
+			out = append(out, k)
+		}
+	}
+	return out
+}

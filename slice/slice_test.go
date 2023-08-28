@@ -1,6 +1,7 @@
 package slice_test
 
 import (
+	"sort"
 	"strings"
 	"testing"
 
@@ -186,6 +187,33 @@ func TestSplitLast(t *testing.T) {
 		}
 		if got != tc.want {
 			t.Errorf("SplitLast %q last: got %q, want %q", input, got, tc.want)
+		}
+	}
+}
+
+func TestMatchingKeys(t *testing.T) {
+	even := func(z int) bool { return z%2 == 0 }
+	big := func(z int) bool { return z > 10 }
+	type M = map[string]int
+	tests := []struct {
+		m    M
+		f    func(int) bool
+		want []string
+	}{
+		{nil, even, nil},
+		{M{}, even, nil},
+		{M{"x": 1, "y": 2, "z": 3}, even, []string{"y"}},
+		{M{"x": 1, "y": 3}, even, nil},
+		{M{"x": 2, "y": 4}, even, []string{"x", "y"}},
+		{M{"x": 2, "y": 3, "z": 5, "a": 11, "b": 13, "c": 19, "d": 0}, big,
+			[]string{"a", "b", "c"}},
+	}
+	for _, tc := range tests {
+		got := slice.MatchingKeys(tc.m, tc.f)
+		sort.Strings(got)
+		sort.Strings(tc.want)
+		if diff := cmp.Diff(tc.want, got); diff != "" {
+			t.Errorf("MatchingKeys (-want, +got):\n%s", diff)
 		}
 	}
 }

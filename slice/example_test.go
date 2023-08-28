@@ -2,16 +2,18 @@ package slice_test
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/creachadair/mds/slice"
 )
 
+func isOdd(v int) bool  { return v%2 == 1 }
+func isEven(v int) bool { return v%2 == 0 }
+
 func ExamplePartition() {
 	vs := []int{3, 1, 8, 4, 2, 6, 9, 10, 5, 7}
-	odd := slice.Partition(vs, func(v int) bool {
-		return v%2 == 1
-	})
+	odd := slice.Partition(vs, isOdd)
 	fmt.Println(odd)
 	// Output:
 	// [3 1 9 5 7]
@@ -45,4 +47,17 @@ func ExampleSplit() {
 	// input: [1 2 3 4 5 6 7 8]
 	// lhs: [1 2 3]
 	// rhs: [4 5 6 7 8]
+}
+
+func ExampleMatchingKeys() {
+	vs := map[string]int{"red": 3, "yellow": 6, "blue": 4, "green": 5}
+
+	keys := slice.MatchingKeys(vs, isEven)
+	sort.Strings(keys) // sort so test output is stable
+	for _, key := range keys {
+		fmt.Println(key, vs[key])
+	}
+	// Output:
+	// blue 4
+	// yellow 6
 }
