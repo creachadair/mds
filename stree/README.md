@@ -2,7 +2,7 @@
 
 [![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://pkg.go.dev/github.com/creachadair/mds/stree)
 
-This repository provides an implementation of Scapegoat Trees, as described in
+This packate provides an implementation of Scapegoat Trees, as described in
 https://people.csail.mit.edu/rivest/pubs/GR93.pdf
 
 ## Visualization
