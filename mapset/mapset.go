@@ -213,3 +213,23 @@ nextElt:
 
 	return out
 }
+
+// FromKeys constructs a new Set containing the keys of m.  The result is never
+// nil, even if m is empty.
+func FromKeys[T comparable, U any](m map[T]U) Set[T] {
+	out := make(Set[T], len(m))
+	for key := range m {
+		out.Add(key)
+	}
+	return out
+}
+
+// FromValues constructs a new Set containing the values of m.  The result is
+// never nil, even if m is empty.
+func FromValues[T, U comparable](m map[T]U) Set[U] {
+	out := make(Set[U])
+	for _, val := range m {
+		out.Add(val)
+	}
+	return out
+}
