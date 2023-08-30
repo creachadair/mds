@@ -284,39 +284,39 @@ func TestCompare(t *testing.T) {
 	})
 }
 
-func TestFromKeys(t *testing.T) {
+func TestKeys(t *testing.T) {
 	t.Run("Nil", func(t *testing.T) {
-		check(t, mapset.FromKeys(map[string]int(nil)))
+		check(t, mapset.Keys(map[string]int(nil)))
 	})
 	t.Run("Empty", func(t *testing.T) {
-		check(t, mapset.FromKeys(map[string]int{}))
+		check(t, mapset.Keys(map[string]int{}))
 	})
 	t.Run("String", func(t *testing.T) {
-		check(t, mapset.FromKeys(map[string]bool{
+		check(t, mapset.Keys(map[string]bool{
 			"a": true, "b": false, "c": true,
 		}), "a", "b", "c")
 	})
 	t.Run("Int", func(t *testing.T) {
-		check(t, mapset.FromKeys(map[int]string{
+		check(t, mapset.Keys(map[int]string{
 			1: "red", 2: "orange", 3: "yellow",
 		}), 1, 2, 3)
 	})
 }
 
-func TestFromValues(t *testing.T) {
+func TestValues(t *testing.T) {
 	t.Run("Nil", func(t *testing.T) {
-		check(t, mapset.FromValues(map[string]int(nil)))
+		check(t, mapset.Values(map[string]int(nil)))
 	})
 	t.Run("Empty", func(t *testing.T) {
-		check(t, mapset.FromValues(map[string]int{}))
+		check(t, mapset.Values(map[string]int{}))
 	})
 	t.Run("String", func(t *testing.T) {
-		check(t, mapset.FromValues(map[int]string{
+		check(t, mapset.Values(map[int]string{
 			1: "foo", 2: "bar", 3: "baz", 4: "foo", 5: "quux",
 		}), "foo", "bar", "baz", "quux")
 	})
 	t.Run("Int", func(t *testing.T) {
-		check(t, mapset.FromValues(map[string]int{
+		check(t, mapset.Values(map[string]int{
 			"red": 1, "green": 1, "blue": 2, "white": 2,
 		}), 1, 2)
 	})
