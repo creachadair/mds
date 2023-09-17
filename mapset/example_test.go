@@ -42,3 +42,40 @@ func Example() {
 	// panama
 	// plan
 }
+
+func ExampleKeys() {
+	s := mapset.Keys(map[string]int{
+		"apple":  1,
+		"pear":   2,
+		"plum":   3,
+		"cherry": 4,
+	})
+
+	elts := s.Slice()
+	sort.Strings(elts)
+	fmt.Println(strings.Join(elts, "\n"))
+	// Output:
+	// apple
+	// cherry
+	// pear
+	// plum
+}
+
+func ExampleValues() {
+	s := mapset.Values(map[string]int{
+		"apple":  5,
+		"pear":   4,
+		"plum":   4,
+		"cherry": 6,
+	})
+
+	elts := s.Slice()
+	sort.Ints(elts)
+	for _, v := range elts {
+		fmt.Println(v)
+	}
+	// Output:
+	// 4
+	// 5
+	// 6
+}
