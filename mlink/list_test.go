@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/creachadair/mds/mlink"
+	"github.com/creachadair/mtest"
 )
 
 func eq(z int) func(int) bool {
@@ -175,14 +176,7 @@ func TestList(t *testing.T) {
 func mustPanic(f func()) func(*testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
-		defer func() {
-			if x := recover(); x != nil {
-				t.Logf("Recovered panic [expected] from %s: %v", t.Name(), x)
-				return
-			}
-			t.Errorf("Did not get expected panic in %s", t.Name())
-		}()
-		f()
+		mtest.MustPanic(t, f)
 	}
 }
 

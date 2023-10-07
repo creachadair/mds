@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/creachadair/mds/slice"
+	"github.com/creachadair/mtest"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
@@ -161,10 +162,10 @@ func TestSplit(t *testing.T) {
 		}
 	}
 	t.Run("Range", func(t *testing.T) {
-		mustPanic(t, func() { slice.Split([]string(nil), 1) })
-		mustPanic(t, func() { slice.Split([]string(nil), -1) })
-		mustPanic(t, func() { slice.Split([]int{1, 2, 3}, 4) })
-		mustPanic(t, func() { slice.Split([]int{1, 2, 3}, -4) })
+		mtest.MustPanic(t, func() { slice.Split([]string(nil), 1) })
+		mtest.MustPanic(t, func() { slice.Split([]string(nil), -1) })
+		mtest.MustPanic(t, func() { slice.Split([]int{1, 2, 3}, 4) })
+		mtest.MustPanic(t, func() { slice.Split([]int{1, 2, 3}, -4) })
 	})
 }
 
@@ -250,14 +251,4 @@ func copyOf[T any](vs []T) []T {
 	out := make([]T, len(vs))
 	copy(out, vs)
 	return out
-}
-
-func mustPanic(t *testing.T, f func()) {
-	defer func() {
-		if x := recover(); x != nil {
-			t.Logf("Panic recovered (OK): %v", x)
-		}
-	}()
-	f()
-	t.Fatal("Expected panic did not occur")
 }
