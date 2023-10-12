@@ -122,6 +122,7 @@ func TestBasic(t *testing.T) {
 func TestItems(t *testing.T) {
 	t.Run("Add", func(t *testing.T) {
 		s := check(t, mapset.New(2, 3, 5, 7), 2, 3, 5, 7)
+		check(t, s.Add(), 2, 3, 5, 7)
 		check(t, s.Add(2, 5, 11, 13), 2, 3, 5, 7, 11, 13)
 		check(t, s, 2, 3, 5, 7, 11, 13)
 	})
@@ -130,12 +131,16 @@ func TestItems(t *testing.T) {
 		s := check(t, mapset.New(2, 3, 5, 7, 11, 13, 17), 2, 3, 5, 7, 11, 13, 17)
 		check(t, s.Remove(13, 17, 2, 8, 4, 1), 3, 5, 7, 11)
 		check(t, s, 3, 5, 7, 11)
+		check(t, mapset.New[int]().Remove())            // remove nothing from empty
+		check(t, mapset.New[int]().Remove(1, 2, 3))     // remove something from empty
+		check(t, mapset.New(1, 2, 3).Remove(), 1, 2, 3) // remove nothing from nonempty
 	})
 
 	t.Run("AddAll", func(t *testing.T) {
 		s1 := check(t, mapset.New(1, 3, 5, 7), 1, 3, 5, 7)
 		s2 := check(t, mapset.New(2, 4, 6), 2, 4, 6)
 
+		check(t, s1.AddAll(nil), 1, 3, 5, 7)
 		check(t, s1.AddAll(s2), 1, 2, 3, 4, 5, 6, 7)
 		check(t, s1, 1, 2, 3, 4, 5, 6, 7)
 		check(t, s2, 2, 4, 6)
@@ -145,6 +150,7 @@ func TestItems(t *testing.T) {
 		s1 := check(t, mapset.New(1, 2, 3, 4, 5), 1, 2, 3, 4, 5)
 		s2 := check(t, mapset.New(2, 4, 6, 8, 10), 2, 4, 6, 8, 10)
 
+		check(t, s1.RemoveAll(nil), 1, 2, 3, 4, 5)
 		check(t, s1.RemoveAll(s2), 1, 3, 5)
 		check(t, s1, 1, 3, 5)
 		check(t, s2, 2, 4, 6, 8, 10)
@@ -157,6 +163,10 @@ func TestItems(t *testing.T) {
 		}
 		if s.Len() != 1 {
 			t.Errorf("Length after Pop: got %d, want 1", s.Len())
+		}
+		e := check(t, mapset.New[int]())
+		if got := e.Pop(); got != 0 {
+			t.Errorf("Pop from empty: got %d, want 0", got)
 		}
 	})
 }

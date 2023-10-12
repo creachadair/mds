@@ -70,10 +70,11 @@ func (s Set[T]) addAll(t Set[T]) Set[T] {
 
 // Remove removes the specified items from the set and returns s.
 func (s Set[T]) Remove(items ...T) Set[T] {
-	if len(s) != 0 {
-		for _, item := range items {
-			delete(s, item)
+	for _, item := range items {
+		if len(s) == 0 {
+			break
 		}
+		delete(s, item)
 	}
 	return s
 }
