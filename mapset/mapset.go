@@ -31,11 +31,7 @@ func (s Set[T]) Clear() Set[T] { clear(s); return s }
 // Clone returns a new set with the same contents as s.
 // The value returned is never nil.
 func (s Set[T]) Clone() Set[T] {
-	m := make(Set[T], len(s))
-	for item := range s {
-		m[item] = struct{}{}
-	}
-	return m
+	return make(Set[T], len(s)).addAll(s)
 }
 
 // Has reports whether t is present in the set.
