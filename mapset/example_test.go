@@ -2,7 +2,6 @@ package mapset_test
 
 import (
 	"fmt"
-	"sort"
 	"strings"
 
 	"github.com/creachadair/mds/mapset"
@@ -30,9 +29,8 @@ func Example() {
 	fmt.Println()
 
 	// The slice is unordered, so impose some discipline.
-	sort.Strings(elts)
 	fmt.Println(strings.Join(elts, "\n"))
-	// Output:
+	// Unordered output:
 	// t intersects u: true
 	// t equals u: false
 	//
@@ -51,10 +49,8 @@ func ExampleKeys() {
 		"cherry": 4,
 	})
 
-	elts := s.Slice()
-	sort.Strings(elts)
-	fmt.Println(strings.Join(elts, "\n"))
-	// Output:
+	fmt.Println(strings.Join(s.Slice(), "\n"))
+	// Unordered output:
 	// apple
 	// cherry
 	// pear
@@ -69,12 +65,10 @@ func ExampleValues() {
 		"cherry": 6,
 	})
 
-	elts := s.Slice()
-	sort.Ints(elts)
-	for _, v := range elts {
+	for _, v := range s.Slice() {
 		fmt.Println(v)
 	}
-	// Output:
+	// Unordered output:
 	// 4
 	// 5
 	// 6
