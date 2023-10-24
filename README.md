@@ -15,3 +15,4 @@ This repository defines generic data structures in Go.
 ## Utilities
 
 - [slice](./slice) helpful functions for manipulating slices ([package docs](https://godoc.org/github.com/creachadair/mds/slice))
+- [mtest](./mtest) a support library for writing tests ([package docs](https://godoc.org/github.com/creachadair/mds/mtest))
