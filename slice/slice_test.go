@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/creachadair/mds/mtest"
 	"github.com/creachadair/mds/slice"
-	"github.com/creachadair/mtest"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 )

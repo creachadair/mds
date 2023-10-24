@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/creachadair/mds/mlink"
-	"github.com/creachadair/mtest"
+	"github.com/creachadair/mds/mtest"
 )
 
 func eq(z int) func(int) bool {
