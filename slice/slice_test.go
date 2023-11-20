@@ -219,6 +219,40 @@ func TestMatchingKeys(t *testing.T) {
 	}
 }
 
+func TestRotate(t *testing.T) {
+	tests := []struct {
+		input string
+		k     int
+		want  string
+	}{
+		{"", 0, ""}, // empty input
+		{"X", 0, "X"},
+		{"X", 1, "X"},
+		{"X", -1, "X"},
+		{"A B", 0, "A B"},
+		{"A B", 1, "B A"},
+		{"A B", -1, "B A"},
+		{"A B C D E", 0, "A B C D E"},
+		{"A B C D E", 1, "E A B C D"},
+		{"A B C D E", 2, "D E A B C"},
+		{"A B C D E", 3, "C D E A B"},
+		{"A B C D E", 4, "B C D E A"},
+		{"A B C D E", 5, "A B C D E"},
+		{"A B C D E", -1, "B C D E A"},
+		{"A B C D E", -2, "C D E A B"},
+		{"A B C D E", -3, "D E A B C"},
+		{"A B C D E", -4, "E A B C D"},
+		{"A B C D E", -5, "A B C D E"},
+	}
+	for _, tc := range tests {
+		got := strings.Fields(tc.input)
+		slice.Rotate(got, tc.k)
+		if diff := cmp.Diff(got, strings.Fields(tc.want)); diff != "" {
+			t.Errorf("Rotate %q %d (-got, +want):\n%s", tc.input, tc.k, diff)
+		}
+	}
+}
+
 func (tc *testCase[T]) partition(t *testing.T) {
 	t.Helper()
 

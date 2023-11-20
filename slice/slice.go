@@ -178,3 +178,43 @@ func MatchingKeys[T comparable, U any](m map[T]U, f func(U) bool) []T {
 	}
 	return out
 }
+
+// Rotate permutes the elements of ss in-place by k positions.
+// If k > 0, elements are rotated rightward.
+// If k < 0, elements are rotated leftward.
+// If k is out of range, Rotate will panic.
+//
+// For example, if
+//
+//	ss := []string{"a", "b", "c", "d"}
+//
+// then slice.Rotate(ss, 1) produces
+//
+//	{"d", "a", "b", "c"}
+//
+// while slice.Rotate(ss, -1) produces
+//
+//	{"b", "c", "d", "a"}
+//
+// The rotation operation takes time proportional to len(ss) but does not
+// allocate storage outside the input slice.
+func Rotate[T any, Slice ~[]T](ss Slice, k int) {
+	if k < 0 {
+		k += len(ss)
+	}
+	if k < 0 || k > len(ss) {
+		panic("index out of range")
+	} else if k == 0 || k == len(ss) {
+		return
+	}
+	i, cur := 0, ss[0]
+	for {
+		next := (i + k) % len(ss)
+		nextv := ss[next]
+		ss[next] = cur
+		if next == 0 {
+			break
+		}
+		i, cur = next, nextv
+	}
+}
