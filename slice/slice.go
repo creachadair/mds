@@ -148,13 +148,8 @@ func MapKeys[T comparable, U any](m map[T]U) []T {
 // i to the end. If i < 0, offsets are counted backward from the end.
 // If i is out of range, Split will panic.
 func Split[T any, Slice ~[]T](ss Slice, i int) (lhs, rhs Slice) {
-	if i < 0 {
-		i += len(ss)
-	}
-	if i < 0 || i > len(ss) {
-		panic("index out of range")
-	}
-	return ss[:i], ss[i:]
+	b := boundsCheck(i, len(ss))
+	return ss[:b], ss[b:]
 }
 
 // SplitLast returns the prefix of ss excluding the last element, and the last
@@ -165,6 +160,22 @@ func SplitLast[T any, Slice ~[]T](ss Slice) (Slice, T) {
 		return nil, zero
 	}
 	return ss[:len(ss)-1], ss[len(ss)-1]
+}
+
+func boundsCheck(i, n int) int {
+	if i < 0 {
+		i += n
+	}
+	if i < 0 || i > n {
+		panic("index out of range")
+	}
+	return i
+}
+
+// At returns the element of ss at offset i. Negative offsets count backward
+// from the end of the slice. If i is out of range, At will panic.
+func At[T any, Slice ~[]T](ss Slice, i int) T {
+	return ss[boundsCheck(i, len(ss))]
 }
 
 // MatchingKeys returns a slice of the keys k of m for which f(m[k]) is true.
@@ -199,12 +210,8 @@ func MatchingKeys[T comparable, U any](m map[T]U, f func(U) bool) []T {
 // The rotation operation takes time proportional to len(ss) but does not
 // allocate storage outside the input slice.
 func Rotate[T any, Slice ~[]T](ss Slice, k int) {
-	if k < 0 {
-		k += len(ss)
-	}
-	if k < 0 || k > len(ss) {
-		panic("index out of range")
-	} else if k == 0 || k == len(ss) {
+	k = boundsCheck(k, len(ss))
+	if k == 0 || k == len(ss) {
 		return
 	}
 	i, cur := 0, ss[0]

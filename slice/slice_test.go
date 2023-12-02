@@ -225,6 +225,40 @@ func TestRotate(t *testing.T) {
 		k     int
 		want  string
 	}{
+		{"x", 0, "x"},
+		{"x", -1, "x"},
+
+		{"a b c", 0, "a"},
+		{"a b c", 1, "b"},
+		{"a b c", 2, "c"},
+
+		{"a b c", -1, "c"},
+		{"a b c", -2, "b"},
+		{"a b c", -3, "a"},
+	}
+	for _, tc := range tests {
+		got := slice.At(strings.Fields(tc.input), tc.k)
+		if got != tc.want {
+			t.Errorf("At %q %d: got %q, want %q", tc.input, tc.k, got, tc.want)
+		}
+	}
+
+	t.Run("Bounds", func(t *testing.T) {
+		mtest.MustPanic(t, func() { slice.At([]string(nil), 0) })
+		mtest.MustPanic(t, func() { slice.At([]string(nil), -1) })
+		mtest.MustPanic(t, func() { slice.At([]string{}, 0) })
+		mtest.MustPanic(t, func() { slice.At([]string{}, -1) })
+		mtest.MustPanic(t, func() { slice.At([]string{"a", "b", "c"}, 10) })
+		mtest.MustPanic(t, func() { slice.At([]string{"a", "b", "c"}, -5) })
+	})
+}
+
+func TestAt(t *testing.T) {
+	tests := []struct {
+		input string
+		k     int
+		want  string
+	}{
 		{"", 0, ""}, // empty input
 		{"X", 0, "X"},
 		{"X", 1, "X"},
