@@ -62,7 +62,7 @@ func RingOf[T any](vs ...T) *Ring[T] {
 // Join splices ring s into a non-empty ring r. There are two cases:
 //
 // If r and s belong to different rings, [r1 ... rn] and [s1 ... sm], the
-// elements of s are spliced in after r and the resulting ring is:
+// elements of s are spliced in after r1 and the resulting ring is:
 //
 //	[r1 s1 ... sm r2 ... rn]
 //
