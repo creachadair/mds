@@ -271,26 +271,44 @@ func (t *Tree[T]) InorderAfter(key T, f func(key T) bool) bool {
 	return t.root.inorderAfter(key, t.lessThan, f)
 }
 
-// Min returns the minimum key from t. If t is empty, Min returns a zero key.
-func (t *Tree[T]) Min() T {
+// Cursor constructs a cursor to the specified key, or nil if key is not
+// present in the tree.
+func (t *Tree[T]) Cursor(key T) *Cursor[T] {
+	path := t.root.pathTo(key, t.lessThan)
+	if len(path) == 0 {
+		return nil
+	}
+	return &Cursor[T]{path: path}
+}
+
+// Root returns a Cursor to the root of t, or nil if t is empty.
+func (t *Tree[T]) Root() *Cursor[T] {
 	if t.root == nil {
+		return nil
+	}
+	return &Cursor[T]{path: []*node[T]{t.root}}
+}
+
+// Min returns the minimum key in t. If t is empty, a zero key is returned.
+func (t *Tree[T]) Min() T {
+	cur := t.root
+	if cur == nil {
 		var zero T
 		return zero
 	}
-	cur := t.root
 	for cur.left != nil {
 		cur = cur.left
 	}
 	return cur.X
 }
 
-// Max returns the maximum key from t. If t is empty, Max returns a zero key.
+// Max returns the maximum key in t. If t is empty, a zero key is returned.
 func (t *Tree[T]) Max() T {
-	if t.root == nil {
+	cur := t.root
+	if cur == nil {
 		var zero T
 		return zero
 	}
-	cur := t.root
 	for cur.right != nil {
 		cur = cur.right
 	}
