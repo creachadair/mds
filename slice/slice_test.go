@@ -287,6 +287,31 @@ func TestAt(t *testing.T) {
 	}
 }
 
+func TestCoalesce(t *testing.T) {
+	tests := []struct {
+		input []string
+		want  string
+	}{
+		{nil, ""},
+		{[]string{}, ""},
+		{[]string{""}, ""},
+		{[]string{"", ""}, ""},
+
+		{[]string{"a"}, "a"},
+		{[]string{"a", "b"}, "a"},
+		{[]string{"a", "", "b"}, "a"},
+		{[]string{"", "a", "b"}, "a"},
+		{[]string{"", "", "b"}, "b"},
+		{[]string{"", "", "", "q", ""}, "q"},
+	}
+	for _, tc := range tests {
+		got := slice.Coalesce(tc.input...)
+		if got != tc.want {
+			t.Errorf("Coalesce %q: got %q, want %q", tc.input, got, tc.want)
+		}
+	}
+}
+
 func (tc *testCase[T]) partition(t *testing.T) {
 	t.Helper()
 

@@ -225,3 +225,14 @@ func Rotate[T any, Slice ~[]T](ss Slice, k int) {
 		i, cur = next, nextv
 	}
 }
+
+// Coalesce returns the first non-zero element of vs, or a zero.
+func Coalesce[T comparable](vs ...T) T {
+	var zero T
+	for _, v := range vs {
+		if v != zero {
+			return v
+		}
+	}
+	return zero
+}
