@@ -143,7 +143,7 @@ func (q *Queue[T]) pop(i int) T {
 	if n == 0 {
 		q.data = q.data[:0]
 	} else {
-		q.data[i] = q.data[n]
+		q.data[i], q.data[n] = q.data[n], out
 		q.data = q.data[:n]
 		q.pushDown(i)
 	}
@@ -193,8 +193,7 @@ func Sort[T any](lessThan func(a, b T) bool, vs []T) {
 	}
 	cmp := func(b, a T) bool { return lessThan(a, b) }
 	q := NewWithData(cmp, vs)
-	for i := len(vs) - 1; !q.IsEmpty(); i-- {
-		v, _ := q.Pop()
-		vs[i] = v
+	for !q.IsEmpty() {
+		q.Pop()
 	}
 }
