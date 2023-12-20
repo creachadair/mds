@@ -2,21 +2,20 @@ package stree_test
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/creachadair/mds/stree"
 )
-
-func stringLess(a, b string) bool { return a < b }
 
 type Pair struct {
 	X string
 	V int
 }
 
-func (p Pair) Less(q Pair) bool { return p.X < q.X }
+func (p Pair) Compare(q Pair) int { return strings.Compare(p.X, q.X) }
 
 func ExampleTree_Add() {
-	tree := stree.New(200, stringLess)
+	tree := stree.New(200, strings.Compare)
 
 	fmt.Println("inserted:", tree.Add("never"))
 	fmt.Println("inserted:", tree.Add("say"))
@@ -31,7 +30,7 @@ func ExampleTree_Add() {
 
 func ExampleTree_Remove() {
 	const key = "Aloysius"
-	tree := stree.New(1, stringLess)
+	tree := stree.New(1, strings.Compare)
 
 	fmt.Println("inserted:", tree.Add(key))
 	fmt.Println("removed:", tree.Remove(key))
@@ -43,7 +42,7 @@ func ExampleTree_Remove() {
 }
 
 func ExampleTree_Get() {
-	tree := stree.New(1, Pair.Less,
+	tree := stree.New(1, Pair.Compare,
 		Pair{X: "angel", V: 5},
 		Pair{X: "devil", V: 7},
 		Pair{X: "human", V: 13},
@@ -60,7 +59,7 @@ func ExampleTree_Get() {
 }
 
 func ExampleTree_Inorder() {
-	tree := stree.New(15, stringLess, "eat", "those", "bloody", "vegetables")
+	tree := stree.New(15, strings.Compare, "eat", "those", "bloody", "vegetables")
 	tree.Inorder(func(key string) bool {
 		fmt.Println(key)
 		return true
@@ -73,7 +72,7 @@ func ExampleTree_Inorder() {
 }
 
 func ExampleTree_Min() {
-	tree := stree.New(50, intLess, 1814, 1956, 955, 1066, 2016)
+	tree := stree.New(50, intCompare, 1814, 1956, 955, 1066, 2016)
 
 	fmt.Println("len:", tree.Len())
 	fmt.Println("min:", tree.Min())

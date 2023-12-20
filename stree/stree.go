@@ -20,7 +20,7 @@ package stree
 import (
 	"fmt"
 	"math"
-	"sort"
+	"slices"
 )
 
 const (
@@ -29,11 +29,12 @@ const (
 )
 
 // New returns a new tree with the given balancing factor 0 ≤ β ≤ 1000. The
-// order of elements stored in the tree is provided by the comparison function.
+// order of elements stored in the tree is provided by the comparison function,
+// where compare(a, b) must be <0 if a < b, =0 if a == b, and >0 if a > b.
 //
 // If any keys are given, the tree is initialized to contain them, otherwise an
-// empty tree is created.  For keys that are known in advance it is more
-// efficient to allocate storage for them at construction time, versus adding
+// empty tree is created.  When the initial set of keys is known in advance it
+// is more efficient to add them during tree construction, versus versus adding
 // them separately later.
 //
 // The balancing factor controls how unbalanced the tree is permitted to be,
@@ -42,24 +43,24 @@ const (
 // rebalancing, but provides faster lookups. A good default is 250.
 //
 // New panics if β < 0 or β > 1000.
-func New[T any](β int, lessThan func(a, b T) bool, keys ...T) *Tree[T] {
+func New[T any](β int, compare func(a, b T) int, keys ...T) *Tree[T] {
 	if β < 0 || β > maxBalance {
 		panic("β out of range")
 	}
 	tree := &Tree[T]{
-		β:        β,
-		lessThan: lessThan,
-		limit:    limitFunc(β),
-		size:     len(keys),
-		max:      len(keys),
+		β:       β,
+		compare: compare,
+		limit:   limitFunc(β),
+		size:    len(keys),
+		max:     len(keys),
 	}
 	if len(keys) != 0 {
 		nodes := make([]*node[T], len(keys))
 		for i, key := range keys {
 			nodes[i] = &node[T]{X: key}
 		}
-		sort.Slice(nodes, func(i, j int) bool {
-			return lessThan(nodes[i].X, nodes[j].X)
+		slices.SortFunc(nodes, func(a, b *node[T]) int {
+			return compare(a.X, b.X)
 		})
 		tree.root = extract(nodes)
 	}
@@ -77,11 +78,11 @@ type Tree[T any] struct {
 	// requires one floating-point operation per insertion to recompute the
 	// depth limit.
 
-	β        int               // balancing factor
-	lessThan func(a, b T) bool // key comparison
-	limit    func(n int) int   // depth limit for size n
-	size     int               // cache of root.size()
-	max      int               // max of size since last rebuild of root
+	β       int              // balancing factor
+	compare func(a, b T) int // key comparison
+	limit   func(n int) int  // depth limit for size n
+	size    int              // cache of root.size()
+	max     int              // max of size since last rebuild of root
 }
 
 func toFraction(β int) float64 { return (float64(β) + maxBalance) / fracLimit }
@@ -149,12 +150,14 @@ func (t *Tree[T]) insert(key T, replace bool, root *node[T], limit int) (ins *no
 			size = 1
 		}
 		return &node[T]{X: key}, true, size, 0
-	} else if t.lessThan(key, root.X) {
+	}
+	cmp := t.compare(key, root.X)
+	if cmp < 0 {
 		ins, added, size, height = t.insert(key, replace, root.left, limit-1)
 		root.left = ins
 		sib = root.right
 		height++
-	} else if t.lessThan(root.X, key) {
+	} else if cmp > 0 {
 		ins, added, size, height = t.insert(key, replace, root.right, limit-1)
 		root.right = ins
 		sib = root.left
@@ -193,7 +196,7 @@ func (t *Tree[T]) insert(key T, replace bool, root *node[T], limit int) (ins *no
 
 // Remove key from the tree and report whether it was present.
 func (t *Tree[T]) Remove(key T) bool {
-	del, ok := t.root.remove(key, t.lessThan)
+	del, ok := t.root.remove(key, t.compare)
 	t.root = del
 	if ok {
 		t.size--
@@ -207,14 +210,16 @@ func (t *Tree[T]) Remove(key T) bool {
 
 // remove key from the subtree under n, returning the modified tree reporting
 // whether the mass of the tree was decreased.
-func (n *node[T]) remove(key T, lessThan func(a, b T) bool) (_ *node[T], ok bool) {
+func (n *node[T]) remove(key T, compare func(a, b T) int) (_ *node[T], ok bool) {
 	if n == nil {
 		return nil, false // nothing to do
-	} else if lessThan(key, n.X) {
-		n.left, ok = n.left.remove(key, lessThan)
+	}
+	cmp := compare(key, n.X)
+	if cmp < 0 {
+		n.left, ok = n.left.remove(key, compare)
 		return n, ok
-	} else if lessThan(n.X, key) {
-		n.right, ok = n.right.remove(key, lessThan)
+	} else if cmp > 0 {
+		n.right, ok = n.right.remove(key, compare)
 		return n, ok
 	} else if n.left == nil {
 		return n.right, true
@@ -248,9 +253,10 @@ func (t *Tree[T]) Clear() { t.size = 0; t.max = 0; t.root = nil }
 func (t *Tree[T]) Get(key T) (_ T, ok bool) {
 	cur := t.root
 	for cur != nil {
-		if t.lessThan(key, cur.X) {
+		cmp := t.compare(key, cur.X)
+		if cmp < 0 {
 			cur = cur.left
-		} else if t.lessThan(cur.X, key) {
+		} else if cmp > 0 {
 			cur = cur.right
 		} else {
 			return cur.X, true
@@ -268,13 +274,13 @@ func (t *Tree[T]) Inorder(f func(key T) bool) bool { return t.root.inorder(f) }
 // if f returns false, InorderAfter stops and returns fales. Otherwise, it
 // returns true after visiting all eligible elements of t.
 func (t *Tree[T]) InorderAfter(key T, f func(key T) bool) bool {
-	return t.root.inorderAfter(key, t.lessThan, f)
+	return t.root.inorderAfter(key, t.compare, f)
 }
 
 // Cursor constructs a cursor to the specified key, or nil if key is not
 // present in the tree.
 func (t *Tree[T]) Cursor(key T) *Cursor[T] {
-	path := t.root.pathTo(key, t.lessThan)
+	path := t.root.pathTo(key, t.compare)
 	if len(path) == 0 {
 		return nil
 	}

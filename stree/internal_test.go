@@ -21,8 +21,6 @@ var (
 	sortWords  = flag.Bool("sort", false, "Sort input words before insertion")
 )
 
-func lessString(a, b string) bool { return a < b }
-
 func sortedUnique(ws []string) []string {
 	out := mapset.New[string](ws...).Slice()
 	sort.Strings(out)
@@ -32,7 +30,7 @@ func sortedUnique(ws []string) []string {
 // Construct a tree with the words from input, returning the finished tree and
 // the original words as split by strings.Fields.
 func makeTree(β int, input string) (*Tree[string], []string) {
-	tree := New(β, lessString)
+	tree := New(β, strings.Compare)
 	words := strings.Fields(input)
 	if *sortWords {
 		sort.Strings(words)

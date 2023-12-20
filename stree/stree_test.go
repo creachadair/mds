@@ -29,7 +29,7 @@ func sortedUnique(ws []string, drop mapset.Set[string]) []string {
 
 func TestNew(t *testing.T) {
 	t.Run("Empty", func(t *testing.T) {
-		tree := stree.New(100, stringLess)
+		tree := stree.New(100, strings.Compare)
 		if n := tree.Len(); n != 0 {
 			t.Errorf("Len of empty tree: got %v, want 0", n)
 		}
@@ -38,7 +38,7 @@ func TestNew(t *testing.T) {
 		}
 	})
 	t.Run("NonEmpty", func(t *testing.T) {
-		tree := stree.New(200, stringLess, "please", "fetch", "your", "slippers")
+		tree := stree.New(200, strings.Compare, "please", "fetch", "your", "slippers")
 		got := allWords(tree)
 		want := []string{"fetch", "please", "slippers", "your"}
 		if diff := cmp.Diff(got, want); diff != "" {
@@ -53,7 +53,7 @@ func TestNew(t *testing.T) {
 
 func TestRemoval(t *testing.T) {
 	words := strings.Fields(`a foolish consistency is the hobgoblin of little minds`)
-	tree := stree.New[string](0, stringLess, words...)
+	tree := stree.New[string](0, strings.Compare, words...)
 
 	got := allWords(tree)
 	want := sortedUnique(words, nil)
@@ -80,8 +80,8 @@ func TestInsertion(t *testing.T) {
 		val int
 	}
 
-	tree := stree.New[kv](300, func(a, b kv) bool {
-		return a.key < b.key
+	tree := stree.New[kv](300, func(a, b kv) int {
+		return strings.Compare(a.key, b.key)
 	})
 	checkInsert := func(f func(kv) bool, key string, val int, ok bool) {
 		t.Helper()
@@ -113,7 +113,7 @@ func TestInsertion(t *testing.T) {
 
 func TestInorderAfter(t *testing.T) {
 	keys := []string{"8", "6", "7", "5", "3", "0", "9"}
-	tree := stree.New(0, stringLess, keys...)
+	tree := stree.New(0, strings.Compare, keys...)
 	tests := []struct {
 		key  string
 		want string
@@ -146,7 +146,7 @@ func TestInorderAfter(t *testing.T) {
 
 func TestCursor(t *testing.T) {
 	t.Run("EmptyTree", func(t *testing.T) {
-		tree := stree.New(250, stringLess)
+		tree := stree.New(250, strings.Compare)
 
 		// An empty tree reports nil cursors.
 		if got := tree.Cursor("whatever"); got.Valid() {
@@ -165,7 +165,7 @@ func TestCursor(t *testing.T) {
 		}
 	})
 
-	tree := stree.New(250, stringLess, "a", "b", "c", "d", "e", "f", "g")
+	tree := stree.New(250, strings.Compare, "a", "b", "c", "d", "e", "f", "g")
 	t.Run("Iterate", func(t *testing.T) {
 		type tcursor = *stree.Cursor[string]
 

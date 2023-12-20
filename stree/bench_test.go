@@ -15,7 +15,7 @@ const benchSeed = 1471808909908695897
 // Trial values of β for load-testing tree operations.
 var balances = []int{0, 50, 100, 150, 200, 250, 300, 500, 800, 1000}
 
-func intLess(a, b int) bool { return a < b }
+func intCompare(a, b int) int { return a - b }
 
 func randomTree(b *testing.B, β int) (*stree.Tree[int], []int) {
 	rng := rand.New(rand.NewSource(benchSeed))
@@ -23,7 +23,7 @@ func randomTree(b *testing.B, β int) (*stree.Tree[int], []int) {
 	for i := range values {
 		values[i] = rng.Intn(math.MaxInt32)
 	}
-	return stree.New(β, intLess, values...), values
+	return stree.New(β, intCompare, values...), values
 }
 
 func BenchmarkNew(b *testing.B) {
@@ -39,7 +39,7 @@ func BenchmarkAddRandom(b *testing.B) {
 		b.Run(fmt.Sprintf("β=%d", β), func(b *testing.B) {
 			_, values := randomTree(b, β)
 			b.ResetTimer()
-			tree := stree.New[int](β, intLess)
+			tree := stree.New[int](β, intCompare)
 			for _, v := range values {
 				tree.Add(v)
 			}
@@ -50,7 +50,7 @@ func BenchmarkAddRandom(b *testing.B) {
 func BenchmarkAddOrdered(b *testing.B) {
 	for _, β := range balances {
 		b.Run(fmt.Sprintf("β=%d", β), func(b *testing.B) {
-			tree := stree.New[int](β, intLess)
+			tree := stree.New[int](β, intCompare)
 			for i := 1; i <= b.N; i++ {
 				tree.Add(i)
 			}
