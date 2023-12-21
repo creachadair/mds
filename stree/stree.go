@@ -281,7 +281,7 @@ func (t *Tree[T]) InorderAfter(key T, f func(key T) bool) bool {
 // present in the tree.
 func (t *Tree[T]) Cursor(key T) *Cursor[T] {
 	path := t.root.pathTo(key, t.compare)
-	if len(path) == 0 {
+	if len(path) == 0 || t.compare(path[len(path)-1].X, key) != 0 {
 		return nil
 	}
 	return &Cursor[T]{path: path}

@@ -171,41 +171,92 @@ func TestCursor(t *testing.T) {
 
 		var cur tcursor
 		prev := (tcursor).Prev
+		left := (tcursor).Left
 		next := (tcursor).Next
+		right := (tcursor).Right
+		up := (tcursor).Up
+
+		// A pseudo-operation that ignores its input, and updates cur to a new
+		// cursor and returns that cursor.
 		jump := func(c tcursor) func(tcursor) tcursor {
 			return func(tcursor) tcursor { cur = c; return c }
 		}
+
+		// Each step of this test is an instruction that applies a step to cur
+		// and specifies whether the result cursor should be valid, and what the
+		// key reported by its Key method should be.
 		pgm := []struct {
 			step  func(tcursor) tcursor
 			valid bool
 			key   string
 		}{
+			// Initially, cur should be invalid.
+			{jump(cur), false, ""},
+
+			// Navigation from an invalid cursor should not panic, but should
+			// leave the cursor invalid.
+			{up, false, ""},
+			{next, false, ""},
+			{prev, false, ""},
+			{left, false, ""},
+			{right, false, ""},
+
+			// Go to the root and navigate around it.
+			{jump(tree.Root()), true, "d"},
+			{next, true, "e"},
+			{prev, true, "d"},
+			{prev, true, "c"},
+
+			// Check left and right children.
+			{jump(tree.Root()), true, "d"},
+			{left, true, "b"},
+			{right, true, "c"},
+			{left, false, ""},
+
+			// Navigate up toward the root.
 			{jump(tree.Root().Min()), true, "a"},
-			{next, true, "b"},
-			{prev, true, "a"},
+			{up, true, "b"},
+			{up, true, "d"},
+			{up, false, ""},
+
+			// Walk off the start to invalid
+			{jump(tree.Root().Min()), true, "a"},
 			{prev, false, ""},
 
+			// Navigate around the min.
 			{jump(tree.Root().Min()), true, "a"},
 			{next, true, "b"},
 			{prev, true, "a"},
 			{next, true, "b"},
 			{next, true, "c"},
 			{next, true, "d"},
-			{prev, true, "c"},
+			{next, true, "e"}, // cross the root successfully
+			{prev, true, "d"},
 
+			// Walk off the end to invalid.
 			{jump(tree.Root().Max()), true, "g"},
 			{next, false, ""},
 
+			// Navigate around the max.
 			{jump(tree.Root().Max()), true, "g"},
 			{prev, true, "f"},
 			{prev, true, "e"},
 			{prev, true, "d"},
 			{prev, true, "c"},
 
+			// Find a non-existing element.
+			{jump(tree.Cursor("nonesuch")), false, ""},
+
+			// Find an existing element.
 			{jump(tree.Cursor("d")), true, "d"},
 			{next, true, "e"},
 			{prev, true, "d"},
 			{prev, true, "c"},
+			{up, true, "b"},
+			{left, true, "a"},
+			{up, true, "b"},
+			{right, true, "c"},
+			{right, false, ""},
 
 			{jump(tree.Root().Min()), true, "a"},
 			{prev, false, ""},
@@ -224,22 +275,22 @@ func TestCursor(t *testing.T) {
 		root := tree.Root()
 		t.Logf("Root: %q", root.Key())
 
-		t.Run("Right", func(t *testing.T) {
+		t.Run("Forward", func(t *testing.T) {
 			var got []string
-			for r := root.Clone().Right().Min(); r.Valid(); r.Next() {
+			for r := tree.Cursor("f").Min(); r.Valid(); r.Next() {
 				got = append(got, r.Key())
 			}
 			if diff := cmp.Diff(got, []string{"e", "f", "g"}); diff != "" {
-				t.Errorf("Right tree (-got, +want):\n%s", diff)
+				t.Errorf("Forward walk (-got, +want):\n%s", diff)
 			}
 		})
-		t.Run("Left", func(t *testing.T) {
+		t.Run("Reverse", func(t *testing.T) {
 			var got []string
-			for l := root.Clone().Left().Max(); l.Valid(); l.Prev() {
+			for l := tree.Cursor("b").Max(); l.Valid(); l.Prev() {
 				got = append(got, l.Key())
 			}
 			if diff := cmp.Diff(got, []string{"c", "b", "a"}); diff != "" {
-				t.Errorf("Left tree (-got, +want):\n%s", diff)
+				t.Errorf("Reverse walk (-got, +want):\n%s", diff)
 			}
 		})
 	})
