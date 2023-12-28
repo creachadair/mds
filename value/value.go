@@ -14,3 +14,6 @@ func LessCompare[T any](less func(a, b T) bool) func(a, b T) int {
 		return 0
 	}
 }
+
+// Ptr returns a pointer to its argument type containing v.
+func Ptr[T any](v T) *T { return &v }
