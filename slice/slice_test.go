@@ -312,6 +312,69 @@ func TestCoalesce(t *testing.T) {
 	}
 }
 
+func TestChunks(t *testing.T) {
+	tests := []struct {
+		input string
+		max   int
+		want  [][]string
+	}{
+		// An empty slice has only one covering.
+		{"", 1, [][]string{{}}},
+		{"", 5, [][]string{{}}},
+
+		{"x", 1, [][]string{{"x"}}},
+		{"x", 2, [][]string{{"x"}}},
+
+		{"a b c d e", 1, [][]string{{"a"}, {"b"}, {"c"}, {"d"}, {"e"}}},
+		{"a b c d e", 2, [][]string{{"a", "b"}, {"c", "d"}, {"e"}}},
+		{"a b c d e", 3, [][]string{{"a", "b", "c"}, {"d", "e"}}},
+		{"a b c d e", 4, [][]string{{"a", "b", "c", "d"}, {"e"}}},
+		{"a b c d e", 5, [][]string{{"a", "b", "c", "d", "e"}}},
+		{"a b c d e", 6, [][]string{{"a", "b", "c", "d", "e"}}},
+	}
+	for _, tc := range tests {
+		got := slice.Chunks(strings.Fields(tc.input), tc.max)
+		if diff := cmp.Diff(got, tc.want); diff != "" {
+			t.Errorf("Chunks(%q, %d): (-got, +want)\n%s", tc.input, tc.max, diff)
+		}
+	}
+
+	t.Logf("OK max=0: %v", mtest.MustPanic(t, func() { slice.Chunks([]string{"a"}, 0) }))
+	t.Logf("OK max<0: %v", mtest.MustPanic(t, func() { slice.Chunks([]string{"a"}, -1) }))
+}
+
+func TestBatches(t *testing.T) {
+	input := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}
+	tests := []struct {
+		n    int
+		want [][]int
+	}{
+		{1, [][]int{input}},
+		{2, [][]int{{1, 2, 3, 4, 5, 6, 7}, {8, 9, 10, 11, 12, 13}}},
+		{3, [][]int{{1, 2, 3, 4, 5}, {6, 7, 8, 9}, {10, 11, 12, 13}}},
+		{4, [][]int{{1, 2, 3, 4}, {5, 6, 7}, {8, 9, 10}, {11, 12, 13}}},
+		{5, [][]int{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10, 11}, {12, 13}}},
+		{6, [][]int{{1, 2, 3}, {4, 5}, {6, 7}, {8, 9}, {10, 11}, {12, 13}}},
+		{7, [][]int{{1, 2}, {3, 4}, {5, 6}, {7, 8}, {9, 10}, {11, 12}, {13}}},
+		{8, [][]int{{1, 2}, {3, 4}, {5, 6}, {7, 8}, {9, 10}, {11}, {12}, {13}}},
+		{9, [][]int{{1, 2}, {3, 4}, {5, 6}, {7, 8}, {9}, {10}, {11}, {12}, {13}}},
+		{10, [][]int{{1, 2}, {3, 4}, {5, 6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}}},
+		{11, [][]int{{1, 2}, {3, 4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}}},
+		{12, [][]int{{1, 2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}}},
+		{13, [][]int{{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}}},
+	}
+	for _, tc := range tests {
+		got := slice.Batches(input, tc.n)
+		if diff := cmp.Diff(got, tc.want); diff != "" {
+			t.Errorf("Batches(%v, %d): (-got, +want)\n%s", input, tc.n, diff)
+		}
+	}
+
+	t.Logf("OK n=0: %v", mtest.MustPanic(t, func() { slice.Batches(input, 0) }))
+	t.Logf("OK n<0: %v", mtest.MustPanic(t, func() { slice.Batches(input, -1) }))
+	t.Logf("OK n>len: %v", mtest.MustPanic(t, func() { slice.Batches(input, len(input)+1) }))
+}
+
 func (tc *testCase[T]) partition(t *testing.T) {
 	t.Helper()
 

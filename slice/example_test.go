@@ -61,3 +61,29 @@ func ExampleMatchingKeys() {
 	// blue 4
 	// yellow 6
 }
+
+func ExampleChunks() {
+	vs := strings.Fields("my heart is a fish hiding in the water grass")
+
+	for _, c := range slice.Chunks(vs, 3) {
+		fmt.Println(c)
+	}
+	// Output:
+	// [my heart is]
+	// [a fish hiding]
+	// [in the water]
+	// [grass]
+}
+
+func ExampleBatches() {
+	vs := strings.Fields("the freckles in our eyes are mirror images that when we kiss are perfectly aligned")
+
+	for _, b := range slice.Batches(vs, 4) {
+		fmt.Println(b)
+	}
+	// Output:
+	// [the freckles in our]
+	// [eyes are mirror images]
+	// [that when we kiss]
+	// [are perfectly aligned]
+}
