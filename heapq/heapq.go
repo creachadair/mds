@@ -9,11 +9,12 @@ package heapq
 // provided when the queue is constructed.
 type Queue[T any] struct {
 	data []T
-	less func(a, b T) bool
+	cmp  func(a, b T) int
 }
 
-// New constructs an empty Queue with the given comparison function.
-func New[T any](lessThan func(a, b T) bool) *Queue[T] { return &Queue[T]{less: lessThan} }
+// New constructs an empty Queue with the given comparison function, where
+// cmp(a, b) must be <0 if a < b, =0 if a == b, and >0 if a > b.
+func New[T any](cmp func(a, b T) int) *Queue[T] { return &Queue[T]{cmp: cmp} }
 
 // NewWithData constructs an empty Queue with the given comparison function
 // that uses the given slice as storage.  This allows the caller to initialize
@@ -22,8 +23,8 @@ func New[T any](lessThan func(a, b T) bool) *Queue[T] { return &Queue[T]{less: l
 //
 // The resulting queue takes ownership of the slice, and the caller should not
 // use data after the call.
-func NewWithData[T any](lessThan func(a, b T) bool, data []T) *Queue[T] {
-	q := &Queue[T]{data: data, less: lessThan}
+func NewWithData[T any](cmp func(a, b T) int, data []T) *Queue[T] {
+	q := &Queue[T]{data: data, cmp: cmp}
 	for i := len(q.data) / 2; i >= 0; i-- {
 		q.pushDown(i)
 	}
@@ -113,8 +114,8 @@ func (q *Queue[T]) Set(vs []T) {
 // Reorder replaces the ordering function for q with a new function. This
 // operation takes time proportional to the length of the queue to restore the
 // (new) heap order. The queue retains the same elements.
-func (q *Queue[T]) Reorder(lessThan func(a, b T) bool) {
-	q.less = lessThan
+func (q *Queue[T]) Reorder(cmp func(a, b T) int) {
+	q.cmp = cmp
 	for i := len(q.data) / 2; i >= 0; i-- {
 		q.pushDown(i)
 	}
@@ -155,7 +156,7 @@ func (q *Queue[T]) pop(i int) T {
 func (q *Queue[T]) pushUp(i int) int {
 	for i > 0 {
 		par := i / 2
-		if !q.less(q.data[i], q.data[par]) {
+		if q.cmp(q.data[i], q.data[par]) >= 0 {
 			break
 		}
 		q.data[i], q.data[par] = q.data[par], q.data[i]
@@ -170,10 +171,10 @@ func (q *Queue[T]) pushDown(i int) int {
 	lc := 2*i + 1
 	for lc < len(q.data) {
 		min := i
-		if q.less(q.data[lc], q.data[min]) {
+		if q.cmp(q.data[lc], q.data[min]) < 0 {
 			min = lc
 		}
-		if rc := lc + 1; rc < len(q.data) && q.less(q.data[rc], q.data[min]) {
+		if rc := lc + 1; rc < len(q.data) && q.cmp(q.data[rc], q.data[min]) < 0 {
 			min = rc
 		}
 		if min == i {
@@ -187,12 +188,12 @@ func (q *Queue[T]) pushDown(i int) int {
 
 // Sort reorders the contents of vs in-place using the heap-sort algorithm, in
 // non-decreasing order by the comparison function provided.
-func Sort[T any](lessThan func(a, b T) bool, vs []T) {
+func Sort[T any](cmp func(a, b T) int, vs []T) {
 	if len(vs) < 2 {
 		return
 	}
-	cmp := func(b, a T) bool { return lessThan(a, b) }
-	q := NewWithData(cmp, vs)
+	rcmp := func(a, b T) int { return -cmp(a, b) }
+	q := NewWithData(rcmp, vs)
 	for !q.IsEmpty() {
 		q.Pop()
 	}

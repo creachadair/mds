@@ -7,9 +7,7 @@ import (
 )
 
 func ExampleNew() {
-	q := heapq.New(func(a, b int) bool {
-		return a < b
-	})
+	q := heapq.New(intCompare)
 
 	q.Add(8)
 	q.Add(6)

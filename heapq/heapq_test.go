@@ -9,15 +9,16 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func intLess(a, b int) bool { return a < b }
+func intCompare(a, b int) int    { return a - b }
+func revIntCompare(a, b int) int { return b - a }
 
 func TestHeap(t *testing.T) {
 	t.Run("New", func(t *testing.T) {
-		runTests(t, heapq.New(intLess))
+		runTests(t, heapq.New(intCompare))
 	})
 	t.Run("NewWithData", func(t *testing.T) {
 		buf := make([]int, 0, 64)
-		runTests(t, heapq.NewWithData(intLess, buf))
+		runTests(t, heapq.NewWithData(intCompare, buf))
 	})
 }
 
@@ -114,7 +115,7 @@ func TestOrder(t *testing.T) {
 	}
 
 	t.Run("Ascending", func(t *testing.T) {
-		q := heapq.New(func(i, j int) bool { return i < j })
+		q := heapq.New(intCompare)
 		q.Set(makeInput())
 		if got := extract(q); !sort.IntsAreSorted(got) {
 			t.Errorf("Queue contents are out of order: %v", got)
@@ -122,7 +123,7 @@ func TestOrder(t *testing.T) {
 	})
 
 	t.Run("Descending", func(t *testing.T) {
-		q := heapq.New(func(i, j int) bool { return i > j })
+		q := heapq.New(revIntCompare)
 		q.Set(makeInput())
 		got := extract(q)
 		if !sort.IsSorted(sort.Reverse(sort.IntSlice(got))) {
@@ -131,13 +132,13 @@ func TestOrder(t *testing.T) {
 	})
 
 	t.Run("Reorder", func(t *testing.T) {
-		q := heapq.New(func(i, j int) bool { return i < j })
+		q := heapq.New(intCompare)
 		q.Set([]int{17, 3, 11, 2, 7, 5, 13})
 		if got, want := q.Front(), 2; got != want {
 			t.Errorf("Front: got %v, want %v", got, want)
 		}
 
-		q.Reorder(func(i, j int) bool { return i > j })
+		q.Reorder(revIntCompare)
 		if got, want := q.Front(), 17; got != want {
 			t.Errorf("Front: got %v, want %v", got, want)
 		}
@@ -164,7 +165,7 @@ func TestNewWithData(t *testing.T) {
 
 	// Give buf over to the queue, then add more stuff so we can check that the
 	// queue took over the array correctly.
-	q := heapq.NewWithData(intLess, buf)
+	q := heapq.NewWithData(intCompare, buf)
 
 	// Add some more stuff via the queue.
 	for i := 0; i < bufSize/2; i++ {
@@ -194,21 +195,21 @@ func TestSort(t *testing.T) {
 	copy(longOut, longIn)
 	sort.Ints(longOut)
 
-	lt := func(a, b int) bool { return a < b }
-	gt := func(a, b int) bool { return a > b }
+	lt := func(a, b int) int { return a - b }
+	gt := func(a, b int) int { return b - a }
 	_, _ = lt, gt
 	tests := []struct {
 		name        string
-		cmp         func(a, b int) bool
+		cmp         func(a, b int) int
 		input, want []int
 	}{
-		{"Nil", lt, nil, nil},
-		{"Empty", lt, []int{}, nil},
-		{"Single-LT", lt, []int{11}, []int{11}},
-		{"Single-GT", gt, []int{11}, []int{11}},
-		{"Ascend", lt, []int{9, 1, 4, 11}, []int{1, 4, 9, 11}},
-		{"Descend", gt, []int{9, 1, 4, 11}, []int{11, 9, 4, 1}},
-		{"Long", lt, longIn, longOut},
+		{"Nil", intCompare, nil, nil},
+		{"Empty", intCompare, []int{}, nil},
+		{"Single-LT", intCompare, []int{11}, []int{11}},
+		{"Single-GT", revIntCompare, []int{11}, []int{11}},
+		{"Ascend", intCompare, []int{9, 1, 4, 11}, []int{1, 4, 9, 11}},
+		{"Descend", revIntCompare, []int{9, 1, 4, 11}, []int{11, 9, 4, 1}},
+		{"Long", intCompare, longIn, longOut},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
