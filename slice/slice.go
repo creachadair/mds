@@ -265,7 +265,7 @@ func Chunks[T any, Slice ~[]T](vs Slice, max int) []Slice {
 // as possible to equal length and together covering the input. The slices
 // returned share storage with the input.
 //
-// Batches will panic if n ≤ 0 or max > len(vs).
+// Batches will panic if n ≤ 0 or n > len(vs).
 func Batches[T any, Slice ~[]T](vs Slice, n int) []Slice {
 	if n <= 0 || n > len(vs) {
 		panic("n out of range")
