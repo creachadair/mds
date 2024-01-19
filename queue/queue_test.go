@@ -5,25 +5,13 @@ import (
 	"math/rand"
 	"testing"
 
+	"github.com/creachadair/mds/internal/mdtest"
 	"github.com/creachadair/mds/queue"
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 )
-
-func checkQueue[T any](t *testing.T, q *queue.Queue[T], want []T) {
-	t.Helper()
-	got := q.Slice()
-	if diff := cmp.Diff(want, got, cmpopts.EquateEmpty()); diff != "" {
-		t.Errorf("Wrong contents (-got, +want):\n%s", diff)
-	}
-	if n := q.Len(); n != len(got) || n != len(want) {
-		t.Errorf("Wrong length: got %d, want %d == %d", n, len(got), len(want))
-	}
-}
 
 func TestQueue(t *testing.T) {
 	var q queue.Queue[int]
-	check := func(want ...int) { checkQueue(t, &q, want) }
+	check := func(want ...int) { mdtest.CheckContents(t, &q, want) }
 
 	// Front and Pop of an empty queue report no value.
 	if v := q.Front(); v != 0 {
@@ -123,7 +111,7 @@ func TestQueueRandom(t *testing.T) {
 		if len(has) > stats.MaxLen {
 			stats.MaxLen = len(has)
 		}
-		checkQueue(t, &q, has)
+		mdtest.CheckContents(t, &q, has)
 		switch op := rand.Intn(doTotal); {
 		case op < doAdd:
 			stats.NumAdd++

@@ -3,6 +3,7 @@ package mlink_test
 import (
 	"testing"
 
+	"github.com/creachadair/mds/internal/mdtest"
 	"github.com/creachadair/mds/mlink"
 	"github.com/creachadair/mds/mtest"
 )
@@ -13,7 +14,7 @@ func eq(z int) func(int) bool {
 
 func TestList(t *testing.T) {
 	lst := mlink.NewList[int]()
-	checkList := checker(t, lst)
+	checkList := func(want ...int) { mdtest.CheckContents(t, lst, want) }
 	advance := func(c *mlink.Cursor[int], wants ...int) {
 		t.Helper()
 		for _, want := range wants {

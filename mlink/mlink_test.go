@@ -3,43 +3,18 @@ package mlink_test
 import (
 	"testing"
 
+	"github.com/creachadair/mds/internal/mdtest"
 	"github.com/creachadair/mds/mlink"
-	"github.com/google/go-cmp/cmp"
 )
-
-type shared[T any] interface {
-	Clear()
-	Peek(int) (T, bool)
-	Each(func(T) bool) bool
-	IsEmpty() bool
-	Len() int
-}
 
 var (
-	_ shared[any] = (*mlink.Queue[any])(nil)
-	_ shared[any] = (*mlink.List[any])(nil)
+	_ mdtest.Shared[any] = (*mlink.Queue[any])(nil)
+	_ mdtest.Shared[any] = (*mlink.List[any])(nil)
 )
-
-func checker[T any](t *testing.T, obj shared[T]) func(want ...T) {
-	return func(want ...T) {
-		t.Helper()
-		var got []T
-		obj.Each(func(v T) bool {
-			got = append(got, v)
-			return true
-		})
-		if diff := cmp.Diff(want, got); diff != "" {
-			t.Errorf("Wrong contents (-got, +want):\n%s", diff)
-		}
-		if n := obj.Len(); n != len(got) || n != len(want) {
-			t.Errorf("Wrong length: got %d, want %d == %d", n, len(got), len(want))
-		}
-	}
-}
 
 func TestQueue(t *testing.T) {
 	var q mlink.Queue[int]
-	check := checker(t, &q)
+	check := func(want ...int) { mdtest.CheckContents(t, &q, want) }
 
 	// Front and Pop of an empty queue report no value.
 	if v := q.Front(); v != 0 {

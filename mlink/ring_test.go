@@ -3,29 +3,12 @@ package mlink_test
 import (
 	"testing"
 
+	"github.com/creachadair/mds/internal/mdtest"
 	"github.com/creachadair/mds/mlink"
-	"github.com/google/go-cmp/cmp"
 )
 
-func rchecker[T any](t *testing.T) func(r *mlink.Ring[T], want ...T) {
-	return func(r *mlink.Ring[T], want ...T) {
-		t.Helper()
-		var got []T
-		r.Each(func(v T) bool {
-			got = append(got, v)
-			return true
-		})
-		if diff := cmp.Diff(want, got); diff != "" {
-			t.Errorf("Wrong contents (-got, +want):\n%s", diff)
-		}
-		if got := r.Len(); got != len(want) {
-			t.Errorf("Wrong length: got %v, want %v", got, len(want))
-		}
-	}
-}
-
 func TestRing(t *testing.T) {
-	rcheck := rchecker[int](t)
+	rcheck := func(r *mlink.Ring[int], want ...int) { mdtest.CheckContents(t, r, want) }
 
 	t.Run("Initialize", func(t *testing.T) {
 		rcheck(nil)
@@ -93,7 +76,7 @@ func TestRing(t *testing.T) {
 		rcheck(r.Join(r.Next())) // nothing was removed
 		rcheck(r, 1, 5, 6)
 
-		rc := rchecker[string](t)
+		rc := func(r *mlink.Ring[string], want ...string) { mdtest.CheckContents(t, r, want) }
 		q := mlink.RingOf("fat", "cats", "get", "dizzy", "after", "eating", "beans")
 		s := q.At(2).Join(q.Prev())
 

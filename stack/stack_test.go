@@ -3,25 +3,13 @@ package stack_test
 import (
 	"testing"
 
+	"github.com/creachadair/mds/internal/mdtest"
 	"github.com/creachadair/mds/stack"
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 )
-
-func checkStack[T any](t *testing.T, s *stack.Stack[T], want []T) {
-	t.Helper()
-	got := s.Slice()
-	if diff := cmp.Diff(want, got, cmpopts.EquateEmpty()); diff != "" {
-		t.Errorf("Wrong contents (-got, +want):\n%s", diff)
-	}
-	if n := s.Len(); n != len(got) || n != len(want) {
-		t.Errorf("Wrong length: got %d, want %d == %d", n, len(got), len(want))
-	}
-}
 
 func TestStack(t *testing.T) {
 	s := stack.New[int]()
-	check := func(want ...int) { checkStack(t, s, want) }
+	check := func(want ...int) { mdtest.CheckContents(t, s, want) }
 
 	// Top and Pop of an empty stack report no value.
 	if v := s.Top(); v != 0 {
