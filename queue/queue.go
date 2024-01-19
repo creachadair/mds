@@ -40,7 +40,8 @@ func (q *Queue[T]) Add(v T) {
 	}
 
 	// The buffer is in the initial regime, head == 0.
-	q.vs = append(q.vs, v)
+	w := append(q.vs, v)
+	q.vs = w[:cap(w)]
 	q.n++
 }
 
