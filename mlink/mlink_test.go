@@ -16,16 +16,15 @@ type shared[T any] interface {
 }
 
 var (
-	_ shared[any] = (*mlink.Stack[any])(nil)
 	_ shared[any] = (*mlink.Queue[any])(nil)
 	_ shared[any] = (*mlink.List[any])(nil)
 )
 
-func checker(t *testing.T, obj shared[int]) func(want ...int) {
-	return func(want ...int) {
+func checker[T any](t *testing.T, obj shared[T]) func(want ...T) {
+	return func(want ...T) {
 		t.Helper()
-		var got []int
-		obj.Each(func(v int) bool {
+		var got []T
+		obj.Each(func(v T) bool {
 			got = append(got, v)
 			return true
 		})
@@ -36,67 +35,6 @@ func checker(t *testing.T, obj shared[int]) func(want ...int) {
 			t.Errorf("Wrong length: got %d, want %d == %d", n, len(got), len(want))
 		}
 	}
-}
-
-func TestStack(t *testing.T) {
-	s := mlink.NewStack[int]()
-	check := checker(t, s)
-
-	// Top and Pop of an empty stack report no value.
-	if v := s.Top(); v != 0 {
-		t.Errorf("Top: got %v, want 0", v)
-	}
-	if v, ok := s.Peek(0); ok || v != 0 {
-		t.Errorf("Peek(0): got (%v, %v), want (0, false)", v, ok)
-	}
-	if v, ok := s.Pop(); ok {
-		t.Errorf("Pop: got (%v, %v), want (0, false)", v, ok)
-	}
-
-	check()
-	if !s.IsEmpty() {
-		t.Error("IsEmpty is incorrectly false")
-	}
-	if n := s.Len(); n != 0 {
-		t.Errorf("Len: got %d, want 0", n)
-	}
-
-	s.Push(1)
-	if s.IsEmpty() {
-		t.Error("IsEmpty is incorrectly true")
-	}
-	check(1)
-
-	s.Push(2)
-	check(2, 1)
-
-	s.Push(3)
-	check(3, 2, 1)
-	if n := s.Len(); n != 3 {
-		t.Errorf("Len: got %d, want 3", n)
-	}
-
-	top := s.Top()
-	if top != 3 {
-		t.Errorf("Top: got %v, want 3", top)
-	}
-	if v, ok := s.Peek(0); !ok || v != top {
-		t.Errorf("Peek(0): got (%v, %v), want (%v, true)", v, ok, top)
-	}
-	if v, ok := s.Peek(1); !ok || v != 2 {
-		t.Errorf("Peek(1): got (%v, %v), want (2, true)", v, ok)
-	}
-	if v, ok := s.Peek(10); ok {
-		t.Errorf("Peek(10): got (%v, %v), want (0, false)", v, ok)
-	}
-
-	if v, ok := s.Pop(); !ok || v != top {
-		t.Errorf("Pop: got (%v, %v), want (%v, true)", v, ok, top)
-	}
-	check(2, 1)
-
-	s.Clear()
-	check()
 }
 
 func TestQueue(t *testing.T) {

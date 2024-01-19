@@ -1,4 +1,5 @@
-package mlink
+// Package stack implements an array-based LIFO stack.
+package stack
 
 // A Stack is a last-in, first-out sequence of values.
 // A zero value is ready for use.
@@ -6,8 +7,8 @@ type Stack[T any] struct {
 	list []T
 }
 
-// NewStack constructs a new empty stack.
-func NewStack[T any]() *Stack[T] { return new(Stack[T]) }
+// New constructs a new empty stack.
+func New[T any]() *Stack[T] { return new(Stack[T]) }
 
 // Push adds an entry for v to the top of s.
 func (s *Stack[T]) Push(v T) { s.list = append(s.list, v) }
@@ -19,7 +20,7 @@ func (s *Stack[T]) Add(v T) { s.list = append(s.list, v) }
 func (s *Stack[T]) IsEmpty() bool { return len(s.list) == 0 }
 
 // Clear discards all the values in s, leaving it empty.
-func (s *Stack[T]) Clear() { s.list = s.list[:0] }
+func (s *Stack[T]) Clear() { s.list = nil }
 
 // Top returns the top element of the stack. If the stack is empty, it returns
 // a zero value.
@@ -67,3 +68,17 @@ func (s *Stack[T]) Each(f func(T) bool) bool {
 
 // Len reports the number of elements in s. This is a constant-time operation.
 func (s *Stack[T]) Len() int { return len(s.list) }
+
+// Slice returns a slice containing a copy of the elmeents of s in order from
+// newest to oldest. If s is empty, Slice returns nil.
+func (s *Stack[T]) Slice() []T {
+	if len(s.list) == 0 {
+		return nil
+	}
+	cp := make([]T, len(s.list))
+	for i, e := 0, len(s.list)-1; i < len(s.list); i++ {
+		cp[i] = s.list[e]
+		e--
+	}
+	return cp
+}
