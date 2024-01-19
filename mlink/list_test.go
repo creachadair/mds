@@ -14,7 +14,7 @@ func eq(z int) func(int) bool {
 
 func TestList(t *testing.T) {
 	lst := mlink.NewList[int]()
-	checkList := func(want ...int) { mdtest.CheckContents(t, lst, want) }
+	checkList := func(want ...int) { t.Helper(); mdtest.CheckContents(t, lst, want) }
 	advance := func(c *mlink.Cursor[int], wants ...int) {
 		t.Helper()
 		for _, want := range wants {
@@ -22,6 +22,12 @@ func TestList(t *testing.T) {
 			if got := c.Get(); got != want {
 				t.Errorf("Get: got %v, want %v", got, want)
 			}
+		}
+	}
+	retract := func(c *mlink.Cursor[int], want bool) {
+		t.Helper()
+		if ok := c.Prev(); ok != want {
+			t.Errorf("Prev: got %v, want %v", ok, want)
 		}
 	}
 	checkAt := func(c *mlink.Cursor[int], want int) {
@@ -78,6 +84,13 @@ func TestList(t *testing.T) {
 	// Exercise navigation with a cursor.
 	c := lst.At(0)
 	checkAt(c, 1)
+	advance(c, 2, 3)
+	retract(c, true) // back up once
+	checkAt(c, 2)
+	retract(c, true) // back up a second time
+	checkAt(c, 1)
+	retract(c, false) // stopped at the front
+	checkAt(c, 1)
 	advance(c, 2)
 
 	if got, want := c.Remove(), 2; got != want {
@@ -112,11 +125,15 @@ func TestList(t *testing.T) {
 		t.Error("Cursor copy should be at the end")
 	}
 
+	cn := c.Copy()
+	cn.Next()
 	c.Truncate()
 	checkList(6, 1, 3)
 	if !c.AtEnd() {
 		t.Error("Cursor should be at the end")
 	}
+	// Truncation invalidates a cursor after the cut point.
+	mtest.MustPanic(t, func() { cn.Get() })
 
 	// Push at the end does the needful.
 	lst.End().Push(9)
@@ -156,9 +173,9 @@ func TestList(t *testing.T) {
 		t.Errorf("Remove: got %v, want %v", got, want)
 	}
 	checkList(11, 1, 3, 12)
-	if !d.AtEnd() {
-		t.Errorf("Sequent cursor should be AtEnd after deletion")
-	}
+
+	// Removing invalidates a cursor to the next item.
+	mtest.MustPanic(t, func() { d.Get() })
 
 	// We can remove the first and last elements.
 	if got, want := lst.At(0).Remove(), 11; got != want {

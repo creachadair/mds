@@ -18,7 +18,7 @@ func (lst *List[T]) IsEmpty() bool { return lst.first.link == nil }
 
 // Clear discards all the values in lst, leaving it empty.  Calling Clear
 // invalidates all cursors to the list.
-func (lst *List[T]) Clear() { lst.first.link = nil }
+func (lst *List[T]) Clear() { lst.first.link.invalidate(); lst.first.link = nil }
 
 // Peek reports whether lst has a value at offset n from the front of the list,
 // and if so returns its value.
@@ -49,9 +49,9 @@ func (lst *List[T]) Len() int {
 	return n
 }
 
-// At returns a cursor to the element at index n ≥ 0 in the list.
-// If n is greater than or equal to n.Len(), At returns a cursor to the end of
-// the list (equivalent to End).
+// At returns a cursor to the element at index n ≥ 0 in the list.  If n is
+// greater than or equal to n.Len(), At returns a cursor to the end of the list
+// (equivalent to End).
 //
 // At will panic if n < 0.
 func (lst *List[T]) At(n int) *Cursor[T] {
@@ -73,11 +73,15 @@ func (lst *List[T]) At(n int) *Cursor[T] {
 // returns a cursor to the end of the list (equivalent to End).
 // This method takes time proportional to the length of the list.
 func (lst *List[T]) Last() *Cursor[T] {
-	cur := &lst.first
-	for cur.link != nil && cur.link.link != nil {
-		cur = cur.link
+	cur := lst.cfirst()
+	if cur.AtEnd() {
+		return &cur
 	}
-	return &Cursor[T]{pred: cur}
+	for !cur.AtEnd() {
+		cur.Next()
+	}
+	cur.pred = cur.pred[:len(cur.pred)-1]
+	return &cur
 }
 
 // End returns a cursor to the position just past the end of the list.
@@ -98,21 +102,24 @@ func (lst *List[T]) Find(f func(T) bool) *Cursor[T] {
 	return &cur
 }
 
-func (lst *List[T]) cfirst() Cursor[T] { return Cursor[T]{pred: &lst.first} }
+func (lst *List[T]) cfirst() Cursor[T] { return Cursor[T]{pred: []*entry[T]{&lst.first}} }
 
 // A Cursor represents a location in a list.  A nil *Cursor is not valid, and
-// operations on it will panic.
+// operations on it will panic. Through a valid cursor, the caller can navigate
+// forward and backward, and add, modify, and remove elements.
+//
+// Multiple cursors into the same list are fine, but note that modifying the
+// list through one cursor may invalidate others.
 type Cursor[T any] struct {
-	// pred points to the entry prior to the target, so that the cursor can
-	// splice an element out of the list.
+	// pred is the sequence of entries from the front of the list to the target.
+	// This permits the cursor to navigate in both directions in the list.
 	//
-	//   pred--->[_, link]--->[X, _]-- ...
-	//                         ^ pred denotes this value
-	//
-	// If pred.link == nil, the cursor indicates the position past the end of
-	// the list.
-	pred *entry[T]
+	// Invariant: len(pred) != 0.
+	pred []*entry[T]
 }
+
+func (c *Cursor[T]) last() *entry[T] { return c.pred[len(c.pred)-1].checkValid() }
+func (c *Cursor[T]) popLast()        { c.pred = c.pred[:len(c.pred)-1]; c.last() }
 
 // Get returns the value at c's location. If c is at the end of the list, Get
 // returns a zero value.
@@ -121,7 +128,7 @@ func (c *Cursor[T]) Get() T {
 		var zero T
 		return zero
 	}
-	return c.pred.link.X
+	return c.last().link.X
 }
 
 // Set replaces the value at c's location. If c is at the end of the list,
@@ -138,15 +145,15 @@ func (c *Cursor[T]) Get() T {
 //	    ^--- c
 func (c *Cursor[T]) Set(v T) {
 	if c.AtEnd() {
-		c.pred.link = &entry[T]{X: v}
+		c.last().link = &entry[T]{X: v}
 		// N.B.: c is now no longer AtEnd
 	} else {
-		c.pred.link.X = v
+		c.last().link.X = v
 	}
 }
 
 // AtEnd reports whether c is at the end of its list.
-func (c *Cursor[T]) AtEnd() bool { return c.pred.link == nil }
+func (c *Cursor[T]) AtEnd() bool { return c.last().link == nil }
 
 // Next advances c to the next position in the list if it is not at the end. If
 // c was already at the end its position is unchanged. Next returns false if
@@ -155,8 +162,19 @@ func (c *Cursor[T]) Next() bool {
 	if c.AtEnd() {
 		return false
 	}
-	c.pred = c.pred.link
+	c.pred = append(c.pred, c.last().link)
 	return !c.AtEnd()
+}
+
+// Prev moves c to the previous position in the list if it is not at the
+// front. If c was already at the front its position is unchanged. Prev returns
+// false if the resulting position is at the front of the list, otherwise true.
+func (c *Cursor[T]) Prev() bool {
+	if len(c.pred) > 1 {
+		c.popLast()
+		return true
+	}
+	return false
 }
 
 // Push inserts a new value into the list at c's location. After insertion, c
@@ -172,8 +190,9 @@ func (c *Cursor[T]) Next() bool {
 //	[4, 1, 2, 3]
 //	 ^--- c
 func (c *Cursor[T]) Push(v T) {
-	added := &entry[T]{X: v, link: c.pred.link}
-	c.pred.link = added
+	last := c.last()
+	added := &entry[T]{X: v, link: last.link}
+	last.link = added
 }
 
 // Add inserts one or more new values into the list at c's location. After
@@ -202,8 +221,8 @@ func (c *Cursor[T]) Add(vs ...T) {
 // After removal, c is still valid and points the element after the one that
 // was removed, or the end of the list.
 //
-// Calling Remove invalidates any cursors to the location immediately after c
-// in the original list.
+// Successfully removing an element invalidates any cursors to the location
+// after the element that was removed.
 //
 // Before:
 //
@@ -223,9 +242,10 @@ func (c *Cursor[T]) Remove() T {
 	// Detach the discarded entry from its neighbor so that any cursors pointing
 	// to that entry will be AtEnd, and changes made through them will not
 	// affect the remaining list.
-	out := c.pred.link
-	c.pred.link, out.link = out.link, nil
-
+	last := c.last()
+	out := last.link
+	last.link = out.link // successor
+	out.link = out       // invalidate the outgoing element
 	return out.X
 }
 
@@ -234,8 +254,7 @@ func (c *Cursor[T]) Remove() T {
 // the end of the list, Truncate does nothing. After truncation, c remains
 // valid.
 //
-// Calling Truncate invalidates any cursors to locations after c in the
-// original list.
+// Truncate invalidates any cursors to locations after c in the list.
 //
 // Before:
 //
@@ -246,8 +265,12 @@ func (c *Cursor[T]) Remove() T {
 //
 //	[1, 2] *
 //	       ^--- c (c.AtEnd() == true)
-func (c *Cursor[T]) Truncate() { c.pred.link = nil }
+func (c *Cursor[T]) Truncate() { last := c.last(); last.link.invalidate(); last.link = nil }
 
 // Copy returns a copy of c pointing to the same location. Changes to c do not
 // affect the copy and vice versa.
-func (c *Cursor[T]) Copy() *Cursor[T] { return &Cursor[T]{pred: c.pred} }
+func (c *Cursor[T]) Copy() *Cursor[T] {
+	cp := make([]*entry[T], len(c.pred))
+	copy(cp, c.pred)
+	return &Cursor[T]{pred: cp}
+}
