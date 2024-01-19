@@ -214,16 +214,31 @@ func Rotate[T any, Slice ~[]T](ss Slice, k int) {
 	if k == 0 || k == len(ss) {
 		return
 	}
-	i, cur := 0, ss[0]
-	for {
-		next := (i + k) % len(ss)
-		nextv := ss[next]
-		ss[next] = cur
-		if next == 0 {
-			break
+
+	// There are (k, n) cycles of the rotation permutation, and we must chase
+	// them all to complete the rotation. The residues of the GCD can be used as
+	// starting points. Despite the nested loop here, we will visit each element
+	// of the slice only once (on its cycle).
+	g := gcd(k, len(ss))
+	for j := 0; j < g; j++ {
+		i, cur := j, ss[j]
+		for {
+			next := (i + k) % len(ss)
+			nextv := ss[next]
+			ss[next] = cur
+			if next == j {
+				break
+			}
+			i, cur = next, nextv
 		}
-		i, cur = next, nextv
 	}
+}
+
+func gcd(a, b int) int {
+	for b != 0 {
+		a, b = b, a%b
+	}
+	return a
 }
 
 // Coalesce returns the first non-zero element of vs, or a zero.

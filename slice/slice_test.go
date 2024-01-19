@@ -228,18 +228,43 @@ func TestRotate(t *testing.T) {
 		{"x", 0, "x"},
 		{"x", -1, "x"},
 
-		{"a b c", 0, "a"},
-		{"a b c", 1, "b"},
-		{"a b c", 2, "c"},
+		{"a b c", 0, "a b c"},
+		{"a b c", 1, "c a b"},
+		{"a b c", 2, "b c a"},
 
-		{"a b c", -1, "c"},
-		{"a b c", -2, "b"},
-		{"a b c", -3, "a"},
+		{"a b c", -1, "b c a"},
+		{"a b c", -2, "c a b"},
+		{"a b c", -3, "a b c"},
+
+		{"30 987 405 309", 0, "30 987 405 309"},
+		{"30 987 405 309", 1, "309 30 987 405"},
+		{"30 987 405 309", 2, "405 309 30 987"},
+		{"30 987 405 309", 3, "987 405 309 30"},
+		{"30 987 405 309", 4, "30 987 405 309"},
+
+		{"30 987 405 309", -3, "309 30 987 405"},
+		{"30 987 405 309", -2, "405 309 30 987"},
+		{"30 987 405 309", -1, "987 405 309 30"},
+
+		{"a b c d e f g h", 0, "a b c d e f g h"},
+		{"a b c d e f g h", 1, "h a b c d e f g"},
+		{"a b c d e f g h", -1, "b c d e f g h a"},
+		{"a b c d e f g h", 2, "g h a b c d e f"},
+		{"a b c d e f g h", -2, "c d e f g h a b"},
+		{"a b c d e f g h", 3, "f g h a b c d e"},
+		{"a b c d e f g h", -3, "d e f g h a b c"},
+		{"a b c d e f g h", 4, "e f g h a b c d"},
+		{"a b c d e f g h", -4, "e f g h a b c d"},
+		{"a b c d e f g h", 5, "d e f g h a b c"},
+		{"a b c d e f g h", -5, "f g h a b c d e"},
+		{"a b c d e f g h", 6, "c d e f g h a b"},
+		{"a b c d e f g h", -6, "g h a b c d e f"},
 	}
 	for _, tc := range tests {
-		got := slice.At(strings.Fields(tc.input), tc.k)
-		if got != tc.want {
-			t.Errorf("At %q %d: got %q, want %q", tc.input, tc.k, got, tc.want)
+		got := strings.Fields(tc.input)
+		slice.Rotate(got, tc.k)
+		if diff := cmp.Diff(got, strings.Fields(tc.want)); diff != "" {
+			t.Errorf("Rotate %s %d (-got, +want):\n%s", tc.input, tc.k, diff)
 		}
 	}
 
