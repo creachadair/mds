@@ -16,6 +16,13 @@ type Queue[T any] struct {
 	n    int
 }
 
+// New constructs a new empty queue.
+func New[T any]() *Queue[T] { return new(Queue[T]) }
+
+// NewSize constructs a new empty queue with storage pre-allocated for n items.
+// The queue will automatically grow beyond the initial size as needed.
+func NewSize[T any](n int) *Queue[T] { return &Queue[T]{vs: make([]T, n)} }
+
 // Add adds v to the end of q.
 func (q *Queue[T]) Add(v T) {
 	if q.n < len(q.vs) {
