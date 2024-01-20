@@ -243,23 +243,21 @@ func Coalesce[T comparable](vs ...T) T {
 }
 
 // Chunks returns a slice of contiguous subslices of vs, each having length at
-// most max and together covering the input.  The slices returned share storage
-// with the input.
+// most n and together covering the input.  All slices except the last will
+// have length exactly n; the last may have fewer. The slices returned share
+// storage with the input.
 //
-// Chunks will panic if max ≤ 0.
-func Chunks[T any, Slice ~[]T](vs Slice, max int) []Slice {
-	if max <= 0 {
+// Chunks will panic if n ≤ 0.
+func Chunks[T any, Slice ~[]T](vs Slice, n int) []Slice {
+	if n <= 0 {
 		panic("max must be positive")
-	} else if max >= len(vs) {
+	} else if n >= len(vs) {
 		return []Slice{vs}
 	}
-	out := make([]Slice, 0, (len(vs)+max-1)/max)
+	out := make([]Slice, 0, (len(vs)+n-1)/n)
 	i := 0
 	for i < len(vs) {
-		end := i + max
-		if end > len(vs) {
-			end = len(vs)
-		}
+		end := min(i+n, len(vs))
 		out = append(out, vs[i:end])
 		i = end
 	}

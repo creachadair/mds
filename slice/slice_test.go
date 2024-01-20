@@ -317,7 +317,7 @@ func TestCoalesce(t *testing.T) {
 func TestChunks(t *testing.T) {
 	tests := []struct {
 		input string
-		max   int
+		n     int
 		want  [][]string
 	}{
 		// An empty slice has only one covering.
@@ -332,17 +332,22 @@ func TestChunks(t *testing.T) {
 		{"a b c d e", 3, [][]string{{"a", "b", "c"}, {"d", "e"}}},
 		{"a b c d e", 4, [][]string{{"a", "b", "c", "d"}, {"e"}}},
 		{"a b c d e", 5, [][]string{{"a", "b", "c", "d", "e"}}},
-		{"a b c d e", 6, [][]string{{"a", "b", "c", "d", "e"}}},
+		{"a b c d e", 6, [][]string{{"a", "b", "c", "d", "e"}}}, // n > len(input)
 	}
 	for _, tc := range tests {
-		got := slice.Chunks(strings.Fields(tc.input), tc.max)
+		got := slice.Chunks(strings.Fields(tc.input), tc.n)
+		for i := 0; i+1 < len(got); i++ {
+			if len(got[i]) != tc.n {
+				t.Errorf("Chunk %d has length %d, want %d", i+1, len(got[i]), tc.n)
+			}
+		}
 		if diff := cmp.Diff(got, tc.want); diff != "" {
-			t.Errorf("Chunks(%q, %d): (-got, +want)\n%s", tc.input, tc.max, diff)
+			t.Errorf("Chunks(%q, %d): (-got, +want)\n%s", tc.input, tc.n, diff)
 		}
 	}
 
-	t.Logf("OK max=0: %v", mtest.MustPanic(t, func() { slice.Chunks([]string{"a"}, 0) }))
-	t.Logf("OK max<0: %v", mtest.MustPanic(t, func() { slice.Chunks([]string{"a"}, -1) }))
+	t.Logf("OK n=0: %v", mtest.MustPanic(t, func() { slice.Chunks([]string{"a"}, 0) }))
+	t.Logf("OK n<0: %v", mtest.MustPanic(t, func() { slice.Chunks([]string{"a"}, -1) }))
 }
 
 func TestBatches(t *testing.T) {
