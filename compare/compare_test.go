@@ -7,12 +7,12 @@ import (
 	"github.com/creachadair/mds/compare"
 )
 
-func TestLessCompare(t *testing.T) {
+func TestFromLessFunc(t *testing.T) {
 	for _, less := range [](func(a, b int) bool){
 		func(a, b int) bool { return a < b },
 		func(a, b int) bool { return a > b },
 	} {
-		cmp := compare.LessCompare(less)
+		cmp := compare.FromLessFunc(less)
 
 		for i := 0; i < 1000; i++ {
 			m := rand.Intn(1000) - 500
