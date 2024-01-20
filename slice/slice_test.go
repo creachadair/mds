@@ -169,29 +169,6 @@ func TestSplit(t *testing.T) {
 	})
 }
 
-func TestSplitLast(t *testing.T) {
-	tests := []struct {
-		input string
-		rest  []string
-		want  string
-	}{
-		{"", nil, ""},
-		{"foo", nil, "foo"},
-		{"foo bar", []string{"foo"}, "bar"},
-		{"foo bar baz", []string{"foo", "bar"}, "baz"},
-	}
-	for _, tc := range tests {
-		input := strings.Fields(tc.input)
-		rest, got := slice.SplitLast(input)
-		if diff := cmp.Diff(tc.rest, rest, cmpopts.EquateEmpty()); diff != "" {
-			t.Errorf("SplitLast %q rest (-want, +got):\n%s", input, diff)
-		}
-		if got != tc.want {
-			t.Errorf("SplitLast %q last: got %q, want %q", input, got, tc.want)
-		}
-	}
-}
-
 func TestMatchingKeys(t *testing.T) {
 	even := func(z int) bool { return z%2 == 0 }
 	big := func(z int) bool { return z > 10 }

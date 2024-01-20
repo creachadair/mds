@@ -152,16 +152,6 @@ func Split[T any, Slice ~[]T](ss Slice, i int) (lhs, rhs Slice) {
 	return ss[:b], ss[b:]
 }
 
-// SplitLast returns the prefix of ss excluding the last element, and the last
-// element itself. If len(ss) == 0, it returns nil and a zero value.
-func SplitLast[T any, Slice ~[]T](ss Slice) (Slice, T) {
-	if len(ss) == 0 {
-		var zero T
-		return nil, zero
-	}
-	return ss[:len(ss)-1], ss[len(ss)-1]
-}
-
 func boundsCheck(i, n int) int {
 	if i < 0 {
 		i += n
