@@ -7,12 +7,13 @@ import (
 	"github.com/creachadair/mds/compare"
 )
 
-func TestFromLessFunc(t *testing.T) {
+func TestConversion(t *testing.T) {
 	for _, less := range [](func(a, b int) bool){
 		func(a, b int) bool { return a < b },
 		func(a, b int) bool { return a > b },
 	} {
 		cmp := compare.FromLessFunc(less)
+		cless := compare.ToLessFunc(cmp)
 
 		for i := 0; i < 1000; i++ {
 			m := rand.Intn(1000) - 500
@@ -28,13 +29,25 @@ func TestFromLessFunc(t *testing.T) {
 				if diff >= 0 {
 					t.Errorf("Compare %d %d: got %v, want ≥ 0", m, n, diff)
 				}
+				if !cless(m, n) {
+					t.Errorf("Less %d %d: got false, want true", m, n)
+				}
 			case nm:
 				if diff <= 0 {
 					t.Errorf("Compare %d %d: got %v, want ≤ 0", m, n, diff)
 				}
+				if cless(m, n) {
+					t.Errorf("Less %d %d: got true, want false", m, n)
+				}
 			default:
 				if diff != 0 {
 					t.Errorf("Compare %d %d: got %v, want 0", m, n, diff)
+				}
+				if cless(m, n) {
+					t.Errorf("Less %d %d: got true, want false", m, n)
+				}
+				if cless(n, m) {
+					t.Errorf("Less %d %d: got true, want false", n, m)
 				}
 			}
 		}
