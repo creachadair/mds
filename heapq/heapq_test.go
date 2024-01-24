@@ -1,6 +1,7 @@
 package heapq_test
 
 import (
+	stdcmp "cmp"
 	"math/rand"
 	"sort"
 	"testing"
@@ -9,8 +10,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func intCompare(a, b int) int    { return a - b }
-func revIntCompare(a, b int) int { return b - a }
+func intCompare(a, b int) int    { return stdcmp.Compare(a, b) }
+func revIntCompare(a, b int) int { return stdcmp.Compare(b, a) }
 
 func TestHeap(t *testing.T) {
 	t.Run("New", func(t *testing.T) {

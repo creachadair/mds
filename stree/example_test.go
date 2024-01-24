@@ -1,6 +1,7 @@
 package stree_test
 
 import (
+	"cmp"
 	"fmt"
 	"strings"
 
@@ -12,7 +13,7 @@ type Pair struct {
 	V int
 }
 
-func (p Pair) Compare(q Pair) int { return strings.Compare(p.X, q.X) }
+func (p Pair) Compare(q Pair) int { return cmp.Compare(p.X, q.X) }
 
 func ExampleTree_Add() {
 	tree := stree.New(200, strings.Compare)
@@ -72,7 +73,7 @@ func ExampleTree_Inorder() {
 }
 
 func ExampleTree_Min() {
-	tree := stree.New(50, intCompare, 1814, 1956, 955, 1066, 2016)
+	tree := stree.New(50, cmp.Compare[int], 1814, 1956, 955, 1066, 2016)
 
 	fmt.Println("len:", tree.Len())
 	fmt.Println("min:", tree.Min())

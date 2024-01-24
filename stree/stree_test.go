@@ -1,6 +1,7 @@
 package stree_test
 
 import (
+	stdcmp "cmp"
 	"sort"
 	"strings"
 	"testing"
@@ -29,7 +30,7 @@ func sortedUnique(ws []string, drop mapset.Set[string]) []string {
 
 func TestNew(t *testing.T) {
 	t.Run("Empty", func(t *testing.T) {
-		tree := stree.New(100, strings.Compare)
+		tree := stree.New(100, stdcmp.Compare[string])
 		if n := tree.Len(); n != 0 {
 			t.Errorf("Len of empty tree: got %v, want 0", n)
 		}
@@ -38,7 +39,7 @@ func TestNew(t *testing.T) {
 		}
 	})
 	t.Run("NonEmpty", func(t *testing.T) {
-		tree := stree.New(200, strings.Compare, "please", "fetch", "your", "slippers")
+		tree := stree.New(200, stdcmp.Compare[string], "please", "fetch", "your", "slippers")
 		got := allWords(tree)
 		want := []string{"fetch", "please", "slippers", "your"}
 		if diff := cmp.Diff(got, want); diff != "" {
@@ -53,7 +54,7 @@ func TestNew(t *testing.T) {
 
 func TestRemoval(t *testing.T) {
 	words := strings.Fields(`a foolish consistency is the hobgoblin of little minds`)
-	tree := stree.New[string](0, strings.Compare, words...)
+	tree := stree.New[string](0, stdcmp.Compare[string], words...)
 
 	got := allWords(tree)
 	want := sortedUnique(words, nil)
@@ -81,7 +82,7 @@ func TestInsertion(t *testing.T) {
 	}
 
 	tree := stree.New[kv](300, func(a, b kv) int {
-		return strings.Compare(a.key, b.key)
+		return stdcmp.Compare[string](a.key, b.key)
 	})
 	checkInsert := func(f func(kv) bool, key string, val int, ok bool) {
 		t.Helper()
@@ -113,7 +114,7 @@ func TestInsertion(t *testing.T) {
 
 func TestInorderAfter(t *testing.T) {
 	keys := []string{"8", "6", "7", "5", "3", "0", "9"}
-	tree := stree.New(0, strings.Compare, keys...)
+	tree := stree.New(0, stdcmp.Compare[string], keys...)
 	tests := []struct {
 		key  string
 		want string
