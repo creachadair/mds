@@ -13,3 +13,14 @@ func MustPanic(t *testing.T, f func()) (val any) {
 	t.Fatal("expected panic was not observed")
 	return
 }
+
+// MustPanicf executes a function f that is expected to panic.  If it does so,
+// MustPanicf returns the value recovered from the panic. Otherwise it logs a
+// fatal error in t.
+func MustPanicf(t *testing.T, f func(), msg string, args ...any) (val any) {
+	t.Helper()
+	defer func() { val = recover() }()
+	f()
+	t.Fatalf(msg, args...)
+	return
+}
