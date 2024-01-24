@@ -264,14 +264,17 @@ func Chunks[T any, Slice ~[]T](vs Slice, n int) []Slice {
 	return out
 }
 
-// Batches returns a slice of n contiguous subslices of vs, each having nearly
-// as possible to equal length and together covering the input. The slices
-// returned share storage with the input.
+// Batches returns a slice of up to n contiguous subslices of vs, each having
+// nearly as possible to equal length and together covering the input. The
+// slices returned share storage with the input. If n > len(vs), the number of
+// batches is capped at len(vs); otherwise exactly n are constructed.
 //
-// Batches will panic if n ≤ 0 or n > len(vs).
+// Batches will panic if n ≤ 0.
 func Batches[T any, Slice ~[]T](vs Slice, n int) []Slice {
-	if n <= 0 || n > len(vs) {
+	if n <= 0 {
 		panic("n out of range")
+	} else if n > len(vs) {
+		n = len(vs)
 	}
 	out := make([]Slice, 0, n)
 	i, size, rem := 0, len(vs)/n, len(vs)%n

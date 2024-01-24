@@ -369,6 +369,7 @@ func TestBatches(t *testing.T) {
 		{11, [][]int{{1, 2}, {3, 4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}}},
 		{12, [][]int{{1, 2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}}},
 		{13, [][]int{{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}}},
+		{100, [][]int{{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}}},
 	}
 	for _, tc := range tests {
 		got := slice.Batches(input, tc.n)
@@ -379,7 +380,6 @@ func TestBatches(t *testing.T) {
 
 	t.Logf("OK n=0: %v", mtest.MustPanic(t, func() { slice.Batches(input, 0) }))
 	t.Logf("OK n<0: %v", mtest.MustPanic(t, func() { slice.Batches(input, -1) }))
-	t.Logf("OK n>len: %v", mtest.MustPanic(t, func() { slice.Batches(input, len(input)+1) }))
 }
 
 func (tc *testCase[T]) partition(t *testing.T) {
