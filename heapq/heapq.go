@@ -18,11 +18,21 @@ func New[T any](cmp func(a, b T) int) *Queue[T] { return &Queue[T]{cmp: cmp} }
 
 // NewWithData constructs an empty Queue with the given comparison function
 // that uses the given slice as storage.  This allows the caller to initialize
-// a heap with existing data without copying, or to preallocate storage. To do
-// this, allocate a slice with 0 length and the desired capacity.
+// a heap with existing data without copying, or to preallocate storage.  To
+// preallocate storage without any initial values, pass a slice with length 0
+// and the desired capacity.
+//
+// For example, to initialize a queue with fixed elements:
+//
+//	q := heapq.New(cfunc, []string{"u", "v", "w", "x", "y"})
+//
+// To initialize an empty queue with a pre-allocated buffer of n elements:
+//
+//	q := heapq.New(cfunc, make([]string, 0, n))
 //
 // The resulting queue takes ownership of the slice, and the caller should not
-// use data after the call.
+// access the contents data after the call unless the queue will no longer be
+// used.
 func NewWithData[T any](cmp func(a, b T) int, data []T) *Queue[T] {
 	q := &Queue[T]{data: data, cmp: cmp}
 	for i := len(q.data) / 2; i >= 0; i-- {
