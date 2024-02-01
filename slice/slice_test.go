@@ -106,6 +106,19 @@ func TestReverse(t *testing.T) {
 	}
 }
 
+func TestZero(t *testing.T) {
+	zs := []int{1, 2, 3, 4, 5}
+	slice.Zero(zs[3:])
+	if diff := cmp.Diff(zs, []int{1, 2, 3, 0, 0}); diff != "" {
+		t.Errorf("Zero (-got, +want):\n%s", diff)
+	}
+	zs = []int{1, 2, 3, 4, 5}
+	slice.Zero(zs[:3])
+	if diff := cmp.Diff(zs, []int{0, 0, 0, 4, 5}); diff != "" {
+		t.Errorf("Zero (-got, +want):\n%s", diff)
+	}
+}
+
 func TestMapKeys(t *testing.T) {
 	cmpStrings := func(a, b string) bool { return a < b }
 

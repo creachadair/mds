@@ -130,6 +130,14 @@ func Reverse[T any, Slice ~[]T](vs Slice) {
 	}
 }
 
+// Zero sets all the elements of vs to their zero value.
+func Zero[T any, Slice ~[]T](vs Slice) {
+	var zero T
+	for i := range vs {
+		vs[i] = zero
+	}
+}
+
 // MapKeys extracts a slice of the keys from a map.  The resulting slice is in
 // arbitrary order.
 func MapKeys[T comparable, U any](m map[T]U) []T {
