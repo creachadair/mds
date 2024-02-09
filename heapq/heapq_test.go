@@ -223,6 +223,59 @@ func TestSort(t *testing.T) {
 	}
 }
 
+func TestUpdate(t *testing.T) {
+	m := make(map[string]int)                // tracks the offsets of strings in the queue
+	up := func(s string, p int) { m[s] = p } // update the offsets map
+	q := heapq.New(stdcmp.Compare[string]).Update(up)
+
+	// Verify that all the elements know their current offset correctly.
+	check := func() {
+		for i := 0; i < q.Len(); i++ {
+			s, _ := q.Peek(i)
+			if m[s] != i {
+				t.Errorf("At pos %d: %s is at %d instead", i, s, m[s])
+			}
+		}
+	}
+
+	check() // empty
+
+	// Check that Set assigns positions to the elements added.
+	q.Set([]string{"m", "z", "t", "a", "k", "b"})
+	check()
+
+	// Check that Add updates positions correctly.
+	q.Add("c")
+	check()
+
+	// Check that we can add an element and remove it by its assigned position.
+	q.Add("j")
+	check()
+
+	oldp := m["j"]
+	t.Logf("Added j at pos=%d", oldp)
+	q.Remove(oldp)
+	check()
+
+	// After removal, the element retains its last position.
+	if m["j"] != oldp {
+		t.Errorf("After Remove j: p=%d, want %d", m["j"], oldp)
+	}
+
+	var got []string
+	for !q.IsEmpty() {
+		s, _ := q.Pop()
+		got = append(got, s)
+		if m[s] != 0 {
+			t.Errorf("Pop: got %q at p=%d, want p=0", s, m[s])
+		}
+
+	}
+	if diff := cmp.Diff(got, []string{"a", "b", "c", "k", "m", "t", "z"}); diff != "" {
+		t.Errorf("Values (-got, +want):\n%s", diff)
+	}
+}
+
 func extract[T any](q *heapq.Queue[T]) []T {
 	all := make([]T, 0, q.Len())
 	for !q.IsEmpty() {
