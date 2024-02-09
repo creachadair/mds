@@ -24,11 +24,11 @@ func New[T any](cmp func(a, b T) int) *Queue[T] { return &Queue[T]{cmp: cmp} }
 //
 // For example, to initialize a queue with fixed elements:
 //
-//	q := heapq.New(cfunc, []string{"u", "v", "w", "x", "y"})
+//	q := heapq.NewWithData(cfunc, []string{"u", "v", "w", "x", "y"})
 //
 // To initialize an empty queue with a pre-allocated buffer of n elements:
 //
-//	q := heapq.New(cfunc, make([]string, 0, n))
+//	q := heapq.NewWithData(cfunc, make([]string, 0, n))
 //
 // The resulting queue takes ownership of the slice, and the caller should not
 // access the contents data after the call unless the queue will no longer be
