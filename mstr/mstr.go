@@ -4,7 +4,7 @@ package mstr
 // Trunc returns a prefix of s having length no greater than n bytes.  If s
 // exceeds this length, it is truncated at a point ≤ n so that the result does
 // not end in a partial UTF-8 encoding. Trunc does not verify that s is valid
-// UTF-8, but if it iis the result will remain valid after truncation.
+// UTF-8, but if it is the result will remain valid after truncation.
 func Trunc(s string, n int) string {
 	if n >= len(s) {
 		return s
