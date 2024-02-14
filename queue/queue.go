@@ -64,7 +64,7 @@ func (q *Queue[T]) Front() T {
 	return q.vs[q.head]
 }
 
-// Peek reports whether q has a value at offset 0 from the front of the queue,
+// Peek reports whether q has a value at offset n from the front of the queue,
 // and if so returns its value. Peek(0) returns the same value as Front.
 func (q *Queue[T]) Peek(n int) (T, bool) {
 	if n < 0 {
