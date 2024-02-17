@@ -5,33 +5,50 @@ import (
 )
 
 // LCS computes a longest common subsequence of as and bs.
+//
+// This implementation takes O(mn) time and O(P·min(m, n)) space for inputs of
+// length m = len(as) and n = len(bs) and longest subsequence length P.
 func LCS[T comparable, Slice ~[]T](as, bs Slice) Slice {
-	return lcsRec(as, bs, make(map[[2]int]Slice))
-}
-
-func lcsRec[T comparable, Slice ~[]T](as, bs Slice, m map[[2]int]Slice) Slice {
 	if len(as) == 0 || len(bs) == 0 {
 		return nil
 	}
-	na, nb := len(as), len(bs)
-	if v, ok := m[[2]int{na, nb}]; ok {
-		return v
+
+	// We maintain two rows of the optimization matrix, (p)revious and
+	// (c)urrent. Rows are positions in bs and columns are positions in as.
+	// The rows are extended by one position to get rid of the special case at
+	// the beginning of the sequence (we use 1..n instead of 0..n-1).
+
+	// Size the buffers based on the smaller input, since order does not matter.
+	// This lets us use less storage with no time penalty.
+	if len(bs) < len(as) {
+		as, bs = bs, as
 	}
-	if as[na-1] == bs[nb-1] {
-		ans := append(lcsRec(as[:na-1], bs[:nb-1], m), as[na-1])
-		m[[2]int{na, nb}] = ans
-		return ans
+	type rec struct {
+		N    int // length of longest subsequence at this junction
+		Path []T // longest subsequence on this path
+	}
+	p := make([]rec, len(as)+1)
+	c := make([]rec, len(as)+1)
+
+	// Fill the rows top to bottom, left to right, since the optimization
+	// recurrence needs the previous element in the same row, and the same and
+	// previous elements in the previous row.
+	for j := 1; j <= len(bs); j++ {
+		p, c = c, p // swap the double buffer
+
+		// Fill the current row.
+		for i := 1; i <= len(as); i++ {
+			if as[i-1] == bs[j-1] {
+				c[i] = rec{p[i-1].N + 1, append(p[i-1].Path, as[i-1])}
+			} else if c[i-1].N >= p[i].N {
+				c[i] = rec{c[i-1].N, c[i-1].Path}
+			} else {
+				c[i] = rec{p[i].N, p[i].Path}
+			}
+		}
 	}
 
-	lhs := lcsRec(as[:na-1], bs, m)
-	rhs := lcsRec(as, bs[:nb-1], m)
-	if len(lhs) >= len(rhs) {
-		m[[2]int{na, nb}] = lhs
-		return lhs
-	} else {
-		m[[2]int{na, nb}] = rhs
-		return rhs
-	}
+	return c[len(as)].Path
 }
 
 // EditOp is the opcode of an edit sequence instruction.
@@ -68,7 +85,11 @@ func (e Edit) String() string {
 }
 
 // EditScript computes a minimal-length sequence of Edit operations that will
-// transform lhs into rhs when applied.
+// transform lhs into rhs. The result is empty if lhs == rhs.
+//
+// This implementation takes O(mn) time and O(min(m, n)) space to compute a
+// longest common subsequence, plus overhead of O(m+n) to construct the edit
+// sequence from the LCS.
 //
 // An edit sequence is processed in order starting at offset 0 of lhs. Items
 // are sent to the output according to the following rules.

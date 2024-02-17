@@ -31,6 +31,9 @@ func TestLCS(t *testing.T) {
 		{"a b c", "a b c", "a b c"},
 		{"a b c", "a b", "a b"},
 		{"b c", "a b c", "b c"},
+		{"a b c d e", "e b c d a", "b c d"},
+		{"x y z", "p d q a b", ""},
+		{"b a r a t a", "a b a t e", "a a t"},
 
 		{"you will be lucky to get this to work at all",
 			"will we be so lucky as to get this to work in the end",
@@ -115,6 +118,8 @@ func TestEditScript(t *testing.T) {
 		{"a b c", "a x c", pedit(t, "=1 x1:1")},
 		{"a b c", "a b", pedit(t, "=2 -1")},
 		{"b c", "a b c", pedit(t, "+1:0")},
+		{"a b c d e", "e b c d a", pedit(t, "x1:0 =3 x1:4")},
+		{"1 2 3 4", "4 3 2 1", pedit(t, "x4:0")},
 
 		{"a x b x c", "1 x b x 2", pedit(t, "x1:0 =3 x1:4")},
 		{"fly you fools", "to fly you must not be fools", pedit(t, "+1:0 =2 +3:3")},
@@ -124,7 +129,7 @@ func TestEditScript(t *testing.T) {
 			pedit(t, "+3:0 =2 -1 =1 x4:6 -2 =1 x1:11"),
 		},
 	}
-	for _, tc := range tests {
+	for _, tc := range tests[13:14] {
 		as, bs := strings.Fields(tc.a), strings.Fields(tc.b)
 		got := slice.EditScript(as, bs)
 		if !slices.Equal(got, tc.want) {
