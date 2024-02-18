@@ -62,6 +62,15 @@ func ExampleMatchingKeys() {
 	// yellow 6
 }
 
+func ExampleRotate() {
+	vs := []int{8, 6, 7, 5, 3, 0, 9}
+
+	slice.Rotate(vs, -3)
+	fmt.Println(vs)
+	// Output:
+	// [5 3 0 9 8 6 7]
+}
+
 func ExampleChunks() {
 	vs := strings.Fields("my heart is a fish hiding in the water grass")
 
