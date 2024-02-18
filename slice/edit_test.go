@@ -112,24 +112,22 @@ func TestEditScript(t *testing.T) {
 		{"a", "a b c", pedit(t, "=1 +2:1")},
 		{"b", "a b c", pedit(t, "+1:0 =1 +1:2")},
 		{"c", "a b c", pedit(t, "+2:0")},
-		{"d", "a b c", pedit(t, "x1:0 +2:1")},
+		{"d", "a b c", pedit(t, "-1 +3:0")},
 
 		{"a b c", "a b c", pedit(t, "")},
 		{"a b c", "a x c", pedit(t, "=1 x1:1")},
 		{"a b c", "a b", pedit(t, "=2 -1")},
 		{"b c", "a b c", pedit(t, "+1:0")},
 		{"a b c d e", "e b c d a", pedit(t, "x1:0 =3 x1:4")},
-		{"1 2 3 4", "4 3 2 1", pedit(t, "x4:0")},
+		{"1 2 3 4", "4 3 2 1", pedit(t, "+3:0 =1 -3")},
 
 		{"a x b x c", "1 x b x 2", pedit(t, "x1:0 =3 x1:4")},
 		{"fly you fools", "to fly you must not be fools", pedit(t, "+1:0 =2 +3:3")},
-
 		{"have the best time it is possible to have under the circumstances",
 			"I hope you have the time of your life in the forest",
-			pedit(t, "+3:0 =2 -1 =1 x4:6 -2 =1 x1:11"),
-		},
+			pedit(t, "+3:0 =2 -1 =1 -6 +4:6 =1 x1:11")},
 	}
-	for _, tc := range tests[13:14] {
+	for _, tc := range tests {
 		as, bs := strings.Fields(tc.a), strings.Fields(tc.b)
 		got := slice.EditScript(as, bs)
 		if !slices.Equal(got, tc.want) {

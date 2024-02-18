@@ -132,20 +132,20 @@ func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit {
 			rend++
 		}
 
-		// Add exchanges for overlapping delete + insert pairs.
-		if x := min(lend-lpos, rend-rpos); x > 0 {
-			out = append(out, Edit{Op: OpReplace, N: x, X: rpos})
-			lpos += x
-			rpos += x
-		}
-
-		// Record any remaining unpaired deletions and insertions.
-		// Note deletions need to go first.
-		if lend > lpos {
-			out = append(out, Edit{Op: OpDrop, N: lend - lpos})
-		}
-		if rend > rpos {
-			out = append(out, Edit{Op: OpCopy, N: rend - rpos, X: rpos})
+		// If we have equal numbers of discards and insertions, combine them into
+		// a single replace instruction. If they're not equal, there is no point
+		// in this substitution, since it doesn't shorten the edit sequence.
+		if n := lend - lpos; n > 0 && n == rend-rpos {
+			out = append(out, Edit{Op: OpReplace, N: n, X: rpos})
+		} else {
+			// Record drops (there may be none).
+			if lend > lpos {
+				out = append(out, Edit{Op: OpDrop, N: lend - lpos})
+			}
+			// Record copies (there may be none).
+			if rend > rpos {
+				out = append(out, Edit{Op: OpCopy, N: rend - rpos, X: rpos})
+			}
 		}
 
 		lpos, rpos = lend, rend
@@ -162,20 +162,21 @@ func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit {
 		out = append(out, Edit{Op: OpEmit, N: m})
 	}
 
-	// Add exchanges for overlapping delete + insert pairs.
-	if x := min(len(lhs)-lpos, len(rhs)-rpos); x > 0 {
-		out = append(out, Edit{Op: OpReplace, N: x, X: rpos})
-		lpos += x
-		rpos += x
+	if n := len(lhs) - lpos; n > 0 && n == len(rhs)-rpos {
+		out = append(out, Edit{Op: OpReplace, N: n, X: rpos})
+	} else {
+		// Drop any leftover elements of lhs.
+		if n := len(lhs) - lpos; n > 0 {
+			out = append(out, Edit{Op: OpDrop, N: n})
+		}
+		// Copy any leftover elements of rhs.
+		if n := len(rhs) - rpos; n > 0 {
+			out = append(out, Edit{Op: OpCopy, N: n, X: rpos})
+		}
 	}
-	// Drop any leftover elements of lhs.
-	if n := len(lhs) - lpos; n > 0 {
-		out = append(out, Edit{Op: OpDrop, N: n})
-	}
-	// Copy any leftover elements of rhs.
-	if n := len(rhs) - rpos; n > 0 {
-		out = append(out, Edit{Op: OpCopy, N: n, X: rpos})
-	}
+
+	// As a special case, drop a trailing emit so that the edit for completely
+	// equal sequences can be empty.
 	if n := len(out); n > 0 && out[n-1].Op == OpEmit {
 		return out[:n-1]
 	}
