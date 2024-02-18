@@ -277,10 +277,12 @@ func Chunks[T any, Slice ~[]T](vs Slice, n int) []Slice {
 // slices returned share storage with the input. If n > len(vs), the number of
 // batches is capped at len(vs); otherwise exactly n are constructed.
 //
-// Batches will panic if n ≤ 0.
+// Batches will panic if n < 0. If n == 0 Batches returns nil.
 func Batches[T any, Slice ~[]T](vs Slice, n int) []Slice {
-	if n <= 0 {
+	if n < 0 {
 		panic("n out of range")
+	} else if n == 0 {
+		return nil
 	} else if n > len(vs) {
 		n = len(vs)
 	}

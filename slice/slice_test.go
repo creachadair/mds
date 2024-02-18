@@ -369,6 +369,7 @@ func TestBatches(t *testing.T) {
 		n    int
 		want [][]int
 	}{
+		{0, nil},
 		{1, [][]int{input}},
 		{2, [][]int{{1, 2, 3, 4, 5, 6, 7}, {8, 9, 10, 11, 12, 13}}},
 		{3, [][]int{{1, 2, 3, 4, 5}, {6, 7, 8, 9}, {10, 11, 12, 13}}},
@@ -391,7 +392,6 @@ func TestBatches(t *testing.T) {
 		}
 	}
 
-	t.Logf("OK n=0: %v", mtest.MustPanic(t, func() { slice.Batches(input, 0) }))
 	t.Logf("OK n<0: %v", mtest.MustPanic(t, func() { slice.Batches(input, -1) }))
 }
 
