@@ -96,3 +96,12 @@ func ExampleBatches() {
 	// [that when we kiss]
 	// [are perfectly aligned]
 }
+
+func ExampleLCS() {
+	fmt.Println(slice.LCS(
+		[]int{1, 0, 3, 4, 2, 7, 9, 9},
+		[]int{1, 3, 5, 7, 9, 11},
+	))
+	// Output:
+	// [1 3 7 9]
+}
