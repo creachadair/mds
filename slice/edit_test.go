@@ -147,11 +147,11 @@ func checkApply[T comparable, Slice ~[]T](t *testing.T, lhs, rhs Slice, edit []s
 	i := 0
 	for _, e := range edit {
 		switch e.Op {
-		case slice.OpDelete:
+		case slice.OpDrop:
 			i += e.N
-		case slice.OpInsert:
-			out = append(out, rhs[e.X:e.X+e.N]...)
 		case slice.OpCopy:
+			out = append(out, rhs[e.X:e.X+e.N]...)
+		case slice.OpEmit:
 			out = append(out, lhs[i:i+e.N]...)
 			i += e.N
 		case slice.OpReplace:

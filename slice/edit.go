@@ -55,10 +55,10 @@ func LCS[T comparable, Slice ~[]T](as, bs Slice) Slice {
 type EditOp byte
 
 const (
-	OpDelete  EditOp = '-' // Delete items from lhs
-	OpInsert  EditOp = '+' // Insert items from rhs
-	OpCopy    EditOp = '=' // Copy elements from lhs
-	OpReplace EditOp = 'x' // Replace with items from rhs
+	OpDrop    EditOp = '-' // Drop items from lhs
+	OpEmit    EditOp = '=' // Emit elements from lhs
+	OpCopy    EditOp = '+' // Copy items from rhs
+	OpReplace EditOp = 'x' // Replace with items from rhs (== Drop+Copy)
 )
 
 // Edit is an edit operation transforming specified as part of a diff.
@@ -71,14 +71,14 @@ type Edit struct {
 
 	// X specifies an additionl argument affected by the operation:
 	//
-	// For OpDelete and OpCopy, X is not used and will be 0.
-	// For OpInsert and OpReplace, X specifies a starting offset in rhs from
-	// which values are to be copied.
+	// For OpDrop and OpEmit, X is not used and will be 0.
+	// For OpCopy and OpReplace, X specifies a starting offset in rhs from which
+	// values are to be copied.
 	X int
 }
 
 func (e Edit) String() string {
-	if e.Op == OpInsert || e.Op == OpReplace {
+	if e.Op == OpCopy || e.Op == OpReplace {
 		return fmt.Sprintf("%c%d:%d", e.Op, e.N, e.X)
 	}
 	return fmt.Sprintf("%c%d", e.Op, e.N)
@@ -96,12 +96,15 @@ func (e Edit) String() string {
 //
 // For each element e of the edit script, if e.Op is:
 //
-//   - OpDelete: advance the offset by e.N (no output)
-//   - OpInsert: output e.N elements from rhs at position e.X
-//   - OpCopy: output e.N elements from lhs at the current offset, and advance
-//     the offset by e.N positions
-//   - OpReplace: output e.N elements from rhs at position e.X, and advance the
-//     offset by e.N positions
+//   - OpDrop: advance the offset by e.N without emitting any output.
+//
+//   - OpEmit: output e.N elements from the current offset in lhs and advance
+//     the offset by e.N positions.
+//
+//   - OpCopy: output e.N elements from position e.X of rhs.
+//
+//   - OpReplace: output e.N elements from position e.X of rhs, and advance
+//     offset by e.N positions (a combination of Drop and Copy).
 //
 // After all edits are processed, output any remaining elements of lhs.  This
 // completes the processing of the script.
@@ -112,9 +115,9 @@ func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit {
 	// For each i, we find the unclaimed elements of lhs and rhs prior to the
 	// occurrence of lcs[i].
 	//
-	// Elements of lhs before lcs[i] must be deleted from the result.
-	// Elements of rhs before lcs[i] must be inserted into the result.
-	// Elements equal to lcs members are copied.
+	// Elements of lhs before lcs[i] must be removed from the result.
+	// Elements of rhs before lcs[i] must be added to the result.
+	// Elements equal to lcs members are preserved as-written.
 	//
 	// However, whenever we have deletes followed immediately by inserts, the
 	// net effect is to "replace" some or all of the deleted items with the
@@ -143,10 +146,10 @@ func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit {
 		// Record any remaining unpaired deletions and insertions.
 		// Note deletions need to go first.
 		if lend > lpos {
-			out = append(out, Edit{Op: OpDelete, N: lend - lpos})
+			out = append(out, Edit{Op: OpDrop, N: lend - lpos})
 		}
 		if rend > rpos {
-			out = append(out, Edit{Op: OpInsert, N: rend - rpos, X: rpos})
+			out = append(out, Edit{Op: OpCopy, N: rend - rpos, X: rpos})
 		}
 
 		lpos, rpos = lend, rend
@@ -160,7 +163,7 @@ func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit {
 		i += m
 		lpos += m
 		rpos += m
-		out = append(out, Edit{Op: OpCopy, N: m})
+		out = append(out, Edit{Op: OpEmit, N: m})
 	}
 
 	// Add exchanges for overlapping delete + insert pairs.
@@ -169,15 +172,15 @@ func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit {
 		lpos += x
 		rpos += x
 	}
-	// Delete any leftover elements of lhs.
+	// Drop any leftover elements of lhs.
 	if n := len(lhs) - lpos; n > 0 {
-		out = append(out, Edit{Op: OpDelete, N: n})
+		out = append(out, Edit{Op: OpDrop, N: n})
 	}
-	// Insert any leftover elements of rhs.
+	// Copy any leftover elements of rhs.
 	if n := len(rhs) - rpos; n > 0 {
-		out = append(out, Edit{Op: OpInsert, N: n, X: rpos})
+		out = append(out, Edit{Op: OpCopy, N: n, X: rpos})
 	}
-	if n := len(out); n > 0 && out[n-1].Op == OpCopy {
+	if n := len(out); n > 0 && out[n-1].Op == OpEmit {
 		return out[:n-1]
 	}
 	return out
