@@ -23,12 +23,8 @@ func LCS[T comparable, Slice ~[]T](as, bs Slice) Slice {
 	if len(bs) < len(as) {
 		as, bs = bs, as
 	}
-	type rec struct {
-		N    int // length of longest subsequence at this junction
-		Path []T // longest subsequence on this path
-	}
-	p := make([]rec, len(as)+1)
-	c := make([]rec, len(as)+1)
+	p := make([]Slice, len(as)+1)
+	c := make([]Slice, len(as)+1)
 
 	// Fill the rows top to bottom, left to right, since the optimization
 	// recurrence needs the previous element in the same row, and the same and
@@ -39,16 +35,16 @@ func LCS[T comparable, Slice ~[]T](as, bs Slice) Slice {
 		// Fill the current row.
 		for i := 1; i <= len(as); i++ {
 			if as[i-1] == bs[j-1] {
-				c[i] = rec{p[i-1].N + 1, append(p[i-1].Path, as[i-1])}
-			} else if c[i-1].N >= p[i].N {
-				c[i] = rec{c[i-1].N, c[i-1].Path}
+				c[i] = append(p[i-1], as[i-1])
+			} else if len(c[i-1]) >= len(p[i]) {
+				c[i] = c[i-1]
 			} else {
-				c[i] = rec{p[i].N, p[i].Path}
+				c[i] = p[i]
 			}
 		}
 	}
 
-	return c[len(as)].Path
+	return c[len(as)]
 }
 
 // EditOp is the opcode of an edit sequence instruction.
