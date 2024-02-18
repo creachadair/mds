@@ -87,9 +87,9 @@ func (e Edit) String() string {
 // EditScript computes a minimal-length sequence of Edit operations that will
 // transform lhs into rhs. The result is empty if lhs == rhs.
 //
-// This implementation takes O(mn) time and O(min(m, n)) space to compute a
-// longest common subsequence, plus overhead of O(m+n) to construct the edit
-// sequence from the LCS.
+// This implementation takes O(mn) time and O(P·min(m, n)) space to compute a
+// longest common subsequence, plus overhead of O(m+n) time and space to
+// construct the edit sequence from the LCS.
 //
 // An edit sequence is processed in order starting at offset 0 of lhs. Items
 // are sent to the output according to the following rules.
