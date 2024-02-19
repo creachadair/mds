@@ -95,23 +95,21 @@ func (e Edit[T]) String() string {
 // longest common subsequence, plus overhead of O(m+n) time and space to
 // construct the edit sequence from the LCS.
 //
-// An edit sequence is processed in order starting at offset 0 of lhs. Items
-// are sent to the output according to the following rules.
+// An edit sequence is processed in order. Items are sent to the output
+// according to the following rules.
 //
 // For each element e of the edit script, if e.Op is:
 //
-//   - OpDrop: advance the offset by e.N without emitting any output.
+//   - OpDrop: Emit no output; e.X records the items discarded.
 //
-//   - OpEmit: output e.N elements from the current offset in lhs and advance
-//     the offset by e.N positions.
+//   - OpEmit: Emit the elements in e.X from lhs.
 //
-//   - OpCopy: output e.N elements from position e.X of rhs.
+//   - OpCopy: Emit the elements in e.Y from rhs.
 //
-//   - OpReplace: output e.N elements from position e.X of rhs, and advance
-//     offset by e.N positions (a combination of Drop and Copy).
+//   - OpReplace: Emit the elements in e.Y from rhs. The items in e.X are the
+//     elements from lhs that were replaced. (== Drop + Copy)
 //
-// After all edits are processed, output any remaining elements of lhs.  This
-// completes the processing of the script.
+// If the edit script is empty, the output is equal to the input.
 func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit[T] {
 	lcs := LCS(lhs, rhs)
 
