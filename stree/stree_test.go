@@ -23,7 +23,7 @@ func allWords(tree *stree.Tree[string]) []string {
 }
 
 func sortedUnique(ws []string, drop mapset.Set[string]) []string {
-	out := mapset.New[string](ws...).RemoveAll(drop).Slice()
+	out := mapset.New(ws...).RemoveAll(drop).Slice()
 	sort.Strings(out)
 	return out
 }
@@ -54,7 +54,7 @@ func TestNew(t *testing.T) {
 
 func TestRemoval(t *testing.T) {
 	words := strings.Fields(`a foolish consistency is the hobgoblin of little minds`)
-	tree := stree.New[string](0, cmp.Compare[string], words...)
+	tree := stree.New(0, cmp.Compare, words...)
 
 	got := allWords(tree)
 	want := sortedUnique(words, nil)
@@ -76,14 +76,9 @@ func TestRemoval(t *testing.T) {
 }
 
 func TestInsertion(t *testing.T) {
-	type kv struct {
-		key string
-		val int
-	}
+	type kv = stree.KV[string, int]
 
-	tree := stree.New[kv](300, func(a, b kv) int {
-		return cmp.Compare[string](a.key, b.key)
-	})
+	tree := stree.New(300, kv{}.Compare(cmp.Compare))
 	checkInsert := func(f func(kv) bool, key string, val int, ok bool) {
 		t.Helper()
 		got := f(kv{key, val})
@@ -92,11 +87,11 @@ func TestInsertion(t *testing.T) {
 		}
 	}
 	checkValue := func(key string, want int) {
-		got, ok := tree.Get(kv{key: key})
+		got, ok := tree.Get(kv{Key: key})
 		if !ok {
 			t.Errorf("Key %q not found", key)
-		} else if got.val != want {
-			t.Errorf("Key %q: got %v, want %v", key, got.val, want)
+		} else if got.Value != want {
+			t.Errorf("Key %q: got %v, want %v", key, got.Value, want)
 		}
 	}
 
