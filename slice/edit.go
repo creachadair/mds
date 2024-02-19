@@ -59,7 +59,7 @@ const (
 
 // Edit is an edit operation transforming specified as part of a diff.
 // Each edit refers to a specific span of one of the inputs.
-type Edit[T comparable] struct {
+type Edit[T any] struct {
 	Op EditOp // the diff operation to apply at the current offset
 
 	// X specifies the elements of lhs affected by the edit.
