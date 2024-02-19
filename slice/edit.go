@@ -81,9 +81,7 @@ func (e Edit[T]) String() string {
 	case OpReplace:
 		x, y := fmt.Sprint(e.X), fmt.Sprint(e.Y)
 		return fmt.Sprintf("%c[%s:%s]", e.Op, x[1:len(x)-1], y[1:len(y)-1])
-	case OpDrop:
-		return fmt.Sprintf("%c%d", e.Op, len(e.X))
-	case OpEmit:
+	case OpDrop, OpEmit:
 		return fmt.Sprintf("%c%v", e.Op, e.X)
 	}
 	return fmt.Sprintf("!%c[INVALID]", e.Op)
