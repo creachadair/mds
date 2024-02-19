@@ -83,3 +83,23 @@ func ExampleTree_Min() {
 	// min: 955
 	// max: 2016
 }
+
+func ExampleKV() {
+	// For brevity, it can be helpful to define a type alias for your items.
+
+	type item = stree.KV[int, string]
+
+	tree := stree.New(100, item{}.Compare(cmp.Compare))
+	tree.Add(item{1, "one"})
+	tree.Add(item{2, "two"})
+	tree.Add(item{3, "three"})
+	tree.Add(item{4, "four"})
+
+	for _, i := range []int{1, 3, 2} {
+		fmt.Println(tree.Cursor(item{Key: i}).Key().Value)
+	}
+	// Output:
+	// one
+	// three
+	// two
+}

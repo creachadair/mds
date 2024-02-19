@@ -307,3 +307,32 @@ func TestCursor(t *testing.T) {
 		}
 	})
 }
+
+func TestKV(t *testing.T) {
+	type kv = stree.KV[string, int]
+	compare := kv{}.Compare(stdcmp.Compare)
+
+	st := stree.New(250, compare, []kv{
+		{"hello", 1},
+		{"is", 2},
+		{"there", 3},
+		{"anybody", 4},
+		{"in", 5},
+		{"here", 6},
+	}...)
+
+	var gotk []string
+	var gotv []int
+	st.Inorder(func(kv kv) bool {
+		gotk = append(gotk, kv.Key)
+		gotv = append(gotv, kv.Value)
+		return true
+	})
+
+	if diff := cmp.Diff(gotk, []string{"anybody", "hello", "here", "in", "is", "there"}); diff != "" {
+		t.Errorf("Keys (-got, +want):\n%s", diff)
+	}
+	if diff := cmp.Diff(gotv, []int{4, 1, 6, 5, 2, 3}); diff != "" {
+		t.Errorf("Values (-got, +want):\n%s", diff)
+	}
+}

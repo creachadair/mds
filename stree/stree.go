@@ -320,3 +320,23 @@ func (t *Tree[T]) Max() T {
 	}
 	return cur.X
 }
+
+// KV is a convenience type for storing key-value pairs in a Tree, where the
+// key type T is used for comparison while the value type U is ignored.  Use
+// the [KVCompare] function to adapt a comparison for T to a KV on T.
+//
+// For convenience of notation, you can create a type alias for an
+// instantiation of this type:
+//
+//	type metrics = stree.KV[string, float64]
+//	compare := metrics{}.Compare(cmp.Compare)
+type KV[T, U any] struct {
+	Key   T
+	Value U
+}
+
+// Compare converts a function comparing values of type T into a function that
+// compares the Key field of a KV[T, U].
+func (KV[T, U]) Compare(compare func(a, b T) int) func(ka, kb KV[T, U]) int {
+	return func(ka, kb KV[T, U]) int { return compare(ka.Key, kb.Key) }
+}
