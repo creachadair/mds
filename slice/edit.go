@@ -54,34 +54,44 @@ const (
 	OpDrop    EditOp = '-' // Drop items from lhs
 	OpEmit    EditOp = '=' // Emit elements from lhs
 	OpCopy    EditOp = '+' // Copy items from rhs
-	OpReplace EditOp = 'x' // Replace with items from rhs (== Drop+Copy)
+	OpReplace EditOp = '!' // Replace with items from rhs (== Drop+Copy)
 )
 
 // Edit is an edit operation transforming specified as part of a diff.
 // Each edit refers to a specific span of one of the inputs.
-type Edit struct {
+type Edit[T comparable] struct {
 	Op EditOp // the diff operation to apply at the current offset
 
-	// N specifies the number of inputs affected by the operation.
-	N int
+	// X specifies the elements of lhs affected by the edit.
+	// For OpDrop and OpReplace it is the elements to be dropped.
+	// For OpEmit its the elements of to be emitted.
+	// For OpCopy it is empty.
+	X []T
 
-	// X specifies an additionl argument affected by the operation:
-	//
-	// For OpDrop and OpEmit, X is not used and will be 0.
-	// For OpCopy and OpReplace, X specifies a starting offset in rhs from which
-	// values are to be copied.
-	X int
+	// Y specifies the elements of rhs affected by the edit.
+	// For OpDrop and OpEmit it is empty.
+	// For OpCopy and OpReplace it is the elements to be copied.
+	Y []T
 }
 
-func (e Edit) String() string {
-	if e.Op == OpCopy || e.Op == OpReplace {
-		return fmt.Sprintf("%c%d:%d", e.Op, e.N, e.X)
+func (e Edit[T]) String() string {
+	switch e.Op {
+	case OpCopy:
+		return fmt.Sprintf("%c%v", e.Op, e.Y)
+	case OpReplace:
+		x, y := fmt.Sprint(e.X), fmt.Sprint(e.Y)
+		return fmt.Sprintf("%c[%s:%s]", e.Op, x[1:len(x)-1], y[1:len(y)-1])
+	case OpDrop:
+		return fmt.Sprintf("%c%d", e.Op, len(e.X))
+	case OpEmit:
+		return fmt.Sprintf("%c%v", e.Op, e.X)
 	}
-	return fmt.Sprintf("%c%d", e.Op, e.N)
+	return fmt.Sprintf("!%c[INVALID]", e.Op)
 }
 
 // EditScript computes a minimal-length sequence of Edit operations that will
-// transform lhs into rhs. The result is empty if lhs == rhs.
+// transform lhs into rhs. The result is empty if lhs == rhs. The slices stored
+// in returned edit operations share storage with the inputs lhs and rhs.
 //
 // This implementation takes O(mn) time and O(P·min(m, n)) space to compute a
 // longest common subsequence, plus overhead of O(m+n) time and space to
@@ -104,7 +114,7 @@ func (e Edit) String() string {
 //
 // After all edits are processed, output any remaining elements of lhs.  This
 // completes the processing of the script.
-func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit {
+func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit[T] {
 	lcs := LCS(lhs, rhs)
 
 	// To construct the edit sequence, i scans forward through lcs.
@@ -120,7 +130,7 @@ func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit {
 	// inserted ones. We represent this case explicitly with a replace edit.
 	lpos, rpos, i := 0, 0, 0
 
-	var out []Edit
+	var out []Edit[T]
 	for i < len(lcs) {
 		// Count the numbers of elements of lhs and rhs prior to the first match.
 		lend := lpos
@@ -132,19 +142,18 @@ func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit {
 			rend++
 		}
 
-		// If we have equal numbers of discards and insertions, combine them into
-		// a single replace instruction. If they're not equal, there is no point
-		// in this substitution, since it doesn't shorten the edit sequence.
+		// If we have at least as many insertions as discards, combine them into
+		// a single replace instruction.
 		if n := lend - lpos; n > 0 && n <= rend-rpos {
-			out = append(out, Edit{Op: OpReplace, N: n, X: rpos})
+			out = append(out, Edit[T]{Op: OpReplace, X: lhs[lpos:lend], Y: rhs[rpos : rpos+n]})
 			rpos += n
 		} else if lend > lpos {
 			// Record drops (there may be none).
-			out = append(out, Edit{Op: OpDrop, N: lend - lpos})
+			out = append(out, Edit[T]{Op: OpDrop, X: lhs[lpos:lend]})
 		}
 		// Record copies (there may be none).
 		if rend > rpos {
-			out = append(out, Edit{Op: OpCopy, N: rend - rpos, X: rpos})
+			out = append(out, Edit[T]{Op: OpCopy, Y: rhs[rpos:rend]})
 		}
 
 		lpos, rpos = lend, rend
@@ -155,28 +164,28 @@ func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit {
 		for i+m < len(lcs) && lhs[lpos+m] == rhs[rpos+m] {
 			m++
 		}
+		out = append(out, Edit[T]{Op: OpEmit, X: lhs[lpos : lpos+m]})
 		i += m
 		lpos += m
 		rpos += m
-		out = append(out, Edit{Op: OpEmit, N: m})
 	}
 
 	if n := len(lhs) - lpos; n > 0 && n <= len(rhs)-rpos {
-		out = append(out, Edit{Op: OpReplace, N: n, X: rpos})
+		out = append(out, Edit[T]{Op: OpReplace, X: lhs[lpos:], Y: rhs[rpos : rpos+n]})
 		rpos += n
-	} else if n := len(lhs) - lpos; n > 0 {
+	} else if n > 0 {
 		// Drop any leftover elements of lhs.
-		out = append(out, Edit{Op: OpDrop, N: n})
+		out = append(out, Edit[T]{Op: OpDrop, X: lhs[lpos:]})
 	}
 	// Copy any leftover elements of rhs.
-	if n := len(rhs) - rpos; n > 0 {
-		out = append(out, Edit{Op: OpCopy, N: n, X: rpos})
+	if len(rhs)-rpos > 0 {
+		out = append(out, Edit[T]{Op: OpCopy, Y: rhs[rpos:]})
 	}
 
-	// As a special case, drop a trailing emit so that the edit for completely
-	// equal sequences can be empty.
-	if n := len(out); n > 0 && out[n-1].Op == OpEmit {
-		return out[:n-1]
+	// As a special case, if the whole edit is a single emit, drop it so that
+	// equal elements have an empty script.
+	if len(out) == 1 && out[0].Op == OpEmit {
+		return nil
 	}
 	return out
 }

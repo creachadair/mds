@@ -110,24 +110,20 @@ func ExampleEditScript() {
 	lhs := strings.Fields("a stitch in time saves nine")
 	rhs := strings.Fields("we live in a time of nine lives")
 
-	i := 0
 	fmt.Println("start", lhs)
 	var out []string
 	for _, e := range slice.EditScript(lhs, rhs) {
 		switch e.Op {
 		case slice.OpDrop:
-			i += e.N
 		case slice.OpEmit:
-			fmt.Println("emit", lhs[i:i+e.N])
-			out = append(out, lhs[i:i+e.N]...)
-			i += e.N
+			fmt.Println("emit", e.X)
+			out = append(out, e.X...)
 		case slice.OpCopy:
-			fmt.Println("copy", rhs[e.X:e.X+e.N])
-			out = append(out, rhs[e.X:e.X+e.N]...)
+			fmt.Println("copy", e.Y)
+			out = append(out, e.Y...)
 		case slice.OpReplace:
-			fmt.Println("replace", lhs[i:i+e.N], "with", rhs[e.X:e.X+e.N])
-			out = append(out, rhs[e.X:e.X+e.N]...)
-			i += e.N
+			fmt.Println("replace", e.X, "with", e.Y)
+			out = append(out, e.Y...)
 		default:
 			panic("invalid")
 		}

@@ -2,8 +2,8 @@ package slice_test
 
 import (
 	"math/rand"
+	"regexp"
 	"slices"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -99,68 +99,81 @@ func TestLCSRandom(t *testing.T) {
 func TestEditScript(t *testing.T) {
 	tests := []struct {
 		a, b string
-		want []slice.Edit
+		want []slice.Edit[string]
 	}{
 		{"", "", nil},
 
-		{"a", "", pedit(t, "-1")},
-		{"", "b", pedit(t, "+1:0")},
+		{"a", "", pedit(t, "-[a]")},
+		{"", "b", pedit(t, "+[b]")},
 
-		{"a b c", "", pedit(t, "-3")},
-		{"", "d e f", pedit(t, "+3:0")},
+		{"a b c", "", pedit(t, "-[a b c]")},
+		{"", "d e f", pedit(t, "+[d e f]")},
 
-		{"a", "a b c", pedit(t, "=1 +2:1")},
-		{"b", "a b c", pedit(t, "+1:0 =1 +1:2")},
-		{"c", "a b c", pedit(t, "+2:0")},
-		{"d", "a b c", pedit(t, "x1:0 +2:1")},
+		{"a", "a b c", pedit(t, "=[a] +[b c]")},
+		{"b", "a b c", pedit(t, "+[a] =[b] +[c]")},
+		{"c", "a b c", pedit(t, "+[a b] =[c]")},
+		{"d", "a b c", pedit(t, "![d:a] +[b c]")},
 
-		{"c d", "a b c d", pedit(t, "+2:0")},
-		{"a b c", "a b c", pedit(t, "")},
-		{"a b c", "a x c", pedit(t, "=1 x1:1")},
-		{"a b c", "a b", pedit(t, "=2 -1")},
-		{"b c", "a b c", pedit(t, "+1:0")},
-		{"a b c d e", "e b c d a", pedit(t, "x1:0 =3 x1:4")},
-		{"1 2 3 4", "4 3 2 1", pedit(t, "+3:0 =1 -3")},
+		{"c d", "a b c d", pedit(t, "+[a b] =[c d]")},
+		{"a b c", "a b c", nil},
+		{"a b c", "a x c", pedit(t, "=[a] ![b:x] =[c]")},
+		{"a b c", "a b", pedit(t, "=[a b] -[c]")},
+		{"b c", "a b c", pedit(t, "+[a] =[b c]")},
+		{"a b c d e", "e b c d a", pedit(t, "![a:e] =[b c d] ![e:a]")},
+		{"1 2 3 4", "4 3 2 1", pedit(t, "+[4 3 2] =[1] -[2 3 4]")},
 
-		{"a x b x c", "1 x b x 2", pedit(t, "x1:0 =3 x1:4")},
-		{"fly you fools", "to fly you must not be fools", pedit(t, "+1:0 =2 +3:3")},
+		{"a x b x c", "1 x b x 2", pedit(t, "![a:1] =[x b x] ![c:2]")},
+		{"fly you fools", "to fly you must not be fools",
+			pedit(t, "+[to] =[fly you] +[must not be] =[fools]")},
 		{"have the best time it is possible to have under the circumstances",
 			"I hope you have the time of your life in the forest",
-			pedit(t, "+3:0 =2 -1 =1 -6 +4:6 =1 x1:11")},
+			pedit(t, "+[I hope you] =[have the] -[best] =[time] -[it is possible to have under] "+
+				"+[of your life in] =[the] ![circumstances:forest]")},
 	}
 	for _, tc := range tests {
 		as, bs := strings.Fields(tc.a), strings.Fields(tc.b)
 		got := slice.EditScript(as, bs)
-		if !slices.Equal(got, tc.want) {
+		if !equalEdits(got, tc.want) {
 			t.Errorf("EditScript(%q, %q):\ngot:  %v\nwant: %v", tc.a, tc.b, got, tc.want)
 		}
 		checkApply(t, as, bs, got)
 	}
 }
 
+func equalEdits[T comparable](a, b []slice.Edit[T]) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := 0; i < len(a); i++ {
+		if a[i].Op != b[i].Op ||
+			!slices.Equal(a[i].X, b[i].X) ||
+			!slices.Equal(a[i].Y, b[i].Y) {
+			return false
+		}
+	}
+	return true
+}
+
 // checkApply verifies that applying the specified edit script to lhs produces rhs.
-func checkApply[T comparable, Slice ~[]T](t *testing.T, lhs, rhs Slice, edit []slice.Edit) {
+func checkApply[T comparable, Slice ~[]T](t *testing.T, lhs, rhs Slice, edit []slice.Edit[T]) {
 	t.Helper()
 
 	var out Slice
-	i := 0
 	for _, e := range edit {
 		switch e.Op {
 		case slice.OpDrop:
-			i += e.N
-		case slice.OpCopy:
-			out = append(out, rhs[e.X:e.X+e.N]...)
+			// nothing to do
+		case slice.OpCopy, slice.OpReplace:
+			out = append(out, e.Y...)
 		case slice.OpEmit:
-			out = append(out, lhs[i:i+e.N]...)
-			i += e.N
-		case slice.OpReplace:
-			out = append(out, rhs[e.X:e.X+e.N]...)
-			i += e.N
+			out = append(out, e.X...)
 		default:
 			t.Fatalf("Unexpected edit operation: %v", e)
 		}
 	}
-	out = append(out, lhs[i:]...)
+	if len(edit) == 0 {
+		out = rhs
+	}
 	if !slices.Equal(out, rhs) {
 		t.Errorf("Apply %v:\ngot:  %v\nwant: %v", edit, out, rhs)
 	} else {
@@ -168,29 +181,39 @@ func checkApply[T comparable, Slice ~[]T](t *testing.T, lhs, rhs Slice, edit []s
 	}
 }
 
+var argsRE = regexp.MustCompile(`([-+=!])\[([^\]]*)\](?:\s|$)`)
+
 // pedit parses a string of space-separated edit strings matching the string
 // format rendered by the String method of a slice.Edit.
-func pedit(t *testing.T, ss string) (out []slice.Edit) {
+func pedit(t *testing.T, ss string) (out []slice.Edit[string]) {
 	t.Helper()
-	for _, s := range strings.Fields(ss) {
-		var next slice.Edit
-		switch s[0] {
-		case '-', '=', '+', 'x':
-			next.Op = slice.EditOp(s[0])
-		default:
-			t.Fatalf("Invalid edit op: %c", s[0])
-		}
-		var err error
-		fst, snd, ok := strings.Cut(s[1:], ":")
-		next.N, err = strconv.Atoi(fst)
-		if err != nil {
-			t.Fatalf("Invalid N: %v", err)
-		}
-		if ok {
-			next.X, err = strconv.Atoi(snd)
-			if err != nil {
-				t.Fatalf("Invalid X: %v", err)
+	ms := argsRE.FindAllStringSubmatch(ss, -1)
+	if ms == nil {
+		t.Fatalf("Invalid argument %q", ss)
+	}
+	for _, m := range ms {
+		fs := strings.Fields(m[2])
+		var next slice.Edit[string]
+		switch m[1] {
+		case "+":
+			next.Op = slice.OpCopy
+			next.Y = fs
+		case "-":
+			next.Op = slice.OpDrop
+			next.X = fs
+		case "=":
+			next.Op = slice.OpEmit
+			next.X = fs
+		case "!":
+			next.Op = slice.OpReplace
+			pre, post, ok := strings.Cut(m[2], ":")
+			if !ok {
+				t.Fatalf("Missing separator in argument %q", m[2])
 			}
+			next.X = strings.Fields(pre)
+			next.Y = strings.Fields(post)
+		default:
+			t.Fatalf("Invalid edit op %q", m[1])
 		}
 		out = append(out, next)
 	}
