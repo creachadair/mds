@@ -112,8 +112,9 @@ func TestEditScript(t *testing.T) {
 		{"a", "a b c", pedit(t, "=1 +2:1")},
 		{"b", "a b c", pedit(t, "+1:0 =1 +1:2")},
 		{"c", "a b c", pedit(t, "+2:0")},
-		{"d", "a b c", pedit(t, "-1 +3:0")},
+		{"d", "a b c", pedit(t, "x1:0 +2:1")},
 
+		{"c d", "a b c d", pedit(t, "+2:0")},
 		{"a b c", "a b c", pedit(t, "")},
 		{"a b c", "a x c", pedit(t, "=1 x1:1")},
 		{"a b c", "a b", pedit(t, "=2 -1")},

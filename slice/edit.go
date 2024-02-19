@@ -135,17 +135,16 @@ func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit {
 		// If we have equal numbers of discards and insertions, combine them into
 		// a single replace instruction. If they're not equal, there is no point
 		// in this substitution, since it doesn't shorten the edit sequence.
-		if n := lend - lpos; n > 0 && n == rend-rpos {
+		if n := lend - lpos; n > 0 && n <= rend-rpos {
 			out = append(out, Edit{Op: OpReplace, N: n, X: rpos})
-		} else {
+			rpos += n
+		} else if lend > lpos {
 			// Record drops (there may be none).
-			if lend > lpos {
-				out = append(out, Edit{Op: OpDrop, N: lend - lpos})
-			}
-			// Record copies (there may be none).
-			if rend > rpos {
-				out = append(out, Edit{Op: OpCopy, N: rend - rpos, X: rpos})
-			}
+			out = append(out, Edit{Op: OpDrop, N: lend - lpos})
+		}
+		// Record copies (there may be none).
+		if rend > rpos {
+			out = append(out, Edit{Op: OpCopy, N: rend - rpos, X: rpos})
 		}
 
 		lpos, rpos = lend, rend
@@ -162,17 +161,16 @@ func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit {
 		out = append(out, Edit{Op: OpEmit, N: m})
 	}
 
-	if n := len(lhs) - lpos; n > 0 && n == len(rhs)-rpos {
+	if n := len(lhs) - lpos; n > 0 && n <= len(rhs)-rpos {
 		out = append(out, Edit{Op: OpReplace, N: n, X: rpos})
-	} else {
+		rpos += n
+	} else if n := len(lhs) - lpos; n > 0 {
 		// Drop any leftover elements of lhs.
-		if n := len(lhs) - lpos; n > 0 {
-			out = append(out, Edit{Op: OpDrop, N: n})
-		}
-		// Copy any leftover elements of rhs.
-		if n := len(rhs) - rpos; n > 0 {
-			out = append(out, Edit{Op: OpCopy, N: n, X: rpos})
-		}
+		out = append(out, Edit{Op: OpDrop, N: n})
+	}
+	// Copy any leftover elements of rhs.
+	if n := len(rhs) - rpos; n > 0 {
+		out = append(out, Edit{Op: OpCopy, N: n, X: rpos})
 	}
 
 	// As a special case, drop a trailing emit so that the edit for completely
