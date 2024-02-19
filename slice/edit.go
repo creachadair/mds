@@ -8,7 +8,9 @@ import (
 //
 // This implementation takes O(mn) time and O(P·min(m, n)) space for inputs of
 // length m = len(as) and n = len(bs) and longest subsequence length P.
-func LCS[T comparable, Slice ~[]T](as, bs Slice) Slice {
+func LCS[T comparable, Slice ~[]T](as, bs Slice) Slice { return lcs(equal, as, bs) }
+
+func lcs[T any, Slice ~[]T](eq func(a, b T) bool, as, bs Slice) Slice {
 	if len(as) == 0 || len(bs) == 0 {
 		return nil
 	}
@@ -34,7 +36,7 @@ func LCS[T comparable, Slice ~[]T](as, bs Slice) Slice {
 
 		// Fill the current row.
 		for i := 1; i <= len(as); i++ {
-			if as[i-1] == bs[j-1] {
+			if eq(as[i-1], bs[j-1]) {
 				c[i] = append(p[i-1], as[i-1])
 			} else if len(c[i-1]) >= len(p[i]) {
 				c[i] = c[i-1]
@@ -111,7 +113,12 @@ func (e Edit[T]) String() string {
 //
 // If the edit script is empty, the output is equal to the input.
 func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit[T] {
-	lcs := LCS(lhs, rhs)
+	return editScript(equal, lhs, rhs)
+}
+
+// editScript computes an edit script using eq as the comparison.
+func editScript[T any, Slice ~[]T](eq func(a, b T) bool, lhs, rhs Slice) []Edit[T] {
+	lcs := lcs(eq, lhs, rhs)
 
 	// To construct the edit sequence, i scans forward through lcs.
 	// For each i, we find the unclaimed elements of lhs and rhs prior to the
@@ -130,11 +137,11 @@ func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit[T] {
 	for i < len(lcs) {
 		// Count the numbers of elements of lhs and rhs prior to the first match.
 		lend := lpos
-		for lhs[lend] != lcs[i] {
+		for !eq(lhs[lend], lcs[i]) {
 			lend++
 		}
 		rend := rpos
-		for rhs[rend] != lcs[i] {
+		for !eq(rhs[rend], lcs[i]) {
 			rend++
 		}
 
@@ -157,7 +164,7 @@ func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit[T] {
 		// Reaching here, lhs[lpos] == rhs[rpos] == lcs[i].
 		// Count how many elements are equal and copy them.
 		m := 1
-		for i+m < len(lcs) && lhs[lpos+m] == rhs[rpos+m] {
+		for i+m < len(lcs) && eq(lhs[lpos+m], rhs[rpos+m]) {
 			m++
 		}
 		out = append(out, Edit[T]{Op: OpEmit, X: lhs[lpos : lpos+m]})
@@ -185,3 +192,5 @@ func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit[T] {
 	}
 	return out
 }
+
+func equal[T comparable](a, b T) bool { return a == b }
