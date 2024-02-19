@@ -2,7 +2,6 @@ package slice_test
 
 import (
 	"fmt"
-	"sort"
 	"strings"
 
 	"github.com/creachadair/mds/slice"
@@ -53,11 +52,10 @@ func ExampleMatchingKeys() {
 	vs := map[string]int{"red": 3, "yellow": 6, "blue": 4, "green": 5}
 
 	keys := slice.MatchingKeys(vs, isEven)
-	sort.Strings(keys) // sort so test output is stable
 	for _, key := range keys {
 		fmt.Println(key, vs[key])
 	}
-	// Output:
+	// Unordered output:
 	// blue 4
 	// yellow 6
 }
