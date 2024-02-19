@@ -1,14 +1,14 @@
 package stree_test
 
 import (
-	stdcmp "cmp"
+	"cmp"
 	"sort"
 	"strings"
 	"testing"
 
 	"github.com/creachadair/mds/mapset"
 	"github.com/creachadair/mds/stree"
-	"github.com/google/go-cmp/cmp"
+	gocmp "github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
@@ -30,7 +30,7 @@ func sortedUnique(ws []string, drop mapset.Set[string]) []string {
 
 func TestNew(t *testing.T) {
 	t.Run("Empty", func(t *testing.T) {
-		tree := stree.New(100, stdcmp.Compare[string])
+		tree := stree.New(100, cmp.Compare[string])
 		if n := tree.Len(); n != 0 {
 			t.Errorf("Len of empty tree: got %v, want 0", n)
 		}
@@ -39,10 +39,10 @@ func TestNew(t *testing.T) {
 		}
 	})
 	t.Run("NonEmpty", func(t *testing.T) {
-		tree := stree.New(200, stdcmp.Compare[string], "please", "fetch", "your", "slippers")
+		tree := stree.New(200, cmp.Compare[string], "please", "fetch", "your", "slippers")
 		got := allWords(tree)
 		want := []string{"fetch", "please", "slippers", "your"}
-		if diff := cmp.Diff(got, want); diff != "" {
+		if diff := gocmp.Diff(got, want); diff != "" {
 			t.Errorf("New<Tree produced unexpected output (-got, +want)\n%s", diff)
 		}
 
@@ -54,11 +54,11 @@ func TestNew(t *testing.T) {
 
 func TestRemoval(t *testing.T) {
 	words := strings.Fields(`a foolish consistency is the hobgoblin of little minds`)
-	tree := stree.New[string](0, stdcmp.Compare[string], words...)
+	tree := stree.New[string](0, cmp.Compare[string], words...)
 
 	got := allWords(tree)
 	want := sortedUnique(words, nil)
-	if diff := cmp.Diff(want, got); diff != "" {
+	if diff := gocmp.Diff(want, got); diff != "" {
 		t.Errorf("Original input differs from expected (-want, +got)\n%s", diff)
 	}
 	drop := mapset.New("a", "is", "of", "the")
@@ -70,7 +70,7 @@ func TestRemoval(t *testing.T) {
 
 	got = allWords(tree)
 	want = sortedUnique(words, drop)
-	if diff := cmp.Diff(want, got); diff != "" {
+	if diff := gocmp.Diff(want, got); diff != "" {
 		t.Errorf("Tree after removal is incorrect (-want, +got)\n%s", diff)
 	}
 }
@@ -82,7 +82,7 @@ func TestInsertion(t *testing.T) {
 	}
 
 	tree := stree.New[kv](300, func(a, b kv) int {
-		return stdcmp.Compare[string](a.key, b.key)
+		return cmp.Compare[string](a.key, b.key)
 	})
 	checkInsert := func(f func(kv) bool, key string, val int, ok bool) {
 		t.Helper()
@@ -114,7 +114,7 @@ func TestInsertion(t *testing.T) {
 
 func TestInorderAfter(t *testing.T) {
 	keys := []string{"8", "6", "7", "5", "3", "0", "9"}
-	tree := stree.New(0, stdcmp.Compare[string], keys...)
+	tree := stree.New(0, cmp.Compare[string], keys...)
 	tests := []struct {
 		key  string
 		want string
@@ -139,7 +139,7 @@ func TestInorderAfter(t *testing.T) {
 			got = append(got, key)
 			return true
 		})
-		if diff := cmp.Diff(want, got, cmpopts.EquateEmpty()); diff != "" {
+		if diff := gocmp.Diff(want, got, cmpopts.EquateEmpty()); diff != "" {
 			t.Errorf("InorderAfter(%v) result differed from expected\n%s", test.key, diff)
 		}
 	}
@@ -281,7 +281,7 @@ func TestCursor(t *testing.T) {
 			for r := tree.Cursor("f").Min(); r.Valid(); r.Next() {
 				got = append(got, r.Key())
 			}
-			if diff := cmp.Diff(got, []string{"e", "f", "g"}); diff != "" {
+			if diff := gocmp.Diff(got, []string{"e", "f", "g"}); diff != "" {
 				t.Errorf("Forward walk (-got, +want):\n%s", diff)
 			}
 		})
@@ -290,7 +290,7 @@ func TestCursor(t *testing.T) {
 			for l := tree.Cursor("b").Max(); l.Valid(); l.Prev() {
 				got = append(got, l.Key())
 			}
-			if diff := cmp.Diff(got, []string{"c", "b", "a"}); diff != "" {
+			if diff := gocmp.Diff(got, []string{"c", "b", "a"}); diff != "" {
 				t.Errorf("Reverse walk (-got, +want):\n%s", diff)
 			}
 		})
@@ -302,7 +302,7 @@ func TestCursor(t *testing.T) {
 			got = append(got, s)
 			return true
 		})
-		if diff := cmp.Diff(got, []string{"e", "f", "g"}); diff != "" {
+		if diff := gocmp.Diff(got, []string{"e", "f", "g"}); diff != "" {
 			t.Errorf("Right tree (-got, +want):\n%s", diff)
 		}
 	})
@@ -310,7 +310,7 @@ func TestCursor(t *testing.T) {
 
 func TestKV(t *testing.T) {
 	type kv = stree.KV[string, int]
-	compare := kv{}.Compare(stdcmp.Compare)
+	compare := kv{}.Compare(cmp.Compare)
 
 	st := stree.New(250, compare, []kv{
 		{"hello", 1},
@@ -329,10 +329,10 @@ func TestKV(t *testing.T) {
 		return true
 	})
 
-	if diff := cmp.Diff(gotk, []string{"anybody", "hello", "here", "in", "is", "there"}); diff != "" {
+	if diff := gocmp.Diff(gotk, []string{"anybody", "hello", "here", "in", "is", "there"}); diff != "" {
 		t.Errorf("Keys (-got, +want):\n%s", diff)
 	}
-	if diff := cmp.Diff(gotv, []int{4, 1, 6, 5, 2, 3}); diff != "" {
+	if diff := gocmp.Diff(gotv, []int{4, 1, 6, 5, 2, 3}); diff != "" {
 		t.Errorf("Values (-got, +want):\n%s", diff)
 	}
 }
