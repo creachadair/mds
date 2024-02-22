@@ -255,7 +255,7 @@ func Coalesce[T comparable](vs ...T) T {
 // have length exactly n; the last may have fewer. The slices returned share
 // storage with the input.
 //
-// Chunks will panic if n < 0. If n == 0, Batches returns a single chunk
+// Chunks will panic if n < 0. If n == 0, Chunks returns a single chunk
 // containing the entire input.
 func Chunks[T any, Slice ~[]T](vs Slice, n int) []Slice {
 	if n < 0 {
