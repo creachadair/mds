@@ -334,12 +334,15 @@ func TestChunks(t *testing.T) {
 		want  [][]string
 	}{
 		// An empty slice has only one covering.
+		{"", 0, [][]string{{}}},
 		{"", 1, [][]string{{}}},
 		{"", 5, [][]string{{}}},
 
+		{"x", 0, [][]string{{"x"}}},
 		{"x", 1, [][]string{{"x"}}},
 		{"x", 2, [][]string{{"x"}}},
 
+		{"a b c d e", 0, [][]string{{"a", "b", "c", "d", "e"}}},
 		{"a b c d e", 1, [][]string{{"a"}, {"b"}, {"c"}, {"d"}, {"e"}}},
 		{"a b c d e", 2, [][]string{{"a", "b"}, {"c", "d"}, {"e"}}},
 		{"a b c d e", 3, [][]string{{"a", "b", "c"}, {"d", "e"}}},
@@ -359,7 +362,6 @@ func TestChunks(t *testing.T) {
 		}
 	}
 
-	t.Logf("OK n=0: %v", mtest.MustPanic(t, func() { slice.Chunks([]string{"a"}, 0) }))
 	t.Logf("OK n<0: %v", mtest.MustPanic(t, func() { slice.Chunks([]string{"a"}, -1) }))
 }
 
