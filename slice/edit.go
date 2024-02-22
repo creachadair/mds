@@ -66,7 +66,7 @@ type Edit[T any] struct {
 
 	// X specifies the elements of lhs affected by the edit.
 	// For OpDrop and OpReplace it is the elements to be dropped.
-	// For OpEmit its the elements of to be emitted.
+	// For OpEmit its the elements to be emitted.
 	// For OpCopy it is empty.
 	X []T
 
