@@ -323,7 +323,7 @@ func (t *Tree[T]) Max() T {
 
 // KV is a convenience type for storing key-value pairs in a Tree, where the
 // key type T is used for comparison while the value type U is ignored.  Use
-// the [KVCompare] function to adapt a comparison for T to a KV on T.
+// the Compare method to adapt a comparison for T to a KV on T.
 //
 // For convenience of notation, you can create a type alias for an
 // instantiation of this type:
