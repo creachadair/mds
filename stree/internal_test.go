@@ -1,16 +1,15 @@
-package stree
+package stree_test
 
 import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"sort"
 	"strings"
 	"testing"
 
-	"github.com/creachadair/mds/mapset"
+	"github.com/creachadair/mds/stree"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -21,16 +20,10 @@ var (
 	sortWords  = flag.Bool("sort", false, "Sort input words before insertion")
 )
 
-func sortedUnique(ws []string) []string {
-	out := mapset.New[string](ws...).Slice()
-	sort.Strings(out)
-	return out
-}
-
 // Construct a tree with the words from input, returning the finished tree and
 // the original words as split by strings.Fields.
-func makeTree(β int, input string) (*Tree[string], []string) {
-	tree := New(β, strings.Compare)
+func makeTree(β int, input string) (*stree.Tree[string], []string) {
+	tree := stree.New(β, strings.Compare)
 	words := strings.Fields(input)
 	if *sortWords {
 		sort.Strings(words)
@@ -41,25 +34,15 @@ func makeTree(β int, input string) (*Tree[string], []string) {
 	return tree, words
 }
 
-// Export all the words in tree in their stored order.
-func allWords(tree *Tree[string]) []string {
-	var got []string
-	tree.Inorder(func(key string) bool {
-		got = append(got, key)
-		return true
-	})
-	return got
-}
-
-func (n *node[T]) height() int {
-	if n == nil {
+func cursorHeight[T any](c *stree.Cursor[T]) int {
+	if !c.Valid() {
 		return 0
 	}
-	h := n.left.height()
-	if r := n.right.height(); r > h {
-		h = r
-	}
-	return h + 1
+	m := max(
+		cursorHeight(c.Clone().Left()),
+		cursorHeight(c.Clone().Right()),
+	)
+	return m + 1
 }
 
 func TestBasicProperties(t *testing.T) {
@@ -69,11 +52,11 @@ func TestBasicProperties(t *testing.T) {
 		t.Fatalf("Reading text: %v", err)
 	}
 	tree, words := makeTree(*strictness, string(text))
-	t.Logf("%v has height %d", tree, tree.root.height())
-	dumpTree(tree)
+	t.Logf("%v has height %d", tree, cursorHeight(tree.Root()))
+	dumpTree(t, tree)
 
 	got := allWords(tree)
-	want := sortedUnique(words)
+	want := sortedUnique(words, nil)
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("Inorder produced unexpected output (-want, +got)\n%s", diff)
 	}
@@ -107,22 +90,22 @@ func TestBasicProperties(t *testing.T) {
 }
 
 // If an output file is specified, dump a DOT graph of tree.
-func dumpTree(tree *Tree[string]) {
+func dumpTree[T any](t *testing.T, tree *stree.Tree[T]) {
 	if *dotFile == "" {
 		return
 	}
 	f, err := os.Create(*dotFile)
 	if err != nil {
-		log.Fatalf("Unable to create DOT output: %v", err)
+		t.Fatalf("Unable to create DOT output: %v", err)
 	}
-	dotTree(f, tree.root)
+	dotTree(f, tree.Root())
 	if err := f.Close(); err != nil {
-		log.Fatalf("Unable to close output: %v", err)
+		t.Fatalf("Unable to close output: %v", err)
 	}
 }
 
 // Render tree to a GraphViz graph.
-func dotTree(w io.Writer, root *node[string]) {
+func dotTree[T any](w io.Writer, root *stree.Cursor[T]) {
 	fmt.Fprintln(w, "digraph Tree {")
 
 	i := 0
@@ -131,17 +114,17 @@ func dotTree(w io.Writer, root *node[string]) {
 		return i
 	}
 
-	var ptree func(*node[string]) int
-	ptree = func(root *node[string]) int {
-		if root == nil {
+	var ptree func(*stree.Cursor[T]) int
+	ptree = func(root *stree.Cursor[T]) int {
+		if !root.Valid() {
 			return 0
 		}
 		id := next()
-		fmt.Fprintf(w, "\tN%04d [label=\"%s\"]\n", id, root.X)
-		if lc := ptree(root.left); lc != 0 {
+		fmt.Fprintf(w, "\tN%04d [label=\"%v\"]\n", id, root.Key())
+		if lc := ptree(root.Clone().Left()); lc != 0 {
 			fmt.Fprintf(w, "\tN%04d -> N%04d\n", id, lc)
 		}
-		if rc := ptree(root.right); rc != 0 {
+		if rc := ptree(root.Clone().Right()); rc != 0 {
 			fmt.Fprintf(w, "\tN%04d -> N%04d\n", id, rc)
 		}
 		return id
