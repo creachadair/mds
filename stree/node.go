@@ -7,6 +7,14 @@ type node[T any] struct {
 	left, right *node[T]
 }
 
+// clone returns a deep copy of n.
+func (n *node[T]) clone() *node[T] {
+	if n == nil {
+		return nil
+	}
+	return &node[T]{X: n.X, left: n.left.clone(), right: n.right.clone()}
+}
+
 // size reports the number of nodes contained in the tree rooted at n.
 // If n == nil, this is defined as 0.
 func (n *node[T]) size() int {

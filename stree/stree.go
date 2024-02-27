@@ -98,6 +98,14 @@ func limitFunc(β int) func(int) int {
 	return func(n int) int { return int(math.Log(float64(n)) / base) }
 }
 
+// Clone returns a deep copy of t with identical settings. Operations on the
+// clone do not affect t and vice versa.
+func (t *Tree[T]) Clone() *Tree[T] {
+	cp := *t                 // shallow copy of the top-level structures
+	cp.root = t.root.clone() // deep copy of the contents
+	return &cp
+}
+
 // Add inserts key into the tree. If key is already present, Add returns false
 // without modifying the tree. Otherwise it adds the key and returns true.
 func (t *Tree[T]) Add(key T) bool {

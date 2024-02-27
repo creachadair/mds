@@ -331,3 +331,20 @@ func TestKV(t *testing.T) {
 		t.Errorf("Values (-got, +want):\n%s", diff)
 	}
 }
+
+func TestClone(t *testing.T) {
+	orig := stree.New(100, cmp.Compare, "a", "b", "c", "d", "e")
+	copy := orig.Clone()
+	orig.Clear()
+	copy.Add("q")
+
+	if orig.Len() != 0 {
+		t.Errorf("Original: length = %d, want 0", orig.Len())
+	}
+
+	var keys []string
+	copy.Inorder(func(s string) bool { keys = append(keys, s); return true })
+	if diff := gocmp.Diff(keys, []string{"a", "b", "c", "d", "e", "q"}); diff != "" {
+		t.Errorf("Clone content (-got, +want):\n%s", diff)
+	}
+}
