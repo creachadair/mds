@@ -271,7 +271,7 @@ func (t *Tree[T]) Get(key T) (_ T, ok bool) {
 func (t *Tree[T]) Inorder(f func(key T) bool) bool { return t.root.inorder(f) }
 
 // InorderAfter calls f for each key greater than or equal to key, in order.
-// if f returns false, InorderAfter stops and returns fales. Otherwise, it
+// if f returns false, InorderAfter stops and returns false. Otherwise, it
 // returns true after visiting all eligible elements of t.
 func (t *Tree[T]) InorderAfter(key T, f func(key T) bool) bool {
 	return t.root.inorderAfter(key, t.compare, f)
