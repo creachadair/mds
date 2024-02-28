@@ -4,6 +4,8 @@
 // for concurrent use without external synchronization.
 package mapset
 
+import "maps"
+
 // A Set represents a set of distinct values. It is implemented via the
 // built-in map type, and the underlying map can also be used directly to add
 // and remove items and to iterate the contents.
@@ -31,7 +33,12 @@ func (s Set[T]) Clear() Set[T] { clear(s); return s }
 // Clone returns a new set with the same contents as s.
 // The value returned is never nil.
 func (s Set[T]) Clone() Set[T] {
-	return make(Set[T], len(s)).addAll(s)
+	if s == nil {
+		return make(Set[T])
+	}
+	// N.B. maps.Clone uses a runtime API internally so it should generally
+	// always be more efficient than an explicit copy.
+	return maps.Clone(s)
 }
 
 // Has reports whether t is present in the set.
@@ -58,14 +65,10 @@ func (s *Set[T]) AddAll(t Set[T]) Set[T] {
 		*s = t.Clone()
 		return *s
 	}
-	return (*s).addAll(t)
-}
-
-func (s Set[T]) addAll(t Set[T]) Set[T] {
 	for item := range t {
-		s[item] = struct{}{}
+		(*s)[item] = struct{}{}
 	}
-	return s
+	return *s
 }
 
 // Remove removes the specified items from the set and returns s.
