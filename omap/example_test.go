@@ -30,20 +30,20 @@ func ExampleMap() {
 	}
 
 	// Construct a map with an explicit ordering function.
-	c := omap.NewFunc[int, string](func(a, b int) int {
-		return -cmp.Compare(a, b)
-	})
+	c := omap.NewFunc[int, string](cmp.Compare)
 
 	// Traverse a map in key order.
-	m.Range(func(word string, count int) bool {
-		c.Set(count, word)
-		return true
-	})
+	for it := m.First(); it.IsValid(); it.Next() {
+		c.Set(it.Value(), it.Key())
+	}
 
-	c.Range(func(count int, word string) bool {
-		fmt.Println(word, count)
-		return count > 3 // stop traversal when this condition fails
-	})
+	// Traverse a map in reverse order.
+	for it := c.Last(); it.IsValid(); it.Prev() {
+		fmt.Println(it.Value(), it.Key())
+		if it.Key() <= 3 {
+			break
+		}
+	}
 
 	// Output:
 	//

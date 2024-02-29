@@ -48,24 +48,22 @@ func TestMap(t *testing.T) {
 	}
 
 	var got []string
-	m.Range(func(key string, _ int) bool {
-		got = append(got, key)
-		return true
-	})
+	for it := m.First(); it.IsValid(); it.Next() {
+		got = append(got, it.Key())
+	}
 	if diff := cmp.Diff(got, []string{"apple", "cherry", "pear", "plum"}); diff != "" {
-		t.Errorf("Range keys (-got, +want):\n%s", diff)
+		t.Errorf("Iter (-got, +want):\n%s", diff)
 	}
 	if diff := cmp.Diff(m.Keys(), []string{"apple", "cherry", "pear", "plum"}); diff != "" {
 		t.Errorf("Keys (-got, +want):\n%s", diff)
 	}
 
 	got = got[:0]
-	m.RangeAfter("dog", func(key string, _ int) bool {
-		got = append(got, key)
-		return true
-	})
+	for it := m.Seek("dog"); it.IsValid(); it.Next() {
+		got = append(got, it.Key())
+	}
 	if diff := cmp.Diff(got, []string{"pear", "plum"}); diff != "" {
-		t.Errorf("RangeAfter dog (-got, +want):\n%s", diff)
+		t.Errorf("Seek dog (-got, +want):\n%s", diff)
 	}
 
 	if m.Delete("dog") {
@@ -95,14 +93,12 @@ func TestZero(t *testing.T) {
 	if zero.Delete("whatever") {
 		t.Error("Delete(whatever) incorrectly reported true")
 	}
-	zero.Range(func(key, value string) bool {
-		t.Errorf("Range: unexected key %q=%q", key, value)
-		return true
-	})
-	zero.RangeAfter("whatever", func(key, value string) bool {
-		t.Errorf("RangeAfter(whatever): unexected key %q=%q", key, value)
-		return true
-	})
+	if it := zero.First(); it.IsValid() {
+		t.Errorf("Iter zero: unexected key %q=%q", it.Key(), it.Value())
+	}
+	if it := zero.First().Seek("whatever"); it.IsValid() {
+		t.Errorf("Seek(whatever): unexected key %q=%q", it.Key(), it.Value())
+	}
 	zero.Clear() // don't panic
 
 	mtest.MustPanicf(t, func() { zero.Set("bad", "mojo") },
