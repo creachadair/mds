@@ -113,6 +113,7 @@ func ExampleEditScript() {
 	for _, e := range slice.EditScript(lhs, rhs) {
 		switch e.Op {
 		case slice.OpDrop:
+			fmt.Println("drop", e.X)
 		case slice.OpEmit:
 			fmt.Println("emit", e.X)
 			out = append(out, e.X...)
@@ -131,6 +132,7 @@ func ExampleEditScript() {
 	// start [a stitch in time saves nine]
 	// copy [we live in]
 	// emit [a]
+	// drop [stitch in]
 	// emit [time]
 	// replace [saves] with [of]
 	// emit [nine]
