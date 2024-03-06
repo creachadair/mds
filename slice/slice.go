@@ -239,17 +239,6 @@ func gcd(a, b int) int {
 	return a
 }
 
-// Coalesce returns the first non-zero element of vs, or a zero.
-func Coalesce[T comparable](vs ...T) T {
-	var zero T
-	for _, v := range vs {
-		if v != zero {
-			return v
-		}
-	}
-	return zero
-}
-
 // Chunks returns a slice of contiguous subslices of vs, each having length at
 // most n and together covering the input.  All slices except the last will
 // have length exactly n; the last may have fewer. The slices returned share
