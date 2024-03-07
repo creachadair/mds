@@ -102,7 +102,7 @@ func (e Edit[T]) String() string {
 //
 // For each element e of the edit script, if e.Op is:
 //
-//   - OpDrop: Emit no output; e.X records the items discarded.
+//   - OpDrop: No output; e.X records the items discarded.
 //
 //   - OpEmit: Emit the elements in e.X from lhs.
 //
