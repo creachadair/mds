@@ -9,7 +9,7 @@ This repository defines generic data structures in Go.
 
 - [heapq](./heapq) a heap-structured priority queue ([package docs](https://godoc.org/github.com/creachadair/mds/heapq))
 - [mapset](./mapset) a basic map-based set implementation ([package docs](https://godoc.org/github.com/creachadair/mds/mapset))
-- [mlink](./mlink) basic linked sequences (stack, queue, list, ring) ([package docs](https://godoc.org/github.com/creachadair/mds/mlink))
+- [mlink](./mlink) basic linked sequences (list, queue, ring) ([package docs](https://godoc.org/github.com/creachadair/mds/mlink))
 - [omap](./omap) ordered key-value map ([package docs](https://godoc.org/github.com/creachadair/mds/omap))
 - [queue](./queue) an array-based FIFO queue ([package docs](https://godoc.org/github.com/creachadair/mds/queue))
 - [stack](./stack) an array-based LIFO stack ([package docs](https://godoc.org/github.com/creachadair/mds/stack))
