@@ -18,5 +18,6 @@ This repository defines generic data structures in Go.
 ## Utilities
 
 - [slice](./slice) helpful functions for manipulating slices ([package docs](https://godoc.org/github.com/creachadair/mds/slice))
+- [mbits](./mbits) helpful functions for manipulating bits and bytes ([package docs](https://godoc.org/github.com/creachadair/mds/mbits))
 - [mstr](./mstr) helpful functions for manipulating strings ([package docs](https://godoc.org/github.com/creachadair/mds/mstr))
 - [mtest](./mtest) a support library for writing tests ([package docs](https://godoc.org/github.com/creachadair/mds/mtest))
