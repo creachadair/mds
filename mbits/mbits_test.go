@@ -1,6 +1,7 @@
 package mbits_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -41,5 +42,46 @@ func TestZero(t *testing.T) {
 		if !isZero(in) {
 			t.Errorf("Zero %q did not work", s)
 		}
+	}
+}
+
+func TestLeadingZeroes(t *testing.T) {
+	for _, nb := range []int{5, 16, 43, 100, 128} {
+		t.Run(fmt.Sprintf("Buf%d", nb), func(t *testing.T) {
+			buf := make([]byte, nb)
+			if got := mbits.LeadingZeroes(buf); got != nb {
+				t.Errorf("Got %d leading zeroes, want %d", got, nb)
+			}
+
+			// Test every possible offset.
+			for i := 0; i < len(buf); i++ {
+				buf[i] = 1
+				if got := mbits.LeadingZeroes(buf); got != i {
+					t.Errorf("Got %d leading zeroes, want %d", got, i)
+				}
+				buf[i] = 0
+			}
+		})
+	}
+}
+
+func TestTrailingZeroes(t *testing.T) {
+	for _, nb := range []int{5, 16, 43, 100, 128} {
+		t.Run(fmt.Sprintf("Buf%d", nb), func(t *testing.T) {
+			buf := make([]byte, nb)
+			if got := mbits.TrailingZeroes(buf); got != nb {
+				t.Errorf("Got %d trailing zeroes, want %d", got, nb)
+			}
+
+			// Test every possible offset.
+			for i := 0; i < len(buf); i++ {
+				pos := len(buf) - i - 1
+				buf[pos] = 1
+				if got := mbits.TrailingZeroes(buf); got != i {
+					t.Errorf("Got %d trailing zeroes, want %d", got, i)
+				}
+				buf[pos] = 0
+			}
+		})
 	}
 }
