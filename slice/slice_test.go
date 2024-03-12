@@ -372,6 +372,69 @@ func TestBatches(t *testing.T) {
 	t.Logf("OK n<0: %v", mtest.MustPanic(t, func() { slice.Batches(input, -1) }))
 }
 
+func TestStrip(t *testing.T) {
+	split := func(s string) []string {
+		out := strings.Fields(s)
+		for i, w := range out {
+			if w == "@" {
+				out[i] = ""
+			}
+		}
+		return out
+	}
+	makeInput := func(s string) [][]string {
+		var out [][]string
+		for _, line := range strings.Split(s, "|") {
+			out = append(out, split(line))
+		}
+		return out
+	}
+	tests := []struct {
+		input string
+		i     int
+		want  string
+	}{
+		{"", 0, ""},
+
+		{"a", 0, "a"},
+		{"a", 1, ""},
+
+		{"a b c", 0, "a"},
+		{"a b c", 1, "b"},
+		{"a b c", 2, "c"},
+		{"a b c", 3, ""},
+
+		{"a b c|d e f", 0, "a d"},
+		{"a b c|d e f", 1, "b e"},
+		{"a b c|d e f", 2, "c f"},
+
+		{"a b c|d e|f g h i", 0, "a d f"},
+		{"a b c|d e|f g h i", 1, "b e g"},
+		{"a b c|d e|f g h i", 2, "c h"},
+		{"a b c|d e|f g h i", 3, "i"},
+		{"a b c|d e|f g h i", 4, ""},
+
+		{"a @ c|@ e f|g h i", 0, "a @ g"},
+		{"a @ c|@ e f|g h i", 1, "@ e h"},
+		{"a @ c|@ e f|g h i", 2, "c f i"},
+		{"a @ c|@ e f|g h i", 3, ""},
+
+		{"a b c d|e f @ g h|i j @", 0, "a e i"},
+		{"a b c d|e f @ g h|i j @", 1, "b f j"},
+		{"a b c d|e f @ g h|i j @", 2, "c @ @"},
+		{"a b c d|e f @ g h|i j @", 3, "d g"},
+		{"a b c d|e f @ g h|i j @", 4, "h"},
+		{"a b c d|e f @ g h|i j @", 5, ""},
+	}
+	for _, tc := range tests {
+		got := slice.Strip(makeInput(tc.input), tc.i)
+		if diff := cmp.Diff(got, split(tc.want), cmpopts.EquateEmpty()); diff != "" {
+			t.Errorf("Strip %d (-got, want):\ninput:\n%s\n%s",
+				tc.i, strings.ReplaceAll(tc.input, "|", "\n"), diff)
+		}
+	}
+}
+
 func (tc *testCase[T]) partition(t *testing.T) {
 	t.Helper()
 
