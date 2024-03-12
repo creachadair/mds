@@ -6,7 +6,7 @@ import (
 
 // LCS computes a longest common subsequence of as and bs.
 //
-// This implementation takes O(mn) time and O(P·min(m, n)) space for inputs of
+// This implementation takes Θ(mn) time and O(P·min(m, n)) space for inputs of
 // length m = len(as) and n = len(bs) and longest subsequence length P.
 func LCS[T comparable, Slice ~[]T](as, bs Slice) Slice { return lcs(equal, as, bs) }
 
@@ -93,7 +93,7 @@ func (e Edit[T]) String() string {
 // transform lhs into rhs. The result is empty if lhs == rhs. The slices stored
 // in returned edit operations share storage with the inputs lhs and rhs.
 //
-// This implementation takes O(mn) time and O(P·min(m, n)) space to compute a
+// This implementation takes Θ(mn) time and O(P·min(m, n)) space to compute a
 // longest common subsequence, plus overhead of O(m+n) time and space to
 // construct the edit sequence from the LCS.
 //
