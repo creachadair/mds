@@ -1,8 +1,6 @@
 package slice
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // LCS computes a longest common subsequence of as and bs.
 //
@@ -113,11 +111,11 @@ func (e Edit[T]) String() string {
 //
 // If the edit script is empty, the output is equal to the input.
 func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit[T] {
-	return editScript(equal, lhs, rhs)
+	return EditScriptFunc(equal, lhs, rhs)
 }
 
-// editScript computes an edit script using eq as the comparison.
-func editScript[T any, Slice ~[]T](eq func(a, b T) bool, lhs, rhs Slice) []Edit[T] {
+// EditScriptFunc computes an edit script using eq as an equality comparison.
+func EditScriptFunc[T any, Slice ~[]T](eq func(a, b T) bool, lhs, rhs Slice) []Edit[T] {
 	lcs := lcs(eq, lhs, rhs)
 
 	// To construct the edit sequence, i scans forward through lcs.
