@@ -111,11 +111,11 @@ func (e Edit[T]) String() string {
 //
 // If the edit script is empty, the output is equal to the input.
 func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit[T] {
-	return EditScriptFunc(equal, lhs, rhs)
+	return editScriptFunc(equal, lhs, rhs)
 }
 
-// EditScriptFunc computes an edit script using eq as an equality comparison.
-func EditScriptFunc[T any, Slice ~[]T](eq func(a, b T) bool, lhs, rhs Slice) []Edit[T] {
+// editScriptFunc computes an edit script using eq as an equality comparison.
+func editScriptFunc[T any, Slice ~[]T](eq func(a, b T) bool, lhs, rhs Slice) []Edit[T] {
 	lcs := lcs(eq, lhs, rhs)
 
 	// To construct the edit sequence, i scans forward through lcs.
