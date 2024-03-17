@@ -171,6 +171,10 @@ func (d *Diff) Unify() *Diff {
 		//
 		// Cut off the overlapping lines from the context edit, and if doing so
 		// results in an empty context, remove that edit from the chunk.
+		//
+		// Note that it is safe to modify the context edits here, as they were
+		// constructed explicitly by AddContext and do not share state with the
+		// original script edits.
 		if lap > 0 {
 			if end.Op == slice.OpEmit { // last has post-context
 				if lap == len(end.X) { // remove the whole edit

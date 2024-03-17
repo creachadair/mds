@@ -2,6 +2,7 @@ package mdiff_test
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -46,6 +47,9 @@ var (
 	// Context diff output (3 lines): diff -c testdata/lhs.txt testdata/rhs.txt
 	//go:embed testdata/cdiff.txt
 	cdiff string
+
+	lhsLines = strings.Split(strings.TrimSpace(lhs), "\n")
+	rhsLines = strings.Split(strings.TrimSpace(rhs), "\n")
 )
 
 func TestDiff(t *testing.T) {
@@ -67,13 +71,23 @@ func TestDiff(t *testing.T) {
 	})
 }
 
+func TestNoAlias(t *testing.T) {
+	// The documentation promises that adding context and unifying does not
+	// disturb the original edit sequence.
+	d := mdiff.New(lhsLines, rhsLines)
+	logDiff(t, d)
+
+	before := fmt.Sprint(d.Edits)
+	d.AddContext(6).Unify()
+	if fmt.Sprint(d.Edits) != before {
+		t.Errorf("Edits were altered:\n got %v,\nwant %s", d.Edits, before)
+	}
+}
+
 func TestFormat(t *testing.T) {
-	lhsLines := strings.Split(strings.TrimSpace(lhs), "\n")
-	rhsLines := strings.Split(strings.TrimSpace(rhs), "\n")
 
 	t.Run("Normal", func(t *testing.T) {
 		d := mdiff.New(lhsLines, rhsLines)
-		logDiff(t, d)
 
 		var buf bytes.Buffer
 		mdiff.Format(&buf, d, nil)
@@ -84,6 +98,7 @@ func TestFormat(t *testing.T) {
 
 	t.Run("Context", func(t *testing.T) {
 		d := mdiff.New(lhsLines, rhsLines).AddContext(3).Unify()
+		logDiff(t, d)
 
 		// This is the timestamp recorded for the testdata file. If you edit the
 		// file, you may need to update this.
