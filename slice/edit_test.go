@@ -121,14 +121,17 @@ func TestEditScript(t *testing.T) {
 		{"b c", "a b c", pedit(t, "+[a] =[b c]")},
 		{"a b c d e", "e b c d a", pedit(t, "![a:e] =[b c d] ![e:a]")},
 		{"1 2 3 4", "4 3 2 1", pedit(t, "+[4 3 2] =[1] -[2 3 4]")},
+		{"a b c 4", "1 2 4", pedit(t, "![a b c:1 2] =[4]")},
+		{"a b 3 4", "0 1 2 3 4", pedit(t, "![a b:0 1 2] =[3 4]")},
 
 		{"a x b x c", "1 x b x 2", pedit(t, "![a:1] =[x b x] ![c:2]")},
 		{"fly you fools", "to fly you must not be fools",
 			pedit(t, "+[to] =[fly you] +[must not be] =[fools]")},
 		{"have the best time it is possible to have under the circumstances",
 			"I hope you have the time of your life in the forest",
-			pedit(t, "+[I hope you] =[have the] -[best] =[time] -[it is possible to have under] "+
-				"+[of your life in] =[the] ![circumstances:forest]")},
+			pedit(t, "+[I hope you] =[have the] -[best] =[time] "+
+				"![it is possible to have under:of your life in] "+
+				"=[the] ![circumstances:forest]")},
 	}
 	for _, tc := range tests {
 		as, bs := strings.Fields(tc.a), strings.Fields(tc.b)

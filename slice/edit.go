@@ -143,11 +143,11 @@ func editScriptFunc[T any, Slice ~[]T](eq func(a, b T) bool, lhs, rhs Slice) []E
 			rend++
 		}
 
-		// If we have at least as many insertions as discards, combine them into
-		// a single replace instruction.
-		if n := lend - lpos; n > 0 && n <= rend-rpos {
-			out = append(out, Edit[T]{Op: OpReplace, X: lhs[lpos:lend], Y: rhs[rpos : rpos+n]})
-			rpos += n
+		// If we have both insertions and copies, replace them with a single
+		// replace instruction.
+		if lend-lpos > 0 && rend-rpos > 0 {
+			out = append(out, Edit[T]{Op: OpReplace, X: lhs[lpos:lend], Y: rhs[rpos:rend]})
+			rpos = rend
 		} else if lend > lpos {
 			// Record drops (there may be none).
 			out = append(out, Edit[T]{Op: OpDrop, X: lhs[lpos:lend]})
