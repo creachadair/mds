@@ -143,8 +143,8 @@ func editScriptFunc[T any, Slice ~[]T](eq func(a, b T) bool, lhs, rhs Slice) []E
 			rend++
 		}
 
-		// If we have both insertions and copies, replace them with a single
-		// replace instruction.
+		// If we have both deletions and copies, combine them in a single replace
+		// instruction.
 		if lend-lpos > 0 && rend-rpos > 0 {
 			out = append(out, Edit[T]{Op: OpReplace, X: lhs[lpos:lend], Y: rhs[rpos:rend]})
 			rpos = rend
@@ -171,10 +171,12 @@ func editScriptFunc[T any, Slice ~[]T](eq func(a, b T) bool, lhs, rhs Slice) []E
 		rpos += m
 	}
 
-	if n := len(lhs) - lpos; n > 0 && n <= len(rhs)-rpos {
-		out = append(out, Edit[T]{Op: OpReplace, X: lhs[lpos:], Y: rhs[rpos : rpos+n]})
-		rpos += n
-	} else if n > 0 {
+	// If we have both deletions and copies, combine them in a single replace
+	// instruction.
+	if len(lhs)-lpos > 0 && len(rhs)-rpos > 0 {
+		out = append(out, Edit[T]{Op: OpReplace, X: lhs[lpos:], Y: rhs[rpos:]})
+		rpos = len(rhs)
+	} else if len(lhs) > lpos {
 		// Drop any leftover elements of lhs.
 		out = append(out, Edit[T]{Op: OpDrop, X: lhs[lpos:]})
 	}

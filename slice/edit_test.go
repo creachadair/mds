@@ -112,7 +112,7 @@ func TestEditScript(t *testing.T) {
 		{"a", "a b c", pedit(t, "=[a] +[b c]")},
 		{"b", "a b c", pedit(t, "+[a] =[b] +[c]")},
 		{"c", "a b c", pedit(t, "+[a b] =[c]")},
-		{"d", "a b c", pedit(t, "![d:a] +[b c]")},
+		{"d", "a b c", pedit(t, "![d:a b c]")},
 
 		{"c d", "a b c d", pedit(t, "+[a b] =[c d]")},
 		{"a b c", "a b c", nil},
@@ -123,6 +123,8 @@ func TestEditScript(t *testing.T) {
 		{"1 2 3 4", "4 3 2 1", pedit(t, "+[4 3 2] =[1] -[2 3 4]")},
 		{"a b c 4", "1 2 4", pedit(t, "![a b c:1 2] =[4]")},
 		{"a b 3 4", "0 1 2 3 4", pedit(t, "![a b:0 1 2] =[3 4]")},
+		{"1 2 3 4", "1 2 3 5 6", pedit(t, "=[1 2 3] ![4:5 6]")},
+		{"1 2 3 4", "1 2 q", pedit(t, "=[1 2] ![3 4:q]")},
 
 		{"a x b x c", "1 x b x 2", pedit(t, "![a:1] =[x b x] ![c:2]")},
 		{"fly you fools", "to fly you must not be fools",
