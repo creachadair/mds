@@ -156,7 +156,7 @@ func (d *Diff) Unify() *Diff {
 	merged := []*Chunk{d.Chunks[0]}
 
 	for _, c := range d.Chunks[1:] {
-		last := merged[len(merged)-1]
+		last := slice.At(merged, -1)
 		// If c does not abut or overlap last, there is nothing to do.
 		if c.LStart > last.LEnd {
 			merged = append(merged, c)
