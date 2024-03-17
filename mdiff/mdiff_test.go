@@ -48,8 +48,8 @@ var (
 	//go:embed testdata/cdiff.txt
 	cdiff string
 
-	lhsLines = strings.Split(strings.TrimSpace(lhs), "\n")
-	rhsLines = strings.Split(strings.TrimSpace(rhs), "\n")
+	lhsLines = mdiff.Lines(lhs)
+	rhsLines = mdiff.Lines(rhs)
 )
 
 func TestDiff(t *testing.T) {
@@ -162,6 +162,32 @@ func TestFormat(t *testing.T) {
 			t.Errorf("Format: got:\n%s\nwant empty", got)
 		}
 	})
+}
+
+func TestLines(t *testing.T) {
+	tests := []struct {
+		input string
+		want  []string
+	}{
+		{"", nil},
+		{" ", []string{" "}},
+		{"\n", []string{""}},
+		{"\n ", []string{"", " "}},
+		{"a\n", []string{"a"}},
+		{"\na\n", []string{"", "a"}},
+		{"a\nb\n", []string{"a", "b"}},
+		{"a\nb", []string{"a", "b"}},
+		{"\n\n\n", []string{"", "", ""}},
+		{"\n\nq", []string{"", "", "q"}},
+		{"\n\nq\n", []string{"", "", "q"}},
+		{"a b\nc\n\n", []string{"a b", "c", ""}},
+		{"a b\nc\n\nd\n", []string{"a b", "c", "", "d"}},
+	}
+	for _, tc := range tests {
+		if diff := gocmp.Diff(mdiff.Lines(tc.input), tc.want); diff != "" {
+			t.Errorf("Lines %q (-got, +want):\n%s", tc.input, diff)
+		}
+	}
 }
 
 func logDiff(t *testing.T, d *mdiff.Diff) {
