@@ -176,6 +176,13 @@ func At[T any, Slice ~[]T](ss Slice, i int) T {
 	return ss[boundsCheck(i, len(ss))]
 }
 
+// PtrAt returns a pointer to the element of ss at offset i.  Negative offsets
+// count backward from the end of the slice.  If i is out of range, PtrAt will
+// panic.
+func PtrAt[T any, Slice ~[]T](ss Slice, i int) *T {
+	return &ss[boundsCheck(i, len(ss))]
+}
+
 // MatchingKeys returns a slice of the keys k of m for which f(m[k]) is true.
 // The resulting slice is in arbitrary order.
 func MatchingKeys[T comparable, U any](m map[T]U, f func(U) bool) []T {

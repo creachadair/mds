@@ -269,35 +269,76 @@ func TestRotate(t *testing.T) {
 }
 
 func TestAt(t *testing.T) {
+	mtest.MustPanic(t, func() { slice.At([]int(nil), 0) })
+	mtest.MustPanic(t, func() { slice.At([]int{1, 2}, 5) })
+	mtest.MustPanic(t, func() { slice.At([]int{1, 2}, -3) })
+
 	tests := []struct {
 		input string
 		k     int
 		want  string
 	}{
-		{"", 0, ""}, // empty input
 		{"X", 0, "X"},
-		{"X", 1, "X"},
 		{"X", -1, "X"},
-		{"A B", 0, "A B"},
-		{"A B", 1, "B A"},
-		{"A B", -1, "B A"},
-		{"A B C D E", 0, "A B C D E"},
-		{"A B C D E", 1, "E A B C D"},
-		{"A B C D E", 2, "D E A B C"},
-		{"A B C D E", 3, "C D E A B"},
-		{"A B C D E", 4, "B C D E A"},
-		{"A B C D E", 5, "A B C D E"},
-		{"A B C D E", -1, "B C D E A"},
-		{"A B C D E", -2, "C D E A B"},
-		{"A B C D E", -3, "D E A B C"},
-		{"A B C D E", -4, "E A B C D"},
-		{"A B C D E", -5, "A B C D E"},
+		{"A B", 0, "A"},
+		{"A B", 1, "B"},
+		{"A B", -1, "B"},
+		{"A B", -2, "A"},
+		{"A B C D E", 0, "A"},
+		{"A B C D E", 1, "B"},
+		{"A B C D E", 2, "C"},
+		{"A B C D E", 3, "D"},
+		{"A B C D E", 4, "E"},
+		{"A B C D E", -1, "E"},
+		{"A B C D E", -2, "D"},
+		{"A B C D E", -3, "C"},
+		{"A B C D E", -4, "B"},
+		{"A B C D E", -5, "A"},
 	}
 	for _, tc := range tests {
-		got := strings.Fields(tc.input)
-		slice.Rotate(got, tc.k)
-		if diff := cmp.Diff(got, strings.Fields(tc.want)); diff != "" {
-			t.Errorf("Rotate %q %d (-got, +want):\n%s", tc.input, tc.k, diff)
+		input := strings.Fields(tc.input)
+		if got := slice.At(input, tc.k); got != tc.want {
+			t.Errorf("At %q %d: got %q, want %q", input, tc.k, got, tc.want)
+		}
+	}
+}
+
+func TestPtrAt(t *testing.T) {
+	tests := []struct {
+		input string
+		k     int
+		want  string
+	}{
+		{"X", 0, "X"},
+		{"X", -1, "X"},
+		{"A B", 0, "A"},
+		{"A B", 1, "B"},
+		{"A B", -1, "B"},
+		{"A B", -2, "A"},
+		{"A B C D E", 0, "A"},
+		{"A B C D E", 1, "B"},
+		{"A B C D E", 2, "C"},
+		{"A B C D E", 3, "D"},
+		{"A B C D E", 4, "E"},
+		{"A B C D E", -1, "E"},
+		{"A B C D E", -2, "D"},
+		{"A B C D E", -3, "C"},
+		{"A B C D E", -4, "B"},
+		{"A B C D E", -5, "A"},
+	}
+	for _, tc := range tests {
+		input := strings.Fields(tc.input)
+
+		got := slice.PtrAt(input, tc.k)
+		idx := tc.k
+		if idx < 0 {
+			idx += len(input)
+		}
+		if want := &input[idx]; got != want {
+			t.Errorf("PtrAt %q %d: got ptr %p, want %p", input, tc.k, got, want)
+		}
+		if *got != tc.want {
+			t.Errorf("PtrAt %q %d: got value %q, want %q", input, tc.k, *got, tc.want)
 		}
 	}
 }
