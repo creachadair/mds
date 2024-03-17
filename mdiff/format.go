@@ -20,6 +20,9 @@ type FormatFunc func(w io.Writer, d *Diff, o *FormatOptions) error
 // and unified diff outputs. It is based on the RFC 2822 time format.
 const TimeFormat = "2006-01-02 15:04:05.999999 -0700"
 
+// NoHeader is a set of default FormatOptions that disables the file header.
+var NoHeader = &FormatOptions{OmitHeader: true}
+
 // FormatOptions are optional settings to format a diff.  A nil pointer is
 // ready for use and provides defaults as described.
 type FormatOptions struct {
