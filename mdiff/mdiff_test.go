@@ -200,7 +200,7 @@ func logDiff(t *testing.T, d *mdiff.Diff) {
 		t.Logf("%d: %v", i+1, e)
 	}
 
-	t.Log("Chunks after context and unification:")
+	t.Log("Chunks:")
 	for i, c := range d.Chunks {
 		t.Logf("%d: %d edits -%d,%d +%d,%d", i+1, len(c.Edits),
 			c.LStart, c.LEnd-c.LStart, c.RStart, c.REnd-c.RStart)
