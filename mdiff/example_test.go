@@ -2,6 +2,7 @@ package mdiff_test
 
 import (
 	"os"
+	"time"
 
 	"github.com/creachadair/mds/mdiff"
 )
@@ -27,6 +28,40 @@ func ExampleFormat() {
 	// ---
 	// > ran
 	// > home
+}
+
+func ExampleFormatContext() {
+	diff := mdiff.New(
+		[]string{"I", "saw", "three", "mice", "running", "away"},
+		[]string{"three", "blind", "mice", "ran", "home"},
+	).AddContext(3).Unify()
+
+	ts := time.Date(2024, 3, 18, 22, 30, 35, 0, time.UTC)
+	mdiff.FormatContext(os.Stdout, diff, &mdiff.FormatOptions{
+		Left: "old", LeftTime: ts,
+		Right: "new", RightTime: ts.Add(3 * time.Second),
+		TimeFormat: time.ANSIC,
+	})
+
+	// Output:
+	//
+	// *** old	Mon Mar 18 22:30:35 2024
+	// --- new	Mon Mar 18 22:30:38 2024
+	// ***************
+	// *** 1,6 ****
+	// - I
+	// - saw
+	//   three
+	//   mice
+	// ! running
+	// ! away
+	// --- 1,5 ----
+	//   three
+	// + blind
+	//   mice
+	// ! ran
+	// ! home
+
 }
 
 func ExampleFormatUnified() {
