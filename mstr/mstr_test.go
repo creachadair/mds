@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/creachadair/mds/mstr"
+	gocmp "github.com/google/go-cmp/cmp"
 )
 
 func TestString(t *testing.T) {
@@ -28,6 +29,32 @@ func TestString(t *testing.T) {
 		got := mstr.Trunc(tc.input, tc.size)
 		if got != tc.want {
 			t.Errorf("Trunc(%q, %d): got %q, want %q", tc.input, tc.size, got, tc.want)
+		}
+	}
+}
+
+func TestLines(t *testing.T) {
+	tests := []struct {
+		input string
+		want  []string
+	}{
+		{"", nil},
+		{" ", []string{" "}},
+		{"\n", []string{""}},
+		{"\n ", []string{"", " "}},
+		{"a\n", []string{"a"}},
+		{"\na\n", []string{"", "a"}},
+		{"a\nb\n", []string{"a", "b"}},
+		{"a\nb", []string{"a", "b"}},
+		{"\n\n\n", []string{"", "", ""}},
+		{"\n\nq", []string{"", "", "q"}},
+		{"\n\nq\n", []string{"", "", "q"}},
+		{"a b\nc\n\n", []string{"a b", "c", ""}},
+		{"a b\nc\n\nd\n", []string{"a b", "c", "", "d"}},
+	}
+	for _, tc := range tests {
+		if diff := gocmp.Diff(mstr.Lines(tc.input), tc.want); diff != "" {
+			t.Errorf("Lines %q (-got, +want):\n%s", tc.input, diff)
 		}
 	}
 }

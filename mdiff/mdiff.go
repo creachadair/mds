@@ -47,8 +47,6 @@
 package mdiff
 
 import (
-	"strings"
-
 	"github.com/creachadair/mds/slice"
 )
 
@@ -275,13 +273,3 @@ type Chunk struct {
 // Edit is an edit operation on strings.  It is exported here so the caller
 // does not need to import slice directly.
 type Edit = slice.Edit[string]
-
-// Lines splits its argument on newlines. It is a convenience function for
-// [strings.Split], except that it returns empty if s == "" and treats a
-// trailing newline as the end of the file.
-func Lines(s string) []string {
-	if s == "" {
-		return nil
-	}
-	return strings.Split(strings.TrimSuffix(s, "\n"), "\n")
-}

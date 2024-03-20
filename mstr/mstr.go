@@ -1,6 +1,8 @@
 // Package mstr defines utility functions for strings.
 package mstr
 
+import "strings"
+
 // Trunc returns a prefix of s having length no greater than n bytes.  If s
 // exceeds this length, it is truncated at a point ≤ n so that the result does
 // not end in a partial UTF-8 encoding. Trunc does not verify that s is valid
@@ -24,4 +26,14 @@ func Trunc(s string, n int) string {
 		n--
 	}
 	return s[:n]
+}
+
+// Lines splits its argument on newlines. It is a convenience function for
+// [strings.Split], except that it returns empty if s == "" and treats a
+// trailing newline as the end of the file.
+func Lines(s string) []string {
+	if s == "" {
+		return nil
+	}
+	return strings.Split(strings.TrimSuffix(s, "\n"), "\n")
 }
