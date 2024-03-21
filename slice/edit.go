@@ -181,7 +181,7 @@ func editScriptFunc[T any, Slice ~[]T](eq func(a, b T) bool, lhs, rhs Slice) []E
 		out = append(out, Edit[T]{Op: OpDrop, X: lhs[lpos:]})
 	}
 	// Copy any leftover elements of rhs.
-	if len(rhs)-rpos > 0 {
+	if len(rhs) > rpos {
 		out = append(out, Edit[T]{Op: OpCopy, Y: rhs[rpos:]})
 	}
 
