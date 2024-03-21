@@ -5,7 +5,7 @@ import (
 
 	"github.com/creachadair/mds/mtest"
 	"github.com/creachadair/mds/omap"
-	"github.com/google/go-cmp/cmp"
+	gocmp "github.com/google/go-cmp/cmp"
 )
 
 func TestMap(t *testing.T) {
@@ -51,10 +51,10 @@ func TestMap(t *testing.T) {
 	for it := m.First(); it.IsValid(); it.Next() {
 		got = append(got, it.Key())
 	}
-	if diff := cmp.Diff(got, []string{"apple", "cherry", "pear", "plum"}); diff != "" {
+	if diff := gocmp.Diff(got, []string{"apple", "cherry", "pear", "plum"}); diff != "" {
 		t.Errorf("Iter (-got, +want):\n%s", diff)
 	}
-	if diff := cmp.Diff(m.Keys(), []string{"apple", "cherry", "pear", "plum"}); diff != "" {
+	if diff := gocmp.Diff(m.Keys(), []string{"apple", "cherry", "pear", "plum"}); diff != "" {
 		t.Errorf("Keys (-got, +want):\n%s", diff)
 	}
 
@@ -62,7 +62,7 @@ func TestMap(t *testing.T) {
 	for it := m.Seek("dog"); it.IsValid(); it.Next() {
 		got = append(got, it.Key())
 	}
-	if diff := cmp.Diff(got, []string{"pear", "plum"}); diff != "" {
+	if diff := gocmp.Diff(got, []string{"pear", "plum"}); diff != "" {
 		t.Errorf("Seek dog (-got, +want):\n%s", diff)
 	}
 
@@ -103,4 +103,29 @@ func TestZero(t *testing.T) {
 
 	mtest.MustPanicf(t, func() { zero.Set("bad", "mojo") },
 		"Set on a zero map should panic")
+}
+
+func TestIterEdit(t *testing.T) {
+	m := omap.New[string, int]()
+
+	m.Set("a", 1)
+	m.Set("b", 2)
+	m.Set("c", 3)
+	m.Set("d", 4)
+	m.Set("e", 5)
+
+	var got []string
+	for it := m.First(); it.IsValid(); {
+		key := it.Key()
+		if key == "b" || key == "d" {
+			m.Delete(key)
+			it.Seek(key)
+		} else {
+			got = append(got, key)
+			it.Next()
+		}
+	}
+	if diff := gocmp.Diff(got, []string{"a", "c", "e"}); diff != "" {
+		t.Errorf("Result (-got, +want):\n%s", diff)
+	}
 }

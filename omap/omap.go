@@ -38,8 +38,18 @@
 //	   doThingsWith(it.Key(), it.Value())
 //	}
 //
-// Note that it is not safe to modify the map while iterating it.  An iterator
-// may report deleted items and miss added ones if the map is modified.
+// Note that it is not safe to modify the map while iterating it.  If you
+// modify a map while iterating it, you will need to re-synchronize any
+// iterators after the edits, e.g.,
+//
+//	for it := m.First(); it.IsValid(); {
+//	   if key := it.Key(); shouldDelete(key) {
+//	      m.Delete(key)
+//	      it.Seek(key) // update the iterator
+//	   } else {
+//	      it.Next()
+//	   }
+//	}
 package omap
 
 import (
