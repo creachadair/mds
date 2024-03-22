@@ -19,6 +19,8 @@
 // of a type and reports whether A precedes B in relative order.
 package compare
 
+import "time"
+
 // FromLessFunc converts a less function, which reports whether its first
 // argument precedes its second in an ordering relation, into a comparison
 // function on that same relation.
@@ -37,4 +39,15 @@ func FromLessFunc[T any](less func(a, b T) bool) func(a, b T) int {
 // relation.
 func ToLessFunc[T any](cmp func(a, b T) int) func(a, b T) bool {
 	return func(a, b T) bool { return cmp(a, b) < 0 }
+}
+
+// Time is a comparison function for time.Time values that orders earlier times
+// before later ones.
+func Time(a, b time.Time) int {
+	if a.Before(b) {
+		return -1
+	} else if a.Equal(b) {
+		return 0
+	}
+	return 1
 }

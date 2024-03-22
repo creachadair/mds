@@ -3,6 +3,7 @@ package compare_test
 import (
 	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/creachadair/mds/compare"
 )
@@ -50,6 +51,38 @@ func TestConversion(t *testing.T) {
 					t.Errorf("Less %d %d: got true, want false", n, m)
 				}
 			}
+		}
+	}
+}
+
+func TestTime(t *testing.T) {
+	ptime := func(s string) time.Time {
+		ts, err := time.Parse(time.RFC3339Nano, s)
+		if err != nil {
+			t.Fatalf("Parse time %q: %v", s, err)
+		}
+		return ts
+	}
+	tests := []struct {
+		a, b string // RFC3339
+		want int
+	}{
+		{"1989-11-09T17:53:00Z", "1989-11-09T17:53:00Z", 0},
+		{"2009-11-10T19:00:00-04:00", "2009-11-10T23:00:00Z", 0},
+		{"1983-11-20T18:30:45-08:00", "1983-11-21T06:00:00+01:00", -1},
+		{"2022-01-31T12:00:00Z", "2021-01-31T12:00:00Z", 1},
+	}
+	for _, tc := range tests {
+		got := compare.Time(ptime(tc.a), ptime(tc.b))
+		if got != tc.want {
+			t.Errorf("Compare %s ? %s: got %d, want %d", tc.a, tc.b, got, tc.want)
+		}
+		rev := compare.Time(ptime(tc.b), ptime(tc.a))
+		switch {
+		case got < 0 && rev <= 0,
+			got > 0 && rev >= 0,
+			got == 0 && rev != 0:
+			t.Errorf("Compare %s ? %s: strict weak order violation: %d / %d", tc.b, tc.a, got, rev)
 		}
 	}
 }
