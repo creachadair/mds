@@ -1,7 +1,9 @@
 package compare_test
 
 import (
+	"cmp"
 	"math/rand"
+	"slices"
 	"testing"
 	"time"
 
@@ -84,5 +86,27 @@ func TestTime(t *testing.T) {
 			got == 0 && rev != 0:
 			t.Errorf("Compare %s ? %s: strict weak order violation: %d / %d", tc.b, tc.a, got, rev)
 		}
+	}
+}
+
+func TestReversed(t *testing.T) {
+	buf := make([]int, 37)
+	for i := range buf {
+		buf[i] = i
+	}
+
+	cz := cmp.Compare[int]
+	rev := compare.Reversed(cz)
+
+	slices.SortFunc(buf, rev)
+	for i := 0; i+1 < len(buf); i++ {
+		if buf[i] <= buf[i+1] {
+			t.Errorf("Output disordered at %d: %d <= %d", i, buf[i], buf[i+1])
+		}
+	}
+
+	slices.SortFunc(buf, compare.Reversed(rev))
+	if !slices.IsSorted(buf) {
+		t.Errorf("Reversed output is not sorted: %v", buf)
 	}
 }

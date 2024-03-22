@@ -51,3 +51,9 @@ func Time(a, b time.Time) int {
 	}
 	return 1
 }
+
+// Reversed returns a comparison function that orders its elements in the
+// reverse of the ordering expressed by c.
+func Reversed[T any](c func(a, b T) int) func(a, b T) int {
+	return func(a, b T) int { return -c(a, b) }
+}
