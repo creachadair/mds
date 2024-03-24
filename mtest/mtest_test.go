@@ -24,7 +24,8 @@ func (t *testStub) Fatalf(msg string, args ...any) {
 	t.text = fmt.Sprintf(msg, args...)
 }
 
-func (*testStub) Helper() {}
+func (*testStub) Helper()        {}
+func (*testStub) Cleanup(func()) {}
 
 func TestMustPanic(t *testing.T) {
 	t.Run("OK", func(t *testing.T) {
@@ -66,4 +67,29 @@ func TestMustPanicf(t *testing.T) {
 			t.Errorf("Unexpected panic value: %v", v)
 		}
 	})
+}
+
+func TestSwap(t *testing.T) {
+	testValue := "original"
+
+	t.Run("Swapped", func(t *testing.T) {
+		old := mtest.Swap(t, &testValue, "replacement")
+
+		if old != "original" {
+			t.Errorf("Old value is %q, want original", old)
+		}
+		if testValue != "replacement" {
+			t.Errorf("Test value is %q, want replacement", testValue)
+		}
+	})
+
+	t.Run("NoSwap", func(t *testing.T) {
+		if testValue != "original" {
+			t.Errorf("Test value is %q, want original", testValue)
+		}
+	})
+
+	if testValue != "original" {
+		t.Errorf("Test value after is %q, want original", testValue)
+	}
 }
