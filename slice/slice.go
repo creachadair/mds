@@ -309,3 +309,21 @@ func Strip[T any, Slice ~[]T](vs []Slice, i int) Slice {
 	}
 	return out
 }
+
+// Head returns up to n elements from the head (front) of vs.  If vs has fewer
+// than n elements, the whole slice is returned.
+func Head[T any, Slice ~[]T](vs Slice, n int) Slice {
+	if len(vs) < n {
+		return vs
+	}
+	return vs[:n]
+}
+
+// Tail returns up to n elements from the tail (end) of vs. If vs has fewer
+// than n elements, the whole slice is returned.
+func Tail[T any, Slice ~[]T](vs Slice, n int) Slice {
+	if len(vs) < n {
+		return vs
+	}
+	return vs[len(vs)-n:]
+}

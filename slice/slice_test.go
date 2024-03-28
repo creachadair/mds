@@ -476,6 +476,54 @@ func TestStrip(t *testing.T) {
 	}
 }
 
+func TestHead(t *testing.T) {
+	tests := []struct {
+		input string
+		n     int
+		want  string
+	}{
+		{"", 0, ""},
+		{"", 1, ""},
+		{"a", 1, "a"},
+
+		{"a b c", 0, ""},
+		{"a b c", 1, "a"},
+		{"a b c", 2, "a b"},
+		{"a b c", 3, "a b c"},
+		{"a b c", 4, "a b c"},
+	}
+	for _, tc := range tests {
+		got := slice.Head(strings.Fields(tc.input), tc.n)
+		if diff := cmp.Diff(got, strings.Fields(tc.want)); diff != "" {
+			t.Errorf("Head %d (-got, +want):\n%s", tc.n, diff)
+		}
+	}
+}
+
+func TestTail(t *testing.T) {
+	tests := []struct {
+		input string
+		n     int
+		want  string
+	}{
+		{"", 0, ""},
+		{"", 1, ""},
+		{"a", 1, "a"},
+
+		{"a b c", 0, ""},
+		{"a b c", 1, "c"},
+		{"a b c", 2, "b c"},
+		{"a b c", 3, "a b c"},
+		{"a b c", 4, "a b c"},
+	}
+	for _, tc := range tests {
+		got := slice.Tail(strings.Fields(tc.input), tc.n)
+		if diff := cmp.Diff(got, strings.Fields(tc.want)); diff != "" {
+			t.Errorf("Tail %d (-got, +want):\n%s", tc.n, diff)
+		}
+	}
+}
+
 func (tc *testCase[T]) partition(t *testing.T) {
 	t.Helper()
 
