@@ -27,6 +27,15 @@ func ReadUnified(r io.Reader) (*Patch, error) {
 	return &Patch{FileInfo: rd.fileInfo, Chunks: rd.chunks}, nil
 }
 
+// Read reads an old-style "normal" Unix diff patch from r.
+func Read(r io.Reader) (*Patch, error) {
+	rd := &diffReader{br: bufio.NewReader(r)}
+	if err := readNormal(rd); err != nil {
+		return nil, err
+	}
+	return &Patch{Chunks: rd.chunks}, nil
+}
+
 // A diffReader provides common plumbing for reading a text diff.  It keeps
 // track of line numbers and one line of lookahead, and accumulates information
 // about a file header, if one is present.
@@ -186,6 +195,8 @@ nextLine:
 		line, err := r.readline()
 		if err == io.EOF {
 			break // end of input, end of chunk
+		} else if err != nil {
+			return err
 		} else if line == "" {
 			return fmt.Errorf("line %d: unexpected blank line", r.ln)
 		}
@@ -205,4 +216,107 @@ nextLine:
 	}
 	r.chunks = append(r.chunks, ch)
 	return nil
+}
+
+// readNormal reads a "normal" Unix diff patch from r.
+func readNormal(r *diffReader) error {
+	for {
+		line, err := r.readline()
+		if err == io.EOF {
+			return nil
+		} else if err != nil {
+			return err
+		} else if line == "" {
+			return fmt.Errorf("line %d: unexpected blank line", r.ln)
+		}
+		var lspec, cmd, rspec string
+		if x, y, ok := strings.Cut(line, "a"); ok { // add lines from rhs
+			lspec, cmd, rspec = x, "a", y
+		} else if x, y, ok := strings.Cut(line, "c"); ok { // replace lines
+			lspec, cmd, rspec = x, "c", y
+		} else if x, y, ok := strings.Cut(line, "d"); ok { // delete lines from lhs
+			lspec, cmd, rspec = x, "d", y
+		} else {
+			return fmt.Errorf("line %d: invalid change command %q", r.ln, line)
+		}
+
+		llo, lhi, err := parseSpan("", lspec)
+		if err != nil {
+			return fmt.Errorf("line %d: invalid line range %q: %w", r.ln, lspec, err)
+		} else if lhi == 0 {
+			lhi = llo // m, 0 → m, m
+		}
+		lhi++
+
+		rlo, rhi, err := parseSpan("", rspec)
+		if err != nil {
+			return fmt.Errorf("line %d: invalid line range %q: %w", r.ln, rspec, err)
+		} else if rhi == 0 {
+			rhi = rlo // n, 0 → n, n
+		}
+		rhi++
+
+		sln := r.ln
+		e, err := readNormalEdit(r)
+		if err != nil {
+			return err
+		}
+		switch cmd {
+		case "a":
+			e.Op = slice.OpCopy
+			llo++ // Adds happen after the marked line.
+		case "c":
+			e.Op = slice.OpReplace
+		case "d":
+			e.Op = slice.OpDrop
+			rlo++ // Deletes happen after the marked line.
+		}
+
+		// Cross-check the number of lines reported in the change spec with the
+		// number we actually read out of the chunk data.
+		if n := rhi - rlo; len(e.Y) != n && (cmd == "a" || cmd == "c") {
+			return fmt.Errorf("line %d: add got %d lines, want %d", sln, len(e.Y), n)
+		}
+		if n := lhi - llo; len(e.X) != n && (cmd == "c" || cmd == "d") {
+			return fmt.Errorf("line %d: delete got %d lines, want %d", sln, len(e.X), n)
+		}
+		r.chunks = append(r.chunks, &Chunk{
+			Edits:  []Edit{e},
+			LStart: llo, LEnd: lhi,
+			RStart: rlo, REnd: rhi,
+		})
+	}
+}
+
+func readNormalEdit(r *diffReader) (Edit, error) {
+	var e Edit
+	var below bool // whether we have seen a "---" separator
+	for {
+		line, err := r.readline()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return Edit{}, err
+		}
+		if rst, ok := strings.CutPrefix(line, "< "); ok {
+			if below || len(e.Y) != 0 {
+				return Edit{}, fmt.Errorf("line %d: unexpected delete line %q", r.ln, line)
+			}
+			e.X = append(e.X, rst)
+		} else if rst, ok := strings.CutPrefix(line, "> "); ok {
+			if len(e.X) != 0 && !below {
+				return Edit{}, fmt.Errorf("line %d: unexpected insert line %q", r.ln, line)
+			}
+			e.Y = append(e.Y, rst)
+		} else if line == "---" {
+			if below {
+				return Edit{}, fmt.Errorf("line %d: unexpected --- separator", r.ln)
+			}
+			below = true
+		} else {
+			r.unread(line)
+			break
+		}
+	}
+	return e, nil
 }
