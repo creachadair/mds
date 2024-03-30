@@ -37,7 +37,7 @@ func ExampleFormatContext() {
 	).AddContext(3).Unify()
 
 	ts := time.Date(2024, 3, 18, 22, 30, 35, 0, time.UTC)
-	mdiff.FormatContext(os.Stdout, diff, &mdiff.FormatOptions{
+	mdiff.FormatContext(os.Stdout, diff, &mdiff.FileInfo{
 		Left: "old", LeftTime: ts,
 		Right: "new", RightTime: ts.Add(3 * time.Second),
 		TimeFormat: time.ANSIC,
@@ -70,7 +70,7 @@ func ExampleFormatUnified() {
 		[]string{"three", "blind", "mice", "ran", "home"},
 	).AddContext(3).Unify()
 
-	mdiff.FormatUnified(os.Stdout, diff, mdiff.NoHeader)
+	mdiff.FormatUnified(os.Stdout, diff, nil) // nil means "no header"
 
 	// Output:
 	//

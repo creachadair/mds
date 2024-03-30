@@ -106,7 +106,7 @@ func TestFormat(t *testing.T) {
 		when := time.Date(2024, 3, 16, 18, 53, 15, 123450000, time.UTC)
 
 		var buf bytes.Buffer
-		mdiff.FormatContext(&buf, d, &mdiff.FormatOptions{
+		mdiff.FormatContext(&buf, d, &mdiff.FileInfo{
 			Left:       "testdata/lhs.txt",
 			LeftTime:   when,
 			Right:      "testdata/rhs.txt",
@@ -126,7 +126,7 @@ func TestFormat(t *testing.T) {
 		when := time.Date(2024, 3, 16, 17, 47, 40, 123450000, time.UTC)
 
 		var buf bytes.Buffer
-		mdiff.FormatUnified(&buf, d, &mdiff.FormatOptions{
+		mdiff.FormatUnified(&buf, d, &mdiff.FileInfo{
 			Left:      "testdata/lhs.txt",
 			LeftTime:  when,
 			Right:     "testdata/rhs.txt",

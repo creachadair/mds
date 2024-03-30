@@ -1,49 +1,37 @@
 package mdiff
 
 import (
+	"cmp"
 	"fmt"
 	"io"
 	"strconv"
 	"time"
 
 	"github.com/creachadair/mds/slice"
-	"github.com/creachadair/mds/value"
 )
 
 // FormatFunc is a function that renders a Diff as text to an io.Writer.
 //
-// A FormatFunc should accept a nil options pointer.  Use the Get method to
-// obtain the default values described under [FormatOptions].
-type FormatFunc func(w io.Writer, d *Diff, o *FormatOptions) error
+// A FormatFunc should accept a nil info pointer, and should skip or supply
+// default values for missing fields.
+type FormatFunc func(w io.Writer, d *Diff, fi *FileInfo) error
 
 // TimeFormat is the default format string used to render timestamps in context
 // and unified diff outputs. It is based on the RFC 2822 time format.
 const TimeFormat = "2006-01-02 15:04:05.999999 -0700"
 
-// NoHeader is a set of default FormatOptions that disables the file header.
-var NoHeader = &FormatOptions{OmitHeader: true}
-
-// FormatOptions are optional settings to format a diff.  A nil pointer is
-// ready for use and provides defaults as described.
-type FormatOptions struct {
-	// OmitHeader, if true, instructs the formatter to skip the header section
-	// giving filenames and timestamps.
-	OmitHeader bool
-
+// FileInfo specifies file metadata to use when formatting a diff.
+type FileInfo struct {
 	// Left is the filename to use for the left-hand input.
-	// If omitted, it uses "a".
 	Left string
 
 	// Right is the filename to use for the right-hand argument.
-	// If omitted, it uses "b".
 	Right string
 
 	// LeftTime is the timestamp to use for the left-hand input.
-	// If zero it uses the current wall-clock time.
 	LeftTime time.Time
 
 	// RightTime is the timestamp to use for the right-hand input.
-	// If zero it uses the current wall-clock time.
 	RightTime time.Time
 
 	// TimeFormat specifies the time format to use for timestamps.
@@ -52,43 +40,17 @@ type FormatOptions struct {
 	TimeFormat string
 }
 
-// Get returns an options value in which any unspecified fields from o are
-// populated with defaults. If o == nil, defaults are supplied for all fields.
-func (o *FormatOptions) Get() FormatOptions {
-	out := value.At(o)
-	if out.Left == "" {
-		out.Left = "a"
-	}
-	if out.Right == "" {
-		out.Right = "b"
-	}
-	if out.TimeFormat == "" {
-		out.TimeFormat = TimeFormat
-	}
-	if zl, zr := out.LeftTime.IsZero(), out.RightTime.IsZero(); zl || zr {
-		now := time.Now()
-		if zl {
-			out.LeftTime = now
-		}
-		if zr {
-			out.RightTime = now
-		}
-	}
-	return out
-}
-
 // FormatUnified is a [FormatFunc] that renders d in the [unified diff] format
-// introduced by GNU diff.
+// introduced by GNU diff. If fi == nil, the file header is omitted.
 //
 // [unified diff]: https://www.gnu.org/software/diffutils/manual/html_node/Unified-Format.html
-func FormatUnified(w io.Writer, d *Diff, o *FormatOptions) error {
+func FormatUnified(w io.Writer, d *Diff, fi *FileInfo) error {
 	if len(d.Chunks) == 0 {
 		return nil
 	}
-	opts := o.Get()
-	if !opts.OmitHeader {
-		fmt.Fprintf(w, "--- %s\t%s\n", opts.Left, opts.LeftTime.Format(opts.TimeFormat))
-		fmt.Fprintf(w, "+++ %s\t%s\n", opts.Right, opts.RightTime.Format(opts.TimeFormat))
+	if fi != nil {
+		fmtFileHeader(w, "--- ", cmp.Or(fi.Left, "a"), fi.LeftTime, cmp.Or(fi.TimeFormat, TimeFormat))
+		fmtFileHeader(w, "+++ ", cmp.Or(fi.Right, "b"), fi.RightTime, cmp.Or(fi.TimeFormat, TimeFormat))
 	}
 	for _, c := range d.Chunks {
 		fmt.Fprintln(w, "@@", uspan("-", c.LStart, c.LEnd), uspan("+", c.RStart, c.REnd), "@@")
@@ -109,18 +71,25 @@ func FormatUnified(w io.Writer, d *Diff, o *FormatOptions) error {
 	return nil
 }
 
+func fmtFileHeader(w io.Writer, prefix, name string, ts time.Time, tfmt string) {
+	fmt.Fprint(w, prefix, name)
+	if !ts.IsZero() {
+		fmt.Fprint(w, "\t", ts.Format(tfmt))
+	}
+	fmt.Fprintln(w)
+}
+
 // FormatContext is a [FormatFunc] that renders d in the [context diff] format
-// introduced by BSD diff.
+// introduced by BSD diff. If fi == nil, the file header is omitted.
 //
 // [context diff]: https://www.gnu.org/software/diffutils/manual/html_node/Context-Format.html
-func FormatContext(w io.Writer, d *Diff, o *FormatOptions) error {
+func FormatContext(w io.Writer, d *Diff, fi *FileInfo) error {
 	if len(d.Chunks) == 0 {
 		return nil
 	}
-	opts := o.Get()
-	if !opts.OmitHeader {
-		fmt.Fprintf(w, "*** %s\t%s\n", opts.Left, opts.LeftTime.Format(opts.TimeFormat))
-		fmt.Fprintf(w, "--- %s\t%s\n", opts.Right, opts.RightTime.Format(opts.TimeFormat))
+	if fi != nil {
+		fmtFileHeader(w, "*** ", cmp.Or(fi.Left, "a"), fi.LeftTime, cmp.Or(fi.TimeFormat, TimeFormat))
+		fmtFileHeader(w, "--- ", cmp.Or(fi.Right, "b"), fi.RightTime, cmp.Or(fi.TimeFormat, TimeFormat))
 	}
 	for _, c := range d.Chunks {
 		// Why 15 stars? I can't say. Berkeley just liked it better that way.
@@ -156,8 +125,8 @@ func FormatContext(w io.Writer, d *Diff, o *FormatOptions) error {
 }
 
 // Format is a [FormatFunc] that renders d in the "normal" Unix diff format.
-// The options are not used by this format, and context is ignored.
-func Format(w io.Writer, d *Diff, _ *FormatOptions) error {
+// This format does not include a file header, so the FileInfo is ignored.
+func Format(w io.Writer, d *Diff, _ *FileInfo) error {
 	lpos, rpos := 1, 1
 	for _, e := range d.Edits {
 		switch e.Op {

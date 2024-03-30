@@ -33,10 +33,10 @@
 //	mdiff.Format(os.Stdout, diff, nil)
 //
 // The [FormatContext] and [FormatUnified] functions allow rendering a diff in
-// those formats instead. Use [FormatOptions] to tell the formatter the names
-// and timestamps to use for their file headers:
+// those formats instead. Use [FileInfo] to tell the formatter the names and
+// timestamps to use for their file headers:
 //
-//	mdiff.FormatUnified(os.Stdout, diff, &mdiff.FormatOptions{
+//	mdiff.FormatUnified(os.Stdout, diff, &mdiff.FileInfo{
 //	   Left:  "dir/original.go",
 //	   Right: "dir/patched.go",
 //	})
