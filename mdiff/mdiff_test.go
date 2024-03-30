@@ -77,7 +77,6 @@ func TestNoAlias(t *testing.T) {
 	// The documentation promises that adding context and unifying does not
 	// disturb the original edit sequence.
 	d := mdiff.New(lhsLines, rhsLines)
-	logDiff(t, d)
 
 	before := fmt.Sprint(d.Edits)
 	d.AddContext(6).Unify()
@@ -87,9 +86,9 @@ func TestNoAlias(t *testing.T) {
 }
 
 func TestFormat(t *testing.T) {
-
 	t.Run("Normal", func(t *testing.T) {
 		d := mdiff.New(lhsLines, rhsLines)
+		logDiff(t, d)
 
 		var buf bytes.Buffer
 		mdiff.Format(&buf, d, nil)
@@ -181,6 +180,21 @@ func TestFormat(t *testing.T) {
 	})
 }
 
+func TestReadUnified(t *testing.T) {
+	p, err := mdiff.ReadUnified(strings.NewReader(udiff))
+	if err != nil {
+		t.Fatalf("ReadUnified: unexpected error: %v", err)
+	}
+	logChunks(t, p.Chunks)
+
+	// The output should round-trip.
+	var buf bytes.Buffer
+	mdiff.FormatUnified(&buf, &mdiff.Diff{Chunks: p.Chunks}, p.FileInfo)
+	if got := buf.String(); got != udiff {
+		t.Errorf("ReadUnified: got:\n%s\nwant:\n%s", got, udiff)
+	}
+}
+
 func logDiff(t *testing.T, d *mdiff.Diff) {
 	t.Helper()
 	t.Logf("Input left: %d lines, right: %d lines; diff has %d edits",
@@ -190,9 +204,12 @@ func logDiff(t *testing.T, d *mdiff.Diff) {
 	for i, e := range d.Edits {
 		t.Logf("%d: %v", i+1, e)
 	}
+	logChunks(t, d.Chunks)
+}
 
+func logChunks(t *testing.T, cs []*mdiff.Chunk) {
 	t.Log("Chunks:")
-	for i, c := range d.Chunks {
+	for i, c := range cs {
 		t.Logf("%d: %d edits -%d,%d +%d,%d", i+1, len(c.Edits),
 			c.LStart, c.LEnd-c.LStart, c.RStart, c.REnd-c.RStart)
 		for j, e := range c.Edits {
