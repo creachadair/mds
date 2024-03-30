@@ -124,41 +124,41 @@ func FormatContext(w io.Writer, d *Diff, fi *FileInfo) error {
 	return nil
 }
 
-// Format is a [FormatFunc] that renders d in the "normal" Unix diff format.
+// Format is a [FormatFunc] that renders d in the "normal" [Unix diff] format.
 // This format does not include a file header, so the FileInfo is ignored.
+//
+// [Unix diff]: https://www.gnu.org/software/diffutils/manual/html_node/Detailed-Normal.html
 func Format(w io.Writer, d *Diff, _ *FileInfo) error {
-	lpos, rpos := 1, 1
-	for _, e := range d.Edits {
-		switch e.Op {
-		case slice.OpDrop:
-			// Diff considers deletions to happen AFTER the previous line rather
-			// than on the current one.
-			epos := rpos
-			if rpos == 1 {
-				epos--
+	for _, c := range d.Chunks {
+		lpos, rpos := c.LStart, c.RStart
+		for _, e := range c.Edits {
+			switch e.Op {
+			case slice.OpDrop:
+				// Diff considers deletions to happen AFTER the previous line rather
+				// than on the current one.
+				fmt.Fprintf(w, "%sd%d\n", dspan(lpos, lpos+len(e.X)), rpos-1)
+				writeLines(w, "< ", e.X)
+				lpos += len(e.X)
+
+			case slice.OpEmit:
+				lpos += len(e.X)
+				rpos += len(e.X)
+
+			case slice.OpCopy:
+				// Diff considers insertions to happen AFTER the previons line rather
+				// than on the current one.
+				fmt.Fprintf(w, "%da%s\n", lpos-1, dspan(rpos, rpos+len(e.Y)))
+				writeLines(w, "> ", e.Y)
+				rpos += len(e.Y)
+
+			case slice.OpReplace:
+				fmt.Fprintf(w, "%sc%s\n", dspan(lpos, lpos+len(e.X)), dspan(rpos, rpos+len(e.Y)))
+				writeLines(w, "< ", e.X)
+				fmt.Fprintln(w, "---")
+				writeLines(w, "> ", e.Y)
+				lpos += len(e.X)
+				rpos += len(e.Y)
 			}
-			fmt.Fprintf(w, "%sd%d\n", dspan(lpos, lpos+len(e.X)), rpos-1)
-			writeLines(w, "< ", e.X)
-			lpos += len(e.X)
-
-		case slice.OpEmit:
-			lpos += len(e.X)
-			rpos += len(e.X)
-
-		case slice.OpCopy:
-			// Diff considers insertions to happen AFTER the previons line rather
-			// than on the current one.
-			fmt.Fprintf(w, "%da%s\n", lpos-1, dspan(rpos, rpos+len(e.Y)))
-			writeLines(w, "> ", e.Y)
-			rpos += len(e.Y)
-
-		case slice.OpReplace:
-			fmt.Fprintf(w, "%sc%s\n", dspan(lpos, lpos+len(e.X)), dspan(rpos, rpos+len(e.Y)))
-			writeLines(w, "< ", e.X)
-			fmt.Fprintln(w, "---")
-			writeLines(w, "> ", e.Y)
-			lpos += len(e.X)
-			rpos += len(e.Y)
 		}
 	}
 	return nil
