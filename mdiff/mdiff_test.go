@@ -9,6 +9,7 @@ import (
 
 	"github.com/creachadair/mds/mdiff"
 	"github.com/creachadair/mds/mstr"
+	"github.com/creachadair/mds/slice"
 	gocmp "github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
@@ -135,6 +136,21 @@ func TestFormat(t *testing.T) {
 		if got := buf.String(); got != udiff {
 			t.Errorf("Unified diff disagrees with testdata.\nGot:\n%s\n\nWant:\n%s", got, udiff)
 		}
+	})
+
+	t.Run("Unified/NoTime", func(t *testing.T) {
+		d := mdiff.New(lhsLines, rhsLines).AddContext(3).Unify()
+
+		var buf bytes.Buffer
+		mdiff.FormatUnified(&buf, d, &mdiff.FileInfo{Left: "a/fuzzy", Right: "b/wuzzy"})
+		lines := mstr.Lines(buf.String())
+		if diff := gocmp.Diff(slice.Head(lines, 2), []string{
+			"--- a/fuzzy",
+			"+++ b/wuzzy",
+		}); diff != "" {
+			t.Errorf("Header (-got, +want):\n%s", diff)
+		}
+		t.Logf("Diff:\n%s\n...", strings.Join(slice.Head(lines, 5), "\n"))
 	})
 
 	t.Run("Empty/Normal", func(t *testing.T) {
