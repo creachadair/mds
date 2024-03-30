@@ -180,19 +180,36 @@ func TestFormat(t *testing.T) {
 	})
 }
 
-func TestReadUnified(t *testing.T) {
-	p, err := mdiff.ReadUnified(strings.NewReader(udiff))
-	if err != nil {
-		t.Fatalf("ReadUnified: unexpected error: %v", err)
-	}
-	logChunks(t, p.Chunks)
+func TestRead(t *testing.T) {
+	t.Run("Normal", func(t *testing.T) {
+		p, err := mdiff.Read(strings.NewReader(odiff))
+		if err != nil {
+			t.Fatalf("Read: unexpected error: %v", err)
+		}
+		logChunks(t, p.Chunks)
 
-	// The output should round-trip.
-	var buf bytes.Buffer
-	mdiff.FormatUnified(&buf, &mdiff.Diff{Chunks: p.Chunks}, p.FileInfo)
-	if got := buf.String(); got != udiff {
-		t.Errorf("ReadUnified: got:\n%s\nwant:\n%s", got, udiff)
-	}
+		// The output should round-trip
+		var buf bytes.Buffer
+		mdiff.Format(&buf, &mdiff.Diff{Chunks: p.Chunks}, nil)
+		if got := buf.String(); got != odiff {
+			t.Errorf("Read: got:\n%s\nwant:\n%s", got, odiff)
+		}
+	})
+
+	t.Run("Unified", func(t *testing.T) {
+		p, err := mdiff.ReadUnified(strings.NewReader(udiff))
+		if err != nil {
+			t.Fatalf("ReadUnified: unexpected error: %v", err)
+		}
+		logChunks(t, p.Chunks)
+
+		// The output should round-trip.
+		var buf bytes.Buffer
+		mdiff.FormatUnified(&buf, &mdiff.Diff{Chunks: p.Chunks}, p.FileInfo)
+		if got := buf.String(); got != udiff {
+			t.Errorf("ReadUnified: got:\n%s\nwant:\n%s", got, udiff)
+		}
+	})
 }
 
 func logDiff(t *testing.T, d *mdiff.Diff) {
