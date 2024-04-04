@@ -263,6 +263,7 @@ func TestRotate(t *testing.T) {
 		mtest.MustPanic(t, func() { slice.At([]string(nil), -1) })
 		mtest.MustPanic(t, func() { slice.At([]string{}, 0) })
 		mtest.MustPanic(t, func() { slice.At([]string{}, -1) })
+		mtest.MustPanic(t, func() { slice.At([]string{"a", "b", "c"}, 3) })
 		mtest.MustPanic(t, func() { slice.At([]string{"a", "b", "c"}, 10) })
 		mtest.MustPanic(t, func() { slice.At([]string{"a", "b", "c"}, -5) })
 	})
@@ -341,6 +342,9 @@ func TestPtrAt(t *testing.T) {
 			t.Errorf("PtrAt %q %d: got value %q, want %q", input, tc.k, *got, tc.want)
 		}
 	}
+	mtest.MustPanicf(t, func() {
+		slice.PtrAt([]string{"a"}, 1)
+	}, "Indexing element at len(vs) should panic")
 }
 
 func TestChunks(t *testing.T) {
