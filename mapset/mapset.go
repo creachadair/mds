@@ -176,17 +176,21 @@ func (s Set[T]) Equals(t Set[T]) bool {
 	return true
 }
 
-// Slice returns a slice of the contents of s in arbitrary order.
-func (s Set[T]) Slice() []T {
+// Append appends the elements of s to the specified slice in arbitrary order,
+// and returns the resulting slice. If cap(vs) ≥ len(s) this will not allocate.
+func (s Set[T]) Append(vs []T) []T {
 	if len(s) == 0 {
-		return nil
+		return vs
 	}
-	items := make([]T, 0, len(s))
 	for item := range s {
-		items = append(items, item)
+		vs = append(vs, item)
 	}
-	return items
+	return vs
 }
+
+// Slice returns a slice of the contents of s in arbitrary order.
+// It is a shorthand for s.Append(nil).
+func (s Set[T]) Slice() []T { return s.Append(nil) }
 
 // Intersect constructs a new set containing the intersection of the specified
 // sets.  The result is never nil, even if the given sets are empty.

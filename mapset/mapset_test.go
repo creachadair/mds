@@ -1,6 +1,7 @@
 package mapset_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/creachadair/mds/mapset"
@@ -330,4 +331,15 @@ func TestValues(t *testing.T) {
 			"red": 1, "green": 1, "blue": 2, "white": 2,
 		}), 1, 2)
 	})
+}
+
+func TestAppend(t *testing.T) {
+	s := mapset.New(strings.Fields("a b c d")...)
+	in := make([]string, 0, 2+len(s))
+	in = append(in, "X", "Y")
+
+	got := s.Append(in)
+	if diff := cmp.Diff(got, []string{"X", "Y", "a", "b", "c", "d"}); diff != "" {
+		t.Errorf("Append (-got, +want):\n%s", diff)
+	}
 }
