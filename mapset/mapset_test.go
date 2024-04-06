@@ -6,6 +6,7 @@ import (
 
 	"github.com/creachadair/mds/mapset"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func check[T comparable](t *testing.T, s mapset.Set[T], want ...T) mapset.Set[T] {
@@ -337,9 +338,10 @@ func TestAppend(t *testing.T) {
 	s := mapset.New(strings.Fields("a b c d")...)
 	in := make([]string, 0, 2+len(s))
 	in = append(in, "X", "Y")
+	opt := cmpopts.SortSlices(func(a, b string) bool { return a < b })
 
 	got := s.Append(in)
-	if diff := cmp.Diff(got, []string{"X", "Y", "a", "b", "c", "d"}); diff != "" {
+	if diff := cmp.Diff(got, []string{"X", "Y", "a", "b", "c", "d"}, opt); diff != "" {
 		t.Errorf("Append (-got, +want):\n%s", diff)
 	}
 }
