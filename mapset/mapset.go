@@ -189,8 +189,13 @@ func (s Set[T]) Append(vs []T) []T {
 }
 
 // Slice returns a slice of the contents of s in arbitrary order.
-// It is a shorthand for s.Append(nil).
-func (s Set[T]) Slice() []T { return s.Append(nil) }
+// It is a shorthand for Append.
+func (s Set[T]) Slice() []T {
+	if len(s) == 0 {
+		return nil
+	}
+	return s.Append(make([]T, 0, len(s)))
+}
 
 // Intersect constructs a new set containing the intersection of the specified
 // sets.  The result is never nil, even if the given sets are empty.
