@@ -84,10 +84,11 @@ func (s Set[T]) Remove(items ...T) Set[T] {
 
 // RemoveAll removes all the elements of set t from s and returns s.
 func (s Set[T]) RemoveAll(t Set[T]) Set[T] {
-	if len(s) != 0 {
-		for item := range t {
-			delete(s, item)
+	for item := range t {
+		if len(s) == 0 {
+			break
 		}
+		delete(s, item)
 	}
 	return s
 }
