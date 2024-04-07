@@ -50,6 +50,17 @@ var (
 	//go:embed testdata/cdiff.txt
 	cdiff string
 
+	// Git patch output: git diff -p.
+	//
+	// To reproduce this output:
+	//    cp mdiff/testdata/{rhs,tmp}.txt
+	//    cp mdiff/testdata/{lhs,rhs}.txt
+	//    mv mdiff/testdata/{tmp,lhs}.txt
+	//    git diff -p > mdiff/testdata/gdiff.txt
+	//
+	//go:embed testdata/gdiff.txt
+	gdiff string
+
 	lhsLines = mstr.Lines(lhs)
 	rhsLines = mstr.Lines(rhs)
 )
@@ -209,6 +220,43 @@ func TestRead(t *testing.T) {
 		if got := buf.String(); got != udiff {
 			t.Errorf("ReadUnified: got:\n%s\nwant:\n%s", got, udiff)
 		}
+	})
+
+	t.Run("Git", func(t *testing.T) {
+		// An input with no patch should report an error.
+		t.Run("Empty", func(t *testing.T) {
+			p, err := mdiff.ReadGitPatch(strings.NewReader("nonsense\n"))
+			if err == nil || !strings.Contains(err.Error(), "no patches found") {
+				t.Fatalf("ReadGitPatch: got %+v, %v; want 'no patches found'", p, err)
+			}
+		})
+
+		t.Run("Full", func(t *testing.T) {
+			u, err := mdiff.ReadUnified(strings.NewReader(udiff))
+			if err != nil {
+				t.Fatalf("ReadUnified: unexpected error: %v", err)
+			}
+
+			ps, err := mdiff.ReadGitPatch(strings.NewReader(gdiff))
+			if err != nil {
+				t.Fatalf("ReadGitPatch: unexpected error: %v", err)
+			}
+			if len(ps) == 0 {
+				t.Fatal("Surprisingly, no patches were reported")
+			}
+			for i, p := range ps {
+				t.Logf("-- Patch %d", i+1)
+				logChunks(t, p.Chunks)
+			}
+
+			// Render the first patch back out, it should look like the unified
+			// diff it came from (with the header shimmed).
+			var buf bytes.Buffer
+			mdiff.FormatUnified(&buf, &mdiff.Diff{Chunks: ps[0].Chunks}, u.FileInfo)
+			if diff := gocmp.Diff(buf.String(), udiff); diff != "" {
+				t.Errorf("Git patch output (-got, +want):\n%s", diff)
+			}
+		})
 	})
 }
 

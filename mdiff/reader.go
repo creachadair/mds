@@ -18,6 +18,50 @@ type Patch struct {
 	Chunks   []*Chunk
 }
 
+// ReadGitPatch reads a sequence of unified diff patches in the format produced
+// by "git diff -p" with default settings. The commit metadata and header lines
+// are ignored.
+func ReadGitPatch(r io.Reader) ([]*Patch, error) {
+	var out []*Patch
+
+	rd := &diffReader{br: bufio.NewReader(r)}
+	for {
+		// Look for the "diff --git ..." line.
+		if err := scanToPrefix(rd, "diff "); err == io.EOF {
+			if len(out) == 0 {
+				return nil, errors.New("no patches found")
+			}
+			return out, nil
+		}
+
+		// Skip headers until the "--- " patch header.
+		if err := scanToPrefix(rd, "--- "); err == io.EOF {
+			return nil, fmt.Errorf("line %d: missing patch header", rd.ln)
+		} else if err != nil {
+			return nil, fmt.Errorf("line %d: %w", rd.ln, err)
+		}
+
+		if err := readUnifiedHeader(rd); err != nil {
+			return nil, fmt.Errorf("line %d: read patch header: %w", rd.ln, err)
+		} else if rd.fileInfo == nil {
+			return nil, fmt.Errorf("line %d: incomplete patch header", rd.ln)
+		}
+
+		for {
+			err := readUnifiedChunk(rd)
+			if err == io.EOF || errors.Is(err, errUnexpectedPrefix) {
+				out = append(out, &Patch{Chunks: rd.chunks})
+				rd.chunks = nil
+				break
+			} else if err != nil {
+				return nil, err
+			}
+			// get more
+		}
+		// An unexpected prefix we will handle on the next iteration.
+	}
+}
+
 // ReadUnified reads a unified diff patch from r.
 func ReadUnified(r io.Reader) (*Patch, error) {
 	rd := &diffReader{br: bufio.NewReader(r)}
@@ -207,16 +251,25 @@ nextLine:
 			add(slice.OpDrop, line[1:])
 		case '+': // addition from rhs
 			add(slice.OpCopy, line[1:])
-		case '@': // new chunk header (probably)
+		case '@': // another diff chunk
 			r.unread(line)
 			break nextLine
 		default:
-			return fmt.Errorf("line %d: unexpected prefix %c", r.ln, line[0])
+			// Something else, maybe the start of a new patch or something.
+			// Report an error, but save the line and the chunk in case the caller
+			// knows what to do about it in context.
+			r.unread(line)
+			r.chunks = append(r.chunks, ch)
+			return fmt.Errorf("line %d: %w %c", r.ln, errUnexpectedPrefix, line[0])
 		}
 	}
 	r.chunks = append(r.chunks, ch)
 	return nil
 }
+
+// errUnexpectedPrefix is a sentinel error reported by readUnifiedChunk to
+// report a line that is not part of a chunk.
+var errUnexpectedPrefix = errors.New("unexpected prefix")
 
 // readNormal reads a "normal" Unix diff patch from r.
 func readNormal(r *diffReader) error {
@@ -319,4 +372,19 @@ func readNormalEdit(r *diffReader) (Edit, error) {
 		}
 	}
 	return e, nil
+}
+
+// scanToPrefix reads forward to a line starting with pfx, and returns nil.
+// The matching line is unread so the caller can reuse it.
+func scanToPrefix(r *diffReader, prefix string) error {
+	for {
+		line, err := r.readline()
+		if err != nil {
+			return err // may be io.EOF, caller will check
+		}
+		if strings.HasPrefix(line, prefix) {
+			r.unread(line)
+			return nil
+		}
+	}
 }
