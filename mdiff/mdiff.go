@@ -41,9 +41,9 @@
 //	   Right: "dir/patched.go",
 //	})
 //
-// If the options are omitted, default placeholders are used instead. You can
-// also implement your own function using the same signature; the options and
-// defaults are exported and usable from another package.
+// If the options are omitted, the formatters defined by this package provide
+// default placeholders. You can also implement your own function using the
+// same signature. It is up to the implementation how to handle defaults.
 package mdiff
 
 import (
