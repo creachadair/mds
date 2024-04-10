@@ -18,9 +18,11 @@ type Patch struct {
 	Chunks   []*Chunk
 }
 
-// ReadGitPatch reads a sequence of unified diff patches in the format produced
-// by "git diff -p" with default settings. The commit metadata and header lines
-// are ignored.
+// ReadGitPatch reads a sequence of unified diff [patches] in the format
+// produced by "git diff -p" with default settings. The commit metadata and
+// header lines are ignored.
+//
+// [patches]: https://git-scm.com/docs/diff-format#generate_patch_text_with_p
 func ReadGitPatch(r io.Reader) ([]*Patch, error) {
 	var out []*Patch
 
