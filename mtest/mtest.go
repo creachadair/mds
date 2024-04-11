@@ -4,7 +4,6 @@ package mtest
 // TB is the subset of the testing.TB interface used by this package.
 type TB interface {
 	Cleanup(func())
-	Fatal(...any)
 	Fatalf(string, ...any)
 	Helper()
 }
@@ -16,7 +15,7 @@ func MustPanic(t TB, f func()) (val any) {
 	t.Helper()
 	defer func() { val = recover() }()
 	f()
-	t.Fatal("expected panic was not observed")
+	t.Fatalf("expected panic was not observed")
 	return
 }
 
