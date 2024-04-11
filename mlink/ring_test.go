@@ -7,81 +7,82 @@ import (
 	"github.com/creachadair/mds/mlink"
 )
 
-func TestRing(t *testing.T) {
-	rcheck := func(r *mlink.Ring[int], want ...int) { mdtest.CheckContents(t, r, want) }
+func rc[T any](t *testing.T, r *mlink.Ring[T], want ...T) {
+	mdtest.CheckContents(t, r, want)
+}
 
+func TestRing(t *testing.T) {
 	t.Run("Initialize", func(t *testing.T) {
-		rcheck(nil)
-		rcheck(mlink.NewRing[int](0))
-		rcheck(mlink.RingOf[int]())
-		rcheck(mlink.NewRing[int](4), 0, 0, 0, 0)
-		rcheck(mlink.RingOf(0), 0)
+		rc[int](t, nil)
+		rc(t, mlink.NewRing[int](0))
+		rc(t, mlink.RingOf[int]())
+		rc(t, mlink.NewRing[int](4), 0, 0, 0, 0)
+		rc(t, mlink.RingOf(0), 0)
 	})
 
 	t.Run("Joining", func(t *testing.T) {
 		r := mlink.NewRing[int](1)
 		r.Join(mlink.RingOf(1, 2, 3))
-		rcheck(r, 0, 1, 2, 3)
+		rc(t, r, 0, 1, 2, 3)
 
 		// Joining r to itself should do nothing.
 		r.Join(r)
-		rcheck(r, 0, 1, 2, 3)
+		rc(t, r, 0, 1, 2, 3)
 
 		// Test adding items to various places in the ring.
 		r.Next().Join(mlink.RingOf(4, 5, 6))
-		rcheck(r, 0, 1, 4, 5, 6, 2, 3)
+		rc(t, r, 0, 1, 4, 5, 6, 2, 3)
 		r.Prev().Join(mlink.RingOf(7))
-		rcheck(r, 0, 1, 4, 5, 6, 2, 3, 7)
+		rc(t, r, 0, 1, 4, 5, 6, 2, 3, 7)
 	})
 
 	t.Run("Popping", func(t *testing.T) {
-		rcheck(mlink.RingOf(1).Pop(), 1)
+		rc(t, mlink.RingOf(1).Pop(), 1)
 		q := mlink.RingOf(2, 3, 5, 7, 11)
-		rcheck(q, 2, 3, 5, 7, 11)
+		rc(t, q, 2, 3, 5, 7, 11)
 		q.Next().Pop()
-		rcheck(q, 2, 5, 7, 11)
+		rc(t, q, 2, 5, 7, 11)
 		q.Prev().Pop()
-		rcheck(q, 2, 5, 7)
+		rc(t, q, 2, 5, 7)
 	})
 
 	t.Run("Circularity", func(t *testing.T) {
 		r := mlink.RingOf(1, 3, 5, 7, 9)
-		rcheck(r, 1, 3, 5, 7, 9)
-		rcheck(r.Next().Next(), 5, 7, 9, 1, 3)
-		rcheck(r.Prev(), 9, 1, 3, 5, 7)
+		rc(t, r, 1, 3, 5, 7, 9)
+		rc(t, r.Next().Next(), 5, 7, 9, 1, 3)
+		rc(t, r.Prev(), 9, 1, 3, 5, 7)
 		r.Next().Join(r.Prev())
-		rcheck(r, 1, 3, 9)
+		rc(t, r, 1, 3, 9)
 	})
 
 	t.Run("SplicingIn", func(t *testing.T) {
 		s := mlink.RingOf(10, 20, 30)
-		rcheck(s, 10, 20, 30)
+		rc(t, s, 10, 20, 30)
 		r := mlink.RingOf(1, 2, 3, 4, 5, 6)
 
 		x := r.Next().Join(s)
-		rcheck(r, 1, 2, 10, 20, 30, 3, 4, 5, 6)
-		//        ^- r  ^- s        ^- x
-		rcheck(s, 10, 20, 30, 3, 4, 5, 6, 1, 2)
-		//        ^- s        ^- x        ^- r
-		rcheck(x, 3, 4, 5, 6, 1, 2, 10, 20, 30)
-		//        ^- x        ^- r  ^- s
+		rc(t, r, 1, 2, 10, 20, 30, 3, 4, 5, 6)
+		//       ^- r  ^- s        ^- x
+		rc(t, s, 10, 20, 30, 3, 4, 5, 6, 1, 2)
+		//       ^- s        ^- x        ^- r
+		rc(t, x, 3, 4, 5, 6, 1, 2, 10, 20, 30)
+		//       ^- x        ^- r  ^- s
 	})
 
 	t.Run("SplicingOut", func(t *testing.T) {
 		r := mlink.RingOf(1, 20, 30, 40, 5, 6)
 		tail := r.At(4)
-		rcheck(r.Join(tail), 20, 30, 40) // just the excised part
-		rcheck(r, 1, 5, 6)
+		rc(t, r.Join(tail), 20, 30, 40) // just the excised part
+		rc(t, r, 1, 5, 6)
 
-		rcheck(r.Join(r.Next())) // nothing was removed
-		rcheck(r, 1, 5, 6)
+		rc(t, r.Join(r.Next())) // nothing was removed
+		rc(t, r, 1, 5, 6)
 
-		rc := func(r *mlink.Ring[string], want ...string) { mdtest.CheckContents(t, r, want) }
 		q := mlink.RingOf("fat", "cats", "get", "dizzy", "after", "eating", "beans")
 		s := q.At(2).Join(q.Prev())
 
-		rc(q, "fat", "cats", "get", "beans")
-		rc(s, "dizzy", "after", "eating")
+		rc(t, q, "fat", "cats", "get", "beans")
+		rc(t, s, "dizzy", "after", "eating")
 	})
 
 	t.Run("Peek", func(t *testing.T) {
