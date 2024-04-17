@@ -254,10 +254,10 @@ func gcd(a, b int) int {
 	return a
 }
 
-// Chunks returns a slice of contiguous subslices of vs, each having length at
-// most n and together covering the input.  All slices except the last will
-// have length exactly n; the last may have fewer. The slices returned share
-// storage with the input.
+// Chunks returns a slice of contiguous subslices ("chunks") of vs, each having
+// length at most n and together covering the input.  All slices except the
+// last will have length exactly n; the last may have fewer. The slices
+// returned share storage with the input.
 //
 // Chunks will panic if n < 0. If n == 0, Chunks returns a single chunk
 // containing the entire input.
@@ -277,10 +277,10 @@ func Chunks[T any, Slice ~[]T](vs Slice, n int) []Slice {
 	return out
 }
 
-// Batches returns a slice of up to n contiguous subslices of vs, each having
-// nearly as possible to equal length and together covering the input. The
-// slices returned share storage with the input. If n > len(vs), the number of
-// batches is capped at len(vs); otherwise exactly n are constructed.
+// Batches returns a slice of up to n contiguous subslices ("batches") of vs,
+// each having nearly as possible to equal length and together covering the
+// input. The slices returned share storage with the input. If n > len(vs), the
+// number of batches is capped at len(vs); otherwise exactly n are constructed.
 //
 // Batches will panic if n < 0. If n == 0 Batches returns nil.
 func Batches[T any, Slice ~[]T](vs Slice, n int) []Slice {
