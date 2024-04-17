@@ -48,3 +48,23 @@ func TestAtDefault(t *testing.T) {
 		}
 	}
 }
+
+func TestCond(t *testing.T) {
+	tests := []struct {
+		flag bool
+		x, y string
+		want string
+	}{
+		{true, "a", "b", "a"},
+		{false, "a", "b", "b"},
+		{true, "", "q", ""},
+		{false, "", "q", "q"},
+		{true, "z", "", "z"},
+		{false, "z", "", ""},
+	}
+	for _, tc := range tests {
+		if got := value.Cond(tc.flag, tc.x, tc.y); got != tc.want {
+			t.Errorf("Cond(%v, %v, %v): got %v, want %v", tc.flag, tc.x, tc.y, got, tc.want)
+		}
+	}
+}
