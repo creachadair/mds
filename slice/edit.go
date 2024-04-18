@@ -35,7 +35,8 @@ func lcs[T any, Slice ~[]T](eq func(a, b T) bool, as, bs Slice) Slice {
 		// Fill the current row.
 		for i := 1; i <= len(as); i++ {
 			if eq(as[i-1], bs[j-1]) {
-				c[i] = append(p[i-1], as[i-1])
+				clipped := p[i-1][:len(p[i-1]):len(p[i-1])]
+				c[i] = append(clipped, as[i-1])
 			} else if len(c[i-1]) >= len(p[i]) {
 				c[i] = c[i-1]
 			} else {
@@ -133,7 +134,7 @@ func editScriptFunc[T any, Slice ~[]T](eq func(a, b T) bool, lhs, rhs Slice) []E
 
 	var out []Edit[T]
 	for i < len(lcs) {
-		// Count the numbers of elements of lhs and rhs prior to the first match.
+		// Count the numbers of elements of lhs and rhs prior to the next match.
 		lend := lpos
 		for !eq(lhs[lend], lcs[i]) {
 			lend++

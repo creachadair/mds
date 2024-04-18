@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/creachadair/mds/slice"
+
+	_ "embed"
 )
 
 func TestLCS(t *testing.T) {
@@ -223,4 +225,25 @@ func pedit(t *testing.T, ss string) (out []slice.Edit[string]) {
 		out = append(out, next)
 	}
 	return
+}
+
+//go:embed testdata/bad-lhs.txt
+var badLHS string
+
+//go:embed testdata/bad-rhs.txt
+var badRHS string
+
+func TestRegression(t *testing.T) {
+	// The original implementation appended path elements to a slice, which
+	// could in some circumstances lead to paths clobbering each other.  Test
+	// that this does not regress.
+	t.Run("ShiftLCS", func(t *testing.T) {
+		lhs := strings.Split(strings.TrimSpace(badLHS), "\n")
+		rhs := strings.Split(strings.TrimSpace(badRHS), "\n")
+
+		// If we overwrite the path improperly, this will panic.  The output was
+		// generated from a production value, but the outputs were hashed since
+		// only the order matters.
+		_ = slice.EditScript(lhs, rhs)
+	})
 }
