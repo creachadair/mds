@@ -23,8 +23,20 @@ func lcs[T any, Slice ~[]T](eq func(a, b T) bool, as, bs Slice) Slice {
 	if len(bs) < len(as) {
 		as, bs = bs, as
 	}
-	p := make([]Slice, len(as)+1)
-	c := make([]Slice, len(as)+1)
+
+	type seq struct {
+		i    int  // offset into as
+		n    int  // length of path
+		prev *seq // previous element
+	}
+	p := make([]*seq, len(as)+1)
+	c := make([]*seq, len(as)+1)
+
+	var zero seq // sentinel; not written
+	for i := range p {
+		p[i] = &zero
+		c[i] = &zero
+	}
 
 	// Fill the rows top to bottom, left to right, since the optimization
 	// recurrence needs the previous element in the same row, and the same and
@@ -35,17 +47,20 @@ func lcs[T any, Slice ~[]T](eq func(a, b T) bool, as, bs Slice) Slice {
 		// Fill the current row.
 		for i := 1; i <= len(as); i++ {
 			if eq(as[i-1], bs[j-1]) {
-				clipped := p[i-1][:len(p[i-1]):len(p[i-1])]
-				c[i] = append(clipped, as[i-1])
-			} else if len(c[i-1]) >= len(p[i]) {
+				c[i] = &seq{i - 1, p[i-1].n + 1, p[i-1]}
+			} else if c[i-1].n >= p[i].n {
 				c[i] = c[i-1]
 			} else {
 				c[i] = p[i]
 			}
 		}
 	}
-
-	return c[len(as)]
+	out := make(Slice, 0, c[len(as)].n)
+	for p := c[len(as)]; p.n > 0; p = p.prev {
+		out = append(out, as[p.i])
+	}
+	Reverse(out)
+	return out
 }
 
 // EditOp is the opcode of an edit sequence instruction.
