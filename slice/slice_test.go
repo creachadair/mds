@@ -342,9 +342,9 @@ func TestPtrAt(t *testing.T) {
 			t.Errorf("PtrAt %q %d: got value %q, want %q", input, tc.k, *got, tc.want)
 		}
 	}
-	mtest.MustPanicf(t, func() {
-		slice.PtrAt([]string{"a"}, 1)
-	}, "Indexing element at len(vs) should panic")
+	if got := slice.PtrAt([]string{"a"}, 10); got != nil {
+		t.Errorf("PtrAt(*, 10): got %v, want nil", got)
+	}
 }
 
 func TestChunks(t *testing.T) {

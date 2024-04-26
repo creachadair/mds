@@ -156,39 +156,45 @@ func MapKeys[T comparable, U any](m map[T]U) []T {
 // If i < 0, offsets are counted backward from the end.  If i is out of range,
 // Split will panic.
 func Split[T any, Slice ~[]T](ss Slice, i int) (lhs, rhs Slice) {
-	b := sliceCheck(i, len(ss))
+	b, ok := sliceCheck(i, len(ss))
+	if !ok {
+		panic("index out of range")
+	}
 	return ss[:b], ss[b:]
 }
 
-func sliceCheck(i, n int) int {
+func sliceCheck(i, n int) (int, bool) {
 	if i < 0 {
 		i += n
 	}
-	if i < 0 || i > n {
-		panic("index out of range")
-	}
-	return i
+	return i, i >= 0 && i <= n
 }
 
-func indexCheck(i, n int) int {
-	j := sliceCheck(i, n)
-	if j == n {
-		panic("index out of range")
+func indexCheck(i, n int) (int, bool) {
+	if i < 0 {
+		i += n
 	}
-	return j
+	return i, i >= 0 && i < n
 }
 
 // At returns the element of ss at offset i. Negative offsets count backward
 // from the end of the slice. If i is out of range, At will panic.
 func At[T any, Slice ~[]T](ss Slice, i int) T {
-	return ss[indexCheck(i, len(ss))]
+	b, ok := indexCheck(i, len(ss))
+	if !ok {
+		panic("index out of range")
+	}
+	return ss[b]
 }
 
 // PtrAt returns a pointer to the element of ss at offset i.  Negative offsets
-// count backward from the end of the slice.  If i is out of range, PtrAt will
-// panic.
+// count backward from the end of the slice.  If i is out of range, PtrAt
+// returns nil.
 func PtrAt[T any, Slice ~[]T](ss Slice, i int) *T {
-	return &ss[indexCheck(i, len(ss))]
+	if pos, ok := indexCheck(i, len(ss)); ok {
+		return &ss[pos]
+	}
+	return nil
 }
 
 // MatchingKeys returns a slice of the keys k of m for which f(m[k]) is true.
@@ -223,8 +229,10 @@ func MatchingKeys[T comparable, U any](m map[T]U, f func(U) bool) []T {
 // The rotation operation takes time proportional to len(ss) but does not
 // allocate storage outside the input slice.
 func Rotate[T any, Slice ~[]T](ss Slice, k int) {
-	k = sliceCheck(k, len(ss))
-	if k == 0 || k == len(ss) {
+	k, ok := sliceCheck(k, len(ss))
+	if !ok {
+		panic("offset out of range")
+	} else if k == 0 || k == len(ss) {
 		return
 	}
 
