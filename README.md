@@ -22,3 +22,4 @@ This repository defines generic data structures in Go.
 - [mdiff](./mdiff) supports creating textual diffs ([package docs](https://godoc.org/github.com/creachadair/mds/mdiff), [example](https://go.dev/play/p/DFL6f7WLcff))
 - [mstr](./mstr) helpful functions for manipulating strings ([package docs](https://godoc.org/github.com/creachadair/mds/mstr))
 - [mtest](./mtest) a support library for writing tests ([package docs](https://godoc.org/github.com/creachadair/mds/mtest))
+- [value](./value) helpful functions for basic values and pointers ([package docs](https://godoc.org/github.com/creachadair/mds/value))
