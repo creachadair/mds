@@ -106,8 +106,8 @@ func ExampleLCS() {
 }
 
 func ExampleEditScript() {
-	lhs := strings.Fields("a stitch in time saves nine")
-	rhs := strings.Fields("we live in a time of nine lives")
+	lhs := strings.Fields("if you mix red with green you get blue")
+	rhs := strings.Fields("red mixed with green does not give blue at all")
 
 	fmt.Println("start", lhs)
 	var out []string
@@ -130,13 +130,13 @@ func ExampleEditScript() {
 	}
 	fmt.Println("end", out)
 	// Output:
-	// start [a stitch in time saves nine]
-	// copy [we live in]
-	// emit [a]
-	// drop [stitch in]
-	// emit [time]
-	// replace [saves] with [of]
-	// emit [nine]
-	// copy [lives]
-	// end [we live in a time of nine lives]
+	// start [if you mix red with green you get blue]
+	// drop [if you mix]
+	// emit [red]
+	// copy [mixed]
+	// emit [with green]
+	// replace [you get] with [does not give]
+	// emit [blue]
+	// copy [at all]
+	// end [red mixed with green does not give blue at all]
 }
