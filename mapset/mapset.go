@@ -18,7 +18,7 @@ func New[T comparable](items ...T) Set[T] {
 	return m.add(items)
 }
 
-// NewSize constructs a new set preallocated to have space for n items.
+// NewSize constructs a new empty set preallocated to have space for n items.
 func NewSize[T comparable](n int) Set[T] { return make(Set[T], n) }
 
 // IsEmpty reports whether s is empty.
