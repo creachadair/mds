@@ -417,7 +417,7 @@ func TestBatches(t *testing.T) {
 	t.Logf("OK n<0: %v", mtest.MustPanic(t, func() { slice.Batches(input, -1) }))
 }
 
-func TestStrip(t *testing.T) {
+func TestStripe(t *testing.T) {
 	split := func(s string) []string {
 		out := strings.Fields(s)
 		for i, w := range out {
@@ -472,7 +472,7 @@ func TestStrip(t *testing.T) {
 		{"a b c d|e f @ g h|i j @", 5, ""},
 	}
 	for _, tc := range tests {
-		got := slice.Strip(makeInput(tc.input), tc.i)
+		got := slice.Stripe(makeInput(tc.input), tc.i)
 		if diff := cmp.Diff(got, split(tc.want), cmpopts.EquateEmpty()); diff != "" {
 			t.Errorf("Strip %d (-got, want):\ninput:\n%s\n%s",
 				tc.i, strings.ReplaceAll(tc.input, "|", "\n"), diff)

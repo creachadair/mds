@@ -313,10 +313,10 @@ func Batches[T any, Slice ~[]T](vs Slice, n int) []Slice {
 	return out
 }
 
-// Strip returns a "strip" of the ith elements of each slice in vs.  Any slice
-// that does not have an ith element is skipped. If none of the slices has an
-// ith element, the result is empty.
-func Strip[T any, Slice ~[]T](vs []Slice, i int) Slice {
+// Stripe returns a "stripe" of the ith elements of each slice in vs.  Any
+// slice that does not have an ith element is skipped. If none of the slices
+// has an ith element, the result is empty.
+func Stripe[T any, Slice ~[]T](vs []Slice, i int) Slice {
 	var out Slice
 	for _, v := range vs {
 		if i < len(v) {
