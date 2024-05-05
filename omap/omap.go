@@ -160,9 +160,10 @@ func (m Map[T, U]) Keys() []T {
 		return nil
 	}
 	out := make([]T, 0, m.Len())
-	for it := m.First(); it.IsValid(); it.Next() {
-		out = append(out, it.Key())
-	}
+	m.m.Inorder(func(kv stree.KV[T, U]) bool {
+		out = append(out, kv.Key)
+		return true
+	})
 	return out
 }
 
