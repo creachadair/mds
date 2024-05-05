@@ -11,6 +11,7 @@ This repository defines generic data structures in Go.
 - [mapset](./mapset) a basic map-based set implementation ([package docs](https://godoc.org/github.com/creachadair/mds/mapset))
 - [mlink](./mlink) basic linked sequences (list, queue, ring) ([package docs](https://godoc.org/github.com/creachadair/mds/mlink))
 - [omap](./omap) ordered key-value map ([package docs](https://godoc.org/github.com/creachadair/mds/omap))
+- [oset](./oset) ordered set ([package docs](https://godoc.org/github.com/creachadair/mds/oset))
 - [queue](./queue) an array-based FIFO queue ([package docs](https://godoc.org/github.com/creachadair/mds/queue))
 - [stack](./stack) an array-based LIFO stack ([package docs](https://godoc.org/github.com/creachadair/mds/stack))
 - [stree](./stree) self-balancing binary-search tree ([package docs](https://godoc.org/github.com/creachadair/mds/stree))
