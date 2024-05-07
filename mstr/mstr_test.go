@@ -58,3 +58,64 @@ func TestLines(t *testing.T) {
 		}
 	}
 }
+
+func TestCompareNatural(t *testing.T) {
+	tests := []struct {
+		a, b string
+		want int
+	}{
+		{"", "", 0},
+
+		// Non-empty vs. empty with non-digits and digits.
+		{"x", "", 1},
+		{"", "x", -1},
+		{"0", "", 1},
+		{"", "0", -1},
+
+		// Leading zeroes do not change the value.
+		{"1", "1", 0},
+		{"01", "1", 0},
+		{"1", "01", 0},
+
+		// Mixed values.
+		{"a1", "a1", 0},
+		{"a2", "a1", 1},
+		{"a1", "a2", -1},
+		{"6c", "06c", 0},
+		{"06c", "6c", 0},
+		{"5c", "06c", -1},
+		{"07c", "6c", 1},
+
+		// Multi-digit numeric runs.
+		{"a2b", "a25b", -1},
+		{"a12b", "a2", 1},
+		{"a25b", "a21b", 1},
+		{"a025b", "a25b", 0},
+
+		// Non-matching types compare lexicographically.
+		// Note it is not possible for these to be equal.
+		{"123", "a", -1},     // because 'a' > '1'
+		{"123", ".", 1},      // because '.' < '1'
+		{"12c9", "12cv", -1}, // because 'v' > '9'
+
+		// Normal lexicographic comparison, without digits.
+		{"a-b-c", "a-b-c", 0},
+		{"a-b-c", "a-b-d", -1},
+		{"a-b-c-d", "a-b-d", -1},
+		{"a-q", "a-b-c", 1},
+		{"a-q-c", "a-b-c", 1},
+
+		// Complicated cases ("v" indicates the point of divergence).
+		//         v                v
+		{"test1-143a19", "test01-143b13", -1},
+		//    v                v
+		{"test5-143a21", "test04-999", 1},
+		//      v               v           'w' > '9'
+		{"test5-word-5", "test5-999-5", 1},
+	}
+	for _, tc := range tests {
+		if got := mstr.CompareNatural(tc.a, tc.b); got != tc.want {
+			t.Errorf("Compare(%q, %q): got %v, want %v", tc.a, tc.b, got, tc.want)
+		}
+	}
+}
