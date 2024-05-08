@@ -69,6 +69,10 @@ import (
 	"github.com/creachadair/mds/slice"
 )
 
+// Edit is an edit operation on strings.  It is exported here so the caller
+// does not need to import the slice package directly.
+type Edit = slice.Edit[string]
+
 // A Diff represents the difference between two slices of strings.
 type Diff struct {
 	// The left and right inputs. These fields alias the slices passed to New.
@@ -169,14 +173,59 @@ func (d *Diff) AddContext(n int) *Diff {
 //
 // Unify updates the edits of any merged chunks, but does not modify the
 // original edit sequence in d.Edits.
-func (d *Diff) Unify() *Diff {
-	if len(d.Chunks) == 0 {
-		return d
+func (d *Diff) Unify() *Diff { d.Chunks = UnifyChunks(d.Chunks); return d }
+
+// findContext returns slices of up to n strings before and after the specified
+// chunk that are equal on the left and right sides of the diff.  Either or
+// both slices may be empty if there are no such lines.
+func (d *Diff) findContext(c *Chunk, n int) (pre, post []string) {
+	lcur, rcur := c.LStart-1, c.RStart-1
+	lend, rend := c.LEnd-1, c.REnd-1
+
+	for i := 1; i <= n; i++ {
+		p, q := lcur-i, rcur-i
+		if p < 0 || q < 0 || d.Left[p] != d.Right[q] {
+			break
+		}
+		pre = append(pre, d.Left[p]) // they are equal, so pick one
+	}
+	slice.Reverse(pre) // we walked backward from the start
+
+	for i := 0; i < n; i++ {
+		p, q := lend+i, rend+i
+		if p >= len(d.Left) || q >= len(d.Right) || d.Left[p] != d.Right[q] {
+			break
+		}
+		post = append(post, d.Left[p])
+	}
+	return
+}
+
+// A Chunk is a contiguous region within a diff covered by one or more
+// consecutive edit operations.
+type Chunk struct {
+	// The edits applied within this chunk, in order.
+	Edits []Edit
+
+	// The starting and ending lines of this chunk in the left input.
+	// Lines are 1-based, and the range includes start but excludes end.
+	LStart, LEnd int
+
+	// The starting and ending lines of this chunk in the right input.
+	// Lines are 1-based and the range includes start but excludes end.
+	RStart, REnd int
+}
+
+// UnifyChunks modifies the chunks in cs to merge adjoining or overlapping
+// chunks, and returns a slice of the modified chunks.
+func UnifyChunks(cs []*Chunk) []*Chunk {
+	if len(cs) == 0 {
+		return nil
 	}
 
-	merged := []*Chunk{d.Chunks[0]}
+	merged := []*Chunk{cs[0]}
 
-	for _, c := range d.Chunks[1:] {
+	for _, c := range cs[1:] {
 		last := slice.At(merged, -1)
 		// If c does not abut or overlap last, there is nothing to do.
 		if c.LStart > last.LEnd {
@@ -244,51 +293,5 @@ func (d *Diff) Unify() *Diff {
 		last.REnd = c.REnd
 		last.Edits = append(last.Edits, c.Edits...)
 	}
-	d.Chunks = merged
-	return d
+	return merged
 }
-
-// findContext returns slices of up to n strings before and after the specified
-// chunk that are equal on the left and right sides of the diff.  Either or
-// both slices may be empty if there are no such lines.
-func (d *Diff) findContext(c *Chunk, n int) (pre, post []string) {
-	lcur, rcur := c.LStart-1, c.RStart-1
-	lend, rend := c.LEnd-1, c.REnd-1
-
-	for i := 1; i <= n; i++ {
-		p, q := lcur-i, rcur-i
-		if p < 0 || q < 0 || d.Left[p] != d.Right[q] {
-			break
-		}
-		pre = append(pre, d.Left[p]) // they are equal, so pick one
-	}
-	slice.Reverse(pre) // we walked backward from the start
-
-	for i := 0; i < n; i++ {
-		p, q := lend+i, rend+i
-		if p >= len(d.Left) || q >= len(d.Right) || d.Left[p] != d.Right[q] {
-			break
-		}
-		post = append(post, d.Left[p])
-	}
-	return
-}
-
-// A Chunk is a contiguous region within a diff covered by one or more
-// consecutive edit operations.
-type Chunk struct {
-	// The edits applied within this chunk, in order.
-	Edits []Edit
-
-	// The starting and ending lines of this chunk in the left input.
-	// Lines are 1-based, and the range includes start but excludes end.
-	LStart, LEnd int
-
-	// The starting and ending lines of this chunk in the right input.
-	// Lines are 1-based and the range includes start but excludes end.
-	RStart, REnd int
-}
-
-// Edit is an edit operation on strings.  It is exported here so the caller
-// does not need to import slice directly.
-type Edit = slice.Edit[string]
