@@ -5,9 +5,9 @@ import "fmt"
 // Maybe is a container that can hold a value of type T, which may either be
 // present or absent. A zero value is ready for use, and is absent.
 //
-// It is safe to copy a Maybe value, but note that if a value is present, only
-// a shallow copy of the underlying value is made. Maybe values are comparable
-// if and only if T is comparable.
+// It is safe to copy and assign a Maybe value, but note that if a value is
+// present, only a shallow copy of the underlying value is made. Maybe values
+// are comparable if and only if T is comparable.
 type Maybe[T any] struct {
 	value   T
 	present bool
