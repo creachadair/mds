@@ -135,7 +135,7 @@ func LNDSFunc[T any, Slice ~[]T](vs Slice, cmp func(a, b T) int) Slice {
 	return ret
 }
 
-// LISFunc computes a longest strictly increasing subsequence of vs.
+// LIS computes a longest strictly increasing subsequence of vs.
 //
 // This implementation takes O(P·log(n)) time and O(n) space for
 // inputs of length n = len(vs) and longest subsequence length P. If
