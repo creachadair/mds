@@ -17,7 +17,7 @@ type Maybe[T any] struct {
 func Just[T any](v T) Maybe[T] { return Maybe[T]{value: v, present: true} }
 
 // Absent returns an absent Maybe of the specified type.  It is a legibility
-// notation eauivalent to the zero value of type Maybe[T].
+// notation equivalent to the zero value of type Maybe[T].
 func Absent[T any]() Maybe[T] { return Maybe[T]{} }
 
 // Present reports whether a value is present in m.
