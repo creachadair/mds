@@ -1,7 +1,7 @@
 package slice_test
 
 import (
-	"math/rand"
+	"math/rand/v2"
 	"slices"
 	"testing"
 
@@ -259,7 +259,7 @@ func quadraticIncreasingSubsequence(lst []int, strictlyIncreasing bool) []int {
 func randomInts(N int) []int {
 	ret := make([]int, N)
 	for i := range ret {
-		ret[i] = rand.Intn(2 * N)
+		ret[i] = rand.IntN(2 * N)
 	}
 	return ret
 }

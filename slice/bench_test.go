@@ -2,7 +2,7 @@ package slice_test
 
 import (
 	"flag"
-	"math/rand"
+	"math/rand/v2"
 	"testing"
 
 	"github.com/creachadair/mds/slice"
@@ -16,11 +16,11 @@ var (
 func BenchmarkEdit(b *testing.B) {
 	lhs := make([]int, *lhsSize)
 	for i := range lhs {
-		lhs[i] = rand.Intn(1000000)
+		lhs[i] = rand.IntN(1000000)
 	}
 	rhs := make([]int, *rhsSize)
 	for i := range rhs {
-		rhs[i] = rand.Intn(10000000)
+		rhs[i] = rand.IntN(10000000)
 	}
 
 	b.Run("LCS", func(b *testing.B) {

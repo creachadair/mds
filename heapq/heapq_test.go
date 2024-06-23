@@ -2,7 +2,7 @@ package heapq_test
 
 import (
 	stdcmp "cmp"
-	"math/rand"
+	"math/rand/v2"
 	"sort"
 	"testing"
 
@@ -110,7 +110,7 @@ func TestOrder(t *testing.T) {
 	makeInput := func() []int {
 		input := make([]int, inputSize)
 		for i := range input {
-			input[i] = rand.Intn(inputRange) - (inputRange / 2)
+			input[i] = rand.IntN(inputRange) - (inputRange / 2)
 		}
 		return input
 	}
@@ -159,7 +159,7 @@ func TestNewWithData(t *testing.T) {
 
 	var want []int
 	for i := 0; i < bufSize/2; i++ {
-		z := rand.Intn(500) - 250
+		z := rand.IntN(500) - 250
 		buf = append(buf, z)
 		want = append(want, z) // keep track of what we added.
 	}
@@ -170,7 +170,7 @@ func TestNewWithData(t *testing.T) {
 
 	// Add some more stuff via the queue.
 	for i := 0; i < bufSize/2; i++ {
-		z := rand.Intn(500) - 250
+		z := rand.IntN(500) - 250
 		q.Add(z)
 		want = append(want, z)
 	}
@@ -190,7 +190,7 @@ func TestNewWithData(t *testing.T) {
 func TestSort(t *testing.T) {
 	longIn := make([]int, 50)
 	for i := range longIn {
-		longIn[i] = rand.Intn(1000) - 250
+		longIn[i] = rand.IntN(1000) - 250
 	}
 	longOut := make([]int, len(longIn))
 	copy(longOut, longIn)

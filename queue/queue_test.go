@@ -2,7 +2,7 @@ package queue_test
 
 import (
 	"flag"
-	"math/rand"
+	"math/rand/v2"
 	"testing"
 
 	"github.com/creachadair/mds/internal/mdtest"
@@ -112,10 +112,10 @@ func TestQueueRandom(t *testing.T) {
 			stats.MaxLen = len(has)
 		}
 		mdtest.CheckContents(t, &q, has)
-		switch op := rand.Intn(doTotal); {
+		switch op := rand.IntN(doTotal); {
 		case op < doAdd:
 			stats.NumAdd++
-			r := rand.Intn(1000)
+			r := rand.IntN(1000)
 			has = append(has, r)
 			debug("Add(%d)", r)
 			q.Add(r)
@@ -146,7 +146,7 @@ func TestQueueRandom(t *testing.T) {
 			}
 		case op < doPeek:
 			if len(has) != 0 {
-				r := rand.Intn(len(has))
+				r := rand.IntN(len(has))
 				debug("Peek(%d) exp=%d", r, has[r])
 				if got, ok := q.Peek(r); !ok || got != has[r] {
 					t.Errorf("Peek(%d): got (%d, %v), want (%d, true)", r, got, ok, has[r])

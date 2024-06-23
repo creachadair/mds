@@ -2,7 +2,7 @@ package compare_test
 
 import (
 	"cmp"
-	"math/rand"
+	"math/rand/v2"
 	"slices"
 	"testing"
 	"time"
@@ -19,8 +19,8 @@ func TestConversion(t *testing.T) {
 		cless := compare.ToLessFunc(cmp)
 
 		for i := 0; i < 1000; i++ {
-			m := rand.Intn(1000) - 500
-			n := rand.Intn(1000) - 500
+			m := rand.IntN(1000) - 500
+			n := rand.IntN(1000) - 500
 
 			mn, nm := less(m, n), less(n, m)
 			if mn && nm {

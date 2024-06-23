@@ -3,7 +3,7 @@ package stree_test
 import (
 	"fmt"
 	"math"
-	"math/rand"
+	"math/rand/v2"
 	"sort"
 	"testing"
 
@@ -18,10 +18,10 @@ var balances = []int{0, 50, 100, 150, 200, 250, 300, 500, 800, 1000}
 func intCompare(a, b int) int { return a - b }
 
 func randomTree(b *testing.B, β int) (*stree.Tree[int], []int) {
-	rng := rand.New(rand.NewSource(benchSeed))
+	rng := rand.New(rand.NewPCG(benchSeed, benchSeed))
 	values := make([]int, b.N)
 	for i := range values {
-		values[i] = rng.Intn(math.MaxInt32)
+		values[i] = rng.IntN(math.MaxInt32)
 	}
 	return stree.New(β, intCompare, values...), values
 }

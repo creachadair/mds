@@ -1,7 +1,7 @@
 package slice_test
 
 import (
-	"math/rand"
+	"math/rand/v2"
 	"regexp"
 	"slices"
 	"strings"
@@ -59,7 +59,7 @@ func TestLCSRandom(t *testing.T) {
 	// Append n randomly generated letters from alpha to *ss.
 	pad := func(ss *[]string, n int, alpha string) {
 		for i := 0; i < n; i++ {
-			j := rand.Intn(len(alpha))
+			j := rand.IntN(len(alpha))
 			*ss = append(*ss, alpha[j:j+1])
 		}
 	}
@@ -69,10 +69,10 @@ func TestLCSRandom(t *testing.T) {
 	input := func(want []string, alpha string) []string {
 		var out []string
 		for _, w := range want {
-			pad(&out, rand.Intn(4), alpha)
+			pad(&out, rand.IntN(4), alpha)
 			out = append(out, w)
 		}
-		pad(&out, rand.Intn(4), alpha)
+		pad(&out, rand.IntN(4), alpha)
 		return out
 	}
 
