@@ -1,7 +1,6 @@
 package slice_test
 
 import (
-	"cmp"
 	"math/rand"
 	"slices"
 	"testing"
@@ -16,7 +15,8 @@ func TestLNDSAndLIS(t *testing.T) {
 	tests := []struct {
 		name string
 		in   []int
-		want []int
+		lnds []int
+		lis  []int
 	}{
 		{
 			name: "nil",
@@ -24,59 +24,76 @@ func TestLNDSAndLIS(t *testing.T) {
 		{
 			name: "empty",
 			in:   []int{},
-			want: []int{},
+			lnds: []int{},
+			lis:  []int{},
 		},
 		{
 			name: "singleton",
 			in:   []int{1},
-			want: []int{1},
+			lnds: []int{1},
+			lis:  []int{1},
 		},
 		{
 			name: "sorted",
 			in:   []int{1, 2, 3, 4},
-			want: []int{1, 2, 3, 4},
+			lnds: []int{1, 2, 3, 4},
+			lis:  []int{1, 2, 3, 4},
 		},
 		{
 			name: "backwards",
 			in:   []int{4, 3, 2, 1},
-			want: []int{1},
+			lnds: []int{1},
+			lis:  []int{1},
 		},
 		{
 			name: "organ_pipe",
 			in:   []int{1, 2, 3, 4, 3, 2, 1},
-			want: []int{1, 2, 3, 3},
+			lnds: []int{1, 2, 3, 3},
+			lis:  []int{1, 2, 3, 4},
 		},
 		{
 			name: "sawtooth",
 			in:   []int{0, 1, 0, -1, 0, 1, 0, -1},
-			want: []int{0, 0, 0, 0},
+			lnds: []int{0, 0, 0, 0},
+			lis:  []int{-1, 0, 1},
 		},
 		{
 			name: "A005132", // from oeis.org
 			in:   []int{0, 1, 3, 6, 2, 7, 13, 20, 12, 21, 11, 22, 10},
-			want: []int{0, 1, 3, 6, 7, 13, 20, 21, 22},
+			lnds: []int{0, 1, 3, 6, 7, 13, 20, 21, 22},
+			lis:  []int{0, 1, 3, 6, 7, 13, 20, 21, 22},
 		},
 		{
 			name: "swapped_pairs",
 			in:   []int{2, 1, 4, 3, 6, 5, 8, 7},
-			want: []int{1, 3, 5, 7},
+			lnds: []int{1, 3, 5, 7},
+			lis:  []int{1, 3, 5, 7},
 		},
 		{
 			name: "run_of_equals",
 			// swapped_pairs with more 3s sprinkled in.
 			in:   []int{2, 1, 3, 4, 3, 6, 3, 5, 8, 3, 7},
-			want: []int{1, 3, 3, 3, 3, 7},
+			lnds: []int{1, 3, 3, 3, 3, 7},
+			lis:  []int{1, 3, 4, 5, 7},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got := slice.LNDS(tc.in)
-			if diff := diff.Diff(got, tc.want); diff != "" {
+			lnds := slice.LNDS(tc.in)
+			if diff := diff.Diff(lnds, tc.lnds); diff != "" {
 				t.Logf("Input was: %v", tc.in)
-				t.Logf("Got: %v", got)
-				t.Logf("Want: %v", tc.want)
+				t.Logf("Got: %v", lnds)
+				t.Logf("Want: %v", tc.lnds)
 				t.Errorf("LNDS subsequence is wrong (-got+want):\n%s", diff)
+			}
+
+			lis := slice.LIS(tc.in)
+			if diff := diff.Diff(lis, tc.lis); diff != "" {
+				t.Logf("Input was: %v", tc.in)
+				t.Logf("Got: %v", lis)
+				t.Logf("Want: %v", tc.lis)
+				t.Errorf("LIS subsequence is wrong (-got+want):\n%s", diff)
 			}
 		})
 	}
@@ -99,7 +116,7 @@ func TestLNDSAgainstLCS(t *testing.T) {
 	for i := 0; i < numIters; i++ {
 		input := randomInts(numVals)
 
-		gotLNDS := slice.LNDSFunc(input, cmp.Compare)
+		gotLNDS := slice.LNDS(input)
 
 		sorted := append([]int(nil), input...)
 		slices.Sort(sorted)
@@ -112,6 +129,30 @@ func TestLNDSAgainstLCS(t *testing.T) {
 	}
 }
 
+func TestLISAgainstLCS(t *testing.T) {
+	t.Parallel()
+
+	// The same result from the LNDS vs. LCS test applies, but only on
+	// lists of distinct elements.
+
+	const numVals = 50
+	const numIters = 100
+	for i := 0; i < numIters; i++ {
+		input := rand.Perm(numVals)
+
+		gotLIS := slice.LIS(input)
+
+		sorted := append([]int(nil), input...)
+		slices.Sort(sorted)
+		gotLCS := slice.LCS(input, sorted)
+
+		if got, want := len(gotLIS), len(gotLCS); got != want {
+			t.Logf("Input: %v", input)
+			t.Errorf("len(LIS(x)) = %v, want len(LCS(x, sorted(x))) = %v", got, want)
+		}
+	}
+}
+
 func TestLNDSRandom(t *testing.T) {
 	t.Parallel()
 
@@ -120,8 +161,8 @@ func TestLNDSRandom(t *testing.T) {
 
 	for i := 0; i < numIters; i++ {
 		input := randomInts(numVals)
-		want := quadraticLNDS(input)
-		got := slice.LNDSFunc(input, cmp.Compare)
+		want := quadraticIncreasingSubsequence(input, false)
+		got := slice.LNDS(input)
 
 		if diff := diff.Diff(got, want); diff != "" {
 			t.Logf("Input: %v", input)
@@ -132,15 +173,34 @@ func TestLNDSRandom(t *testing.T) {
 	}
 }
 
-// quadraticLNDS returns the same longest increasing subsequence of
-// lst that slice.LNDSFunc returns, but using a quadratic recursive
-// search that is much slower, but more obviously correct by
-// inspection.
-func quadraticLNDS(lst []int) []int {
-	// better reports whether a is a better LNDS than b.
-	//
-	// a wins if it is longer, or if any of its elements is smaller
-	// than its counterpart in b.
+func TestLISRandom(t *testing.T) {
+	t.Parallel()
+
+	const numVals = 50
+	const numIters = 100
+
+	for i := 0; i < numIters; i++ {
+		input := randomInts(numVals)
+		want := quadraticIncreasingSubsequence(input, true)
+		got := slice.LIS(input)
+
+		if diff := diff.Diff(got, want); diff != "" {
+			t.Logf("Input: %v", input)
+			t.Logf("Got: %v", got)
+			t.Logf("Want: %v", want)
+			t.Errorf("LIS subsequence is wrong (-got+want):\n%s", diff)
+		}
+	}
+}
+
+// quadraticRisingSequence recursively scans all subsequences of lst,
+// looking for the longest increasing subsequence. if
+// strictlyIncreasing is true it returns the same as slice.LIS,
+// otherwise it returns the same as slice.LNDS.
+func quadraticIncreasingSubsequence(lst []int, strictlyIncreasing bool) []int {
+	// better reports whether a is a better increasing subsequence
+	// than b. a is better if it is longer, or if any of its elements
+	// is smaller than its counterpart in b.
 	better := func(a, b []int) bool {
 		if len(a) > len(b) {
 			return true
@@ -148,25 +208,23 @@ func quadraticLNDS(lst []int) []int {
 			return false
 		}
 
-		for i := range a {
-			if a[i] < b[i] {
-				return true
-			} else if a[i] > b[i] {
-				return false
-			}
-		}
-		// a and b are completely equal, which can happen in the
-		// quadratic algorithm since we might generate permutations of
-		// indistinguishable equal elements. Returning false avoids a
-		// pointless copy.
-		return false
+		// We can't use slices.Compare alone because we need list
+		// length to win over list contents, and contents to matter
+		// only between equal lists. But we can use it for the equal
+		// case.
+		return slices.Compare(a, b) < 0
 	}
 
-	// findLNDS recursively constructs all possible increasing
-	// sequences of vs, updating best as it discovers better LNDS
-	// candidates.
-	var findLNDS func([]int, []int, []int) []int
-	findLNDS = func(vs, acc, best []int) (bestOfTree []int) {
+	canExtend := func(prev, next int) bool { return next >= prev }
+	if strictlyIncreasing {
+		canExtend = func(prev, next int) bool { return next > prev }
+	}
+
+	// findIS recursively constructs all possible increasing sequences
+	// of vs, updating best as it discovers better candidates for
+	// longest.
+	var findIS func([]int, []int, []int) []int
+	findIS = func(vs, acc, best []int) (bestOfTree []int) {
 		if len(vs) == 0 {
 			if better(acc, best) {
 				best = append(best[:0], acc...)
@@ -182,12 +240,12 @@ func quadraticLNDS(lst []int) []int {
 		}
 
 		elt, vs := vs[0], vs[1:]
-		if len(acc) == 0 || elt >= acc[len(acc)-1] {
+		if len(acc) == 0 || canExtend(acc[len(acc)-1], elt) {
 			// elt could extend acc, try that
-			best = findLNDS(vs, append(acc, elt), best)
+			best = findIS(vs, append(acc, elt), best)
 		}
 		// and always try skipping elt
-		return findLNDS(vs, acc, best)
+		return findIS(vs, acc, best)
 	}
 
 	// Preallocate, so the recursion doesn't add insult to injury by
@@ -195,7 +253,7 @@ func quadraticLNDS(lst []int) []int {
 	acc := make([]int, 0, len(lst))
 	best := make([]int, 0, len(lst))
 
-	return findLNDS(lst, acc, best)
+	return findIS(lst, acc, best)
 }
 
 func randomInts(N int) []int {

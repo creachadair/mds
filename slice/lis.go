@@ -2,6 +2,7 @@ package slice
 
 import (
 	"cmp"
+	"slices"
 )
 
 // Editorial note: "longest increasing subsequence" and "longest
@@ -126,6 +127,72 @@ func LNDSFunc[T any, Slice ~[]T](vs Slice, cmp func(a, b T) int) Slice {
 	// partition the input.
 	ret := make([]T, len(tails))
 	seqIdx := tails[len(tails)-1] // current longest subsequence element
+	for i := range ret {
+		ret[len(ret)-1-i] = vs[seqIdx]
+		seqIdx = prev[seqIdx]
+	}
+
+	return ret
+}
+
+// LISFunc computes a longest strictly increasing subsequence of vs.
+//
+// This implementation takes O(P·log(n)) time and O(n) space for
+// inputs of length n = len(vs) and longest subsequence length P. If
+// the longest subsequence is the entire input, it takes O(n) time and
+// O(n) space.
+func LIS[T cmp.Ordered, Slice ~[]T](vs Slice) Slice {
+	return LISFunc(vs, cmp.Compare)
+}
+
+// LISFunc computes a longest strictly increasing subsequence of vs,
+// in the order determined by the cmp function. cmp must return a
+// negative number when a < b, a positive number when a > b, and zero
+// when a == b.
+//
+// This implementation takes O(P·log(n)) time and O(n) space for
+// inputs of length n = len(vs) and longest subsequence length P. If
+// the longest subsequence is the entire input, it takes O(n) time and
+// O(n) space.
+func LISFunc[T any, Slice ~[]T](vs Slice, cmp func(a, b T) int) Slice {
+	// LISFunc is almost exactly the same as LNDSFunc, except that
+	// comparisons are > instead of >= and the binary search leans
+	// left. Further comments have been omitted for brevity.
+	if len(vs) == 0 {
+		return vs
+	}
+
+	var (
+		tails = make([]int, 1, len(vs))
+		prev  = make([]int, len(vs))
+	)
+	prev[0] = -1
+	tails[0] = 0
+
+	for i := range vs[1:] {
+		i++
+
+		idxOfBestTail := tails[len(tails)-1]
+		if cmp(vs[i], vs[idxOfBestTail]) > 0 {
+			prev[i] = idxOfBestTail
+			tails = append(tails, i)
+			continue
+		}
+
+		replaceIdx, _ := slices.BinarySearchFunc(tails[:len(tails)-1], vs[i], func(idx int, target T) int {
+			return cmp(vs[idx], target)
+		})
+
+		if replaceIdx == 0 {
+			prev[i] = -1
+		} else {
+			prev[i] = tails[replaceIdx-1]
+		}
+		tails[replaceIdx] = i
+	}
+
+	ret := make([]T, len(tails))
+	seqIdx := tails[len(tails)-1]
 	for i := range ret {
 		ret[len(ret)-1-i] = vs[seqIdx]
 		seqIdx = prev[seqIdx]
