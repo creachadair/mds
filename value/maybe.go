@@ -32,7 +32,7 @@ func (m Maybe[T]) Get() T { return m.value }
 
 // Or returns m if a value is present, otherwise it returns o.
 func (m Maybe[T]) Or(o Maybe[T]) Maybe[T] {
-	if m.Present() {
+	if m.present {
 		return m
 	}
 	return o
