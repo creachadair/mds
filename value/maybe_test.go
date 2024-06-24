@@ -30,6 +30,27 @@ func TestMaybe(t *testing.T) {
 		}
 	})
 
+	t.Run("Or", func(t *testing.T) {
+		v := value.Just("pear")
+		w := value.Just("plum")
+		absent := value.Absent[string]()
+		tests := []struct {
+			lhs, rhs value.Maybe[string]
+			want     value.Maybe[string]
+		}{
+			{absent, absent, absent},
+			{v, absent, v},
+			{absent, v, v},
+			{v, w, v},
+			{w, v, w},
+		}
+		for _, tc := range tests {
+			if got := tc.lhs.Or(tc.rhs); got != tc.want {
+				t.Errorf("%v.Or(%v): got %v, want %v", tc.lhs, tc.rhs, got, tc.want)
+			}
+		}
+	})
+
 	t.Run("String", func(t *testing.T) {
 		v := value.Just("pear")
 		if got := v.String(); got != "pear" {
