@@ -1,6 +1,7 @@
 package value_test
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/creachadair/mds/value"
@@ -60,6 +61,36 @@ func TestMaybe(t *testing.T) {
 		var w value.Maybe[string]
 		if got, want := w.String(), "Absent[string]"; got != want {
 			t.Errorf("String: got %q, want %q", got, want)
+		}
+	})
+}
+
+func TestJust(t *testing.T) {
+	odd := func(v int) (int, bool) {
+		return v, v%2 == 1
+	}
+	t.Run("OK", func(t *testing.T) {
+		got := value.JustOK(odd(1))
+		if want := value.Just(1); got != want {
+			t.Errorf("JustOK(1): got %v, want %v", got, want)
+		}
+	})
+	t.Run("NotOK", func(t *testing.T) {
+		got := value.JustOK(odd(2))
+		if got.Present() {
+			t.Errorf("JustOK(2): got %v, want absent", got)
+		}
+	})
+	t.Run("NoErr", func(t *testing.T) {
+		got := value.JustErr(strconv.Atoi("1"))
+		if want := value.Just(1); got != want {
+			t.Errorf("JustErr(1): got %v, want %v", got, want)
+		}
+	})
+	t.Run("Err", func(t *testing.T) {
+		got := value.JustErr(strconv.Atoi("bogus"))
+		if got.Present() {
+			t.Errorf("JustErr(bogus): got %v, want absent", got)
 		}
 	})
 }

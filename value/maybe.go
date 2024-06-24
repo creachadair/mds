@@ -16,6 +16,24 @@ type Maybe[T any] struct {
 // Just returns a Maybe whose present value is v.
 func Just[T any](v T) Maybe[T] { return Maybe[T]{value: v, present: true} }
 
+// JustOK returns a present Maybe with value v if ok is true; otherwise it
+// returns absent.
+func JustOK[T any](v T, ok bool) Maybe[T] {
+	if ok {
+		return Just(v)
+	}
+	return Maybe[T]{}
+}
+
+// JustNoError returns a present Maybe with value v if err == nil; otherwise it
+// returns absent.
+func JustNoError[T any](v T, err error) Maybe[T] {
+	if err == nil {
+		return Just(v)
+	}
+	return Maybe[T]{}
+}
+
 // Absent returns an absent Maybe of the specified type.  It is a legibility
 // notation equivalent to the zero value of type Maybe[T].
 func Absent[T any]() Maybe[T] { return Maybe[T]{} }
