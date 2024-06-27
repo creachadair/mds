@@ -82,15 +82,15 @@ func TestJust(t *testing.T) {
 		}
 	})
 	t.Run("NoErr", func(t *testing.T) {
-		got := value.JustErr(strconv.Atoi("1"))
+		got := value.JustNoError(strconv.Atoi("1"))
 		if want := value.Just(1); got != want {
-			t.Errorf("JustErr(1): got %v, want %v", got, want)
+			t.Errorf("JustNoError(1): got %v, want %v", got, want)
 		}
 	})
 	t.Run("Err", func(t *testing.T) {
-		got := value.JustErr(strconv.Atoi("bogus"))
+		got := value.JustNoError(strconv.Atoi("bogus"))
 		if got.Present() {
-			t.Errorf("JustErr(bogus): got %v, want absent", got)
+			t.Errorf("JustNoError(bogus): got %v, want absent", got)
 		}
 	})
 }
