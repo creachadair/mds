@@ -1,7 +1,5 @@
 package stree
 
-import "fmt"
-
 type node[T any] struct {
 	X           T
 	left, right *node[T]
@@ -24,22 +22,98 @@ func (n *node[T]) size() int {
 	return 1 + n.left.size() + n.right.size()
 }
 
-// flatten extracts the nodes rooted at n into a slice in order, and returns
-// the resulting slice. The results are appended to into, thus allowing the
-// caller to preallocate storage:
+// treeToVine rewrites the tree rooted at n into an inorder linked list, and
+// returns the first element of the list. The nodes are modified in-place and
+// linked via their right pointers; the left pointers of all the nodes are set
+// to nil.
 //
-// Example:
-//
-//	into := n.flatten(make([]*node, 0, n.size()))
-//
-// If cap(into) ≥ n.size(), this method does not allocate on the heap.
-func (n *node[T]) flatten(into []*node[T]) []*node[T] {
-	if n != nil {
-		into = n.left.flatten(into)
-		into = append(into, n)
-		into = n.right.flatten(into)
+// This conversion uses the in-place iterative approach of Stout & Warren,
+// where the tree is denormalized in-place via rightward rotations.
+func treeToVine[T any](n *node[T]) *node[T] {
+	stub := &node[T]{right: n} // sentinel
+	cur := stub
+	for cur.right != nil {
+		C := cur.right
+		if C.left == nil {
+			cur = C
+			continue
+		}
+
+		// Right rotate:
+		//   cur     into     cur
+		//     \                \
+		//      C                L
+		//     / \              / \
+		//    L   z            x   C
+		//   / \                  / \
+		//  x   y                y   z
+		L := C.left
+		C.left = L.right // y ← C
+		L.right = C      // L → C
+		cur.right = L    // n → L
 	}
-	return into
+	return stub.right
+}
+
+// rotateLeft rewrites the chain of nodes starting from n and linked by right
+// pointers, by left-rotating the specified number of times. This function will
+// panic if count exceeds the length of the chain.
+//
+// A single left-rotation transforms:
+//
+//	n      into       n
+//	 \                 \
+//	  C                 R
+//	 / \               / \
+//	x   R             C   z
+//	   / \           / \
+//	  y   z         x   y
+//
+// Note that any of x, y, and z may be nil.
+func rotateLeft[T any](n *node[T], count int) {
+	next := n
+	for i := 0; i < count; i++ {
+		C := next.right
+		R := C.right
+
+		C.right = R.left // C → y
+		R.left = C       // C ← R
+		next.right = R   // n → R
+
+		next = R // advance
+	}
+}
+
+// vineToTree rewrites the chain of count nodes starting from n and linked by
+// right pointers, into a balanced tree rooted at n. It returns the root of the
+// resulting new tree. It will panic if count exceeds the chain length.
+//
+// This uses Stout & Warren's extension of Day's algorithm that produces a tree
+// that is "full" (as much as possible), with leaves filled left-to-right.
+func vineToTree[T any](n *node[T], count int) *node[T] {
+	// Compute the largest power of 2 no greater than count, less 1.
+	// That is the size of the largest full tree not exceeding count nodes.
+	step := 1
+	for step <= count {
+		step = (2 * step) + 1 // == 2*k - 1
+	}
+	step /= 2
+
+	stub := &node[T]{right: n}
+
+	// Step 1: Pack the "loose" elements left over.
+	// For example, if count == 21 then step == 15 and 6 are left over.
+	// After (count - step) == 6 rotations we have 15 (a full tree).
+	// This is done first to ensure the leaves fill left-to-right.
+	rotateLeft(stub, count-step)
+
+	// Step 2: Pack the full tree and its subtrees.
+	left := step
+	for left > 1 {
+		left /= 2
+		rotateLeft(stub, left)
+	}
+	return stub.right
 }
 
 // extract constructs a balanced tree from the given nodes and returns the root
@@ -60,11 +134,7 @@ func extract[T any](nodes []*node[T]) *node[T] {
 // Costs a single size-element array allocation, plus O(lg size) stack space,
 // but does no other allocation.
 func rewrite[T any](root *node[T], size int) *node[T] {
-	nodes := root.flatten(make([]*node[T], 0, size))
-	if len(nodes) != size {
-		panic(fmt.Sprintf("len(nodes) = %d but size = %d", len(nodes), size))
-	}
-	return extract(nodes)
+	return vineToTree(treeToVine(root), size)
 }
 
 // popMinRight removes the smallest node from the right subtree of root,
