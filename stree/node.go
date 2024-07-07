@@ -157,14 +157,15 @@ func popMinRight[T any](root *node[T]) *node[T] {
 
 // inorder visits the subtree under n inorder, calling f until f returns false.
 func (n *node[T]) inorder(f func(T) bool) bool {
-	if n == nil {
-		return true
-	} else if ok := n.left.inorder(f); !ok {
-		return false
-	} else if ok := f(n.X); !ok {
-		return false
+	for n != nil {
+		if ok := n.left.inorder(f); !ok {
+			return false
+		} else if ok := f(n.X); !ok {
+			return false
+		}
+		n = n.right
 	}
-	return n.right.inorder(f)
+	return true
 }
 
 // pathTo returns the sequence of nodes beginning at n leading to key, if key
