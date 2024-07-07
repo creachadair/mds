@@ -8,7 +8,7 @@
 // Scapegoat trees are relatively memory-efficient, as interior nodes do not
 // require any ancillary metadata for balancing purposes, and the tree itself
 // costs only a few words of bookkeeping overhead beyond the nodes. Rebalancing
-// uses the Day-Stout-Warrent (DSW) in-place algorithm, which does not require
+// uses the Day-Stout-Warren (DSW) in-place algorithm, which does not require
 // any additional heap allocations.
 //
 // The scapegoat tree algorithm is described by the paper:
