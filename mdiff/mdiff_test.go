@@ -84,6 +84,24 @@ func TestDiff(t *testing.T) {
 	})
 }
 
+func TestRegression(t *testing.T) {
+	t.Run("#12", func(t *testing.T) {
+		const contextWindow = 3
+
+		// Produce a chunk with a longer overlap than the size of the context
+		// window.  Without the fix, this will trigger a panic in unification.
+		lhs := lines("X", "Y", "Z", "", "a", "b", "c")
+		rhs := lines("X", "Y", "Z", "", "", "a", "", "b", "", "c", "")
+
+		d := mdiff.New(lhs, rhs)
+		t.Log("-- Before context")
+		logChunks(t, d.Chunks)
+		d.AddContext(contextWindow).Unify()
+		t.Log("-- After unification")
+		logChunks(t, d.Chunks)
+	})
+}
+
 func TestNoAlias(t *testing.T) {
 	// The documentation promises that adding context and unifying does not
 	// disturb the original edit sequence.
@@ -282,3 +300,5 @@ func logChunks(t *testing.T, cs []*mdiff.Chunk) {
 		}
 	}
 }
+
+func lines(ss ...string) []string { return ss }
