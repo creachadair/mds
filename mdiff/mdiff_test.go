@@ -90,8 +90,8 @@ func TestRegression(t *testing.T) {
 
 		// Produce a chunk with a longer overlap than the size of the context
 		// window.  Without the fix, this will trigger a panic in unification.
-		lhs := mstr.Lines("X\nY\nZ\n\na\nb\nc")
-		rhs := mstr.Lines("X\nY\nZ\n\n\na\n\nb\n\nc\n\n")
+		lhs := lines("X", "Y", "Z", "", "a", "b", "c")
+		rhs := lines("X", "Y", "Z", "", "", "a", "", "b", "", "c", "")
 
 		d := mdiff.New(lhs, rhs)
 		t.Log("-- Before context")
@@ -300,3 +300,5 @@ func logChunks(t *testing.T, cs []*mdiff.Chunk) {
 		}
 	}
 }
+
+func lines(ss ...string) []string { return ss }
