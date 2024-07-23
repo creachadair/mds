@@ -247,7 +247,7 @@ func UnifyChunks(cs []*Chunk) []*Chunk {
 		// original script edits.
 		if lap > 0 {
 			if end.Op == slice.OpEmit { // last has post-context
-				if lap == len(end.X) { // remove the whole edit
+				if lap >= len(end.X) { // remove the whole edit
 					last.Edits = last.Edits[:len(last.Edits)-1]
 					end = slice.PtrAt(last.Edits, -1)
 				} else {
@@ -257,7 +257,7 @@ func UnifyChunks(cs []*Chunk) []*Chunk {
 				last.LEnd -= lap
 				last.REnd -= lap
 			} else if start.Op == slice.OpEmit { // start has pre-context
-				if lap == len(start.X) { // remove the whole edit
+				if lap >= len(start.X) { // remove the whole edit
 					c.Edits = c.Edits[1:]
 					start = slice.PtrAt(c.Edits, 0)
 				} else {
