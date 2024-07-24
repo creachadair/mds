@@ -43,14 +43,7 @@ func ToLessFunc[T any](cmp func(a, b T) int) func(a, b T) bool {
 
 // Time is a comparison function for time.Time values that orders earlier times
 // before later ones.
-func Time(a, b time.Time) int {
-	if a.Before(b) {
-		return -1
-	} else if a.Equal(b) {
-		return 0
-	}
-	return 1
-}
+func Time(a, b time.Time) int { return a.Compare(b) }
 
 // Reversed returns a comparison function that orders its elements in the
 // reverse of the ordering expressed by c.
