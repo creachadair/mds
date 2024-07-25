@@ -118,7 +118,8 @@ func vineToTree[T any](n *node[T], count int) *node[T] {
 
 // extract constructs a balanced tree from the given nodes and returns the root
 // of the tree. The child pointers of the resulting nodes are updated in place.
-// This function does not allocate on the heap.
+// This function does not allocate on the heap. The nodes must be
+// sorted and free of duplicates.
 func extract[T any](nodes []*node[T]) *node[T] {
 	if len(nodes) == 0 {
 		return nil

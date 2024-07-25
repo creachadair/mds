@@ -54,9 +54,22 @@ func TestNew(t *testing.T) {
 		got := allWords(tree)
 		want := []string{"fetch", "please", "slippers", "your"}
 		if diff := gocmp.Diff(got, want); diff != "" {
-			t.Errorf("New<Tree produced unexpected output (-got, +want)\n%s", diff)
+			t.Errorf("New: Tree produced unexpected output (-got, +want)\n%s", diff)
 		}
 
+		if n := tree.Len(); n != len(want) {
+			t.Errorf("Len: got %d, want %d", n, len(want))
+		}
+	})
+	t.Run("Duplicates", func(t *testing.T) {
+		// Regression test for #14: duplicate values could be inserted
+		// at construction time.
+		tree := stree.New(100, cmp.Compare[string], "we", "can", "dance", "we", "can", "dance")
+		got := allWords(tree)
+		want := []string{"can", "dance", "we"}
+		if diff := gocmp.Diff(got, want); diff != "" {
+			t.Errorf("New: Tree produced unexpected output (-got, +want)\n%s", diff)
+		}
 		if n := tree.Len(); n != len(want) {
 			t.Errorf("Len: got %d, want %d", n, len(want))
 		}
