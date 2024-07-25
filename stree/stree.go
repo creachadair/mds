@@ -51,8 +51,6 @@ func New[T any](β int, compare func(a, b T) int, keys ...T) *Tree[T] {
 		β:       β,
 		compare: compare,
 		limit:   limitFunc(β),
-		size:    len(keys),
-		max:     len(keys),
 	}
 	if len(keys) != 0 {
 		nodes := make([]*node[T], len(keys))
@@ -62,6 +60,11 @@ func New[T any](β int, compare func(a, b T) int, keys ...T) *Tree[T] {
 		slices.SortFunc(nodes, func(a, b *node[T]) int {
 			return compare(a.X, b.X)
 		})
+		nodes = slices.CompactFunc(nodes, func(a, b *node[T]) bool {
+			return compare(a.X, b.X) == 0
+		})
+		tree.size = len(nodes)
+		tree.max = len(nodes)
 		tree.root = extract(nodes)
 	}
 	return tree
