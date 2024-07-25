@@ -62,27 +62,6 @@ func TestPartition(t *testing.T) {
 	}
 }
 
-func TestDedup(t *testing.T) {
-	for _, test := range []testCase[int]{
-		{"Nil", nil, nil, nil},
-		{"Empty", []int{}, nil, nil},
-		{"One", []int{100}, []int{100}, nil},
-		{"NoRuns", []int{1, 3, 2, 4}, []int{1, 3, 2, 4}, nil},
-		{"Single", []int{5, 5, 5, 5, 5}, []int{5}, nil},
-		{"Two", []int{2, 2, 2, 3, 3, 3}, []int{2, 3}, nil},
-		{"Repeat", []int{1, 3, 3, 1}, []int{1, 3, 1}, nil},
-		{"NoRunsAsc", []int{0, 1, 2, 3, 4}, []int{0, 1, 2, 3, 4}, nil},
-		{"NoRunsDesc", []int{10, 9, 8, 7}, []int{10, 9, 8, 7}, nil},
-		{"RunsAsc", []int{0, 1, 1, 1, 2, 2, 3}, []int{0, 1, 2, 3}, nil},
-		{"RunsDesc", []int{5, 5, 5, 3, 3, 1, 1, 0}, []int{5, 3, 1, 0}, nil},
-
-		// Runs:           a  b---  c  b---  d---  e---------
-		{"Unsorted", []int{1, 0, 0, 9, 0, 0, 3, 3, 2, 2, 2, 2}, []int{1, 0, 9, 0, 3, 2}, nil},
-	} {
-		t.Run(test.desc, test.dedup)
-	}
-}
-
 func TestReverse(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -539,20 +518,6 @@ func (tc *testCase[T]) partition(t *testing.T) {
 	diff := cmp.Diff(tc.want, got, cmpopts.EquateEmpty())
 	if diff != "" {
 		t.Errorf("Partition result (-want, +got)\n%s", diff)
-	}
-}
-
-func (tc *testCase[T]) dedup(t *testing.T) {
-	t.Helper()
-
-	cp := copyOf(tc.input)
-	t.Logf("Input: %+v", cp)
-
-	got := slice.Dedup(cp)
-	t.Logf("After dedup: %+v ~ %+v", got, cp[len(got):])
-	diff := cmp.Diff(tc.want, got, cmpopts.EquateEmpty())
-	if diff != "" {
-		t.Errorf("Dedup result (-want, +got)\n%s", diff)
 	}
 }
 
