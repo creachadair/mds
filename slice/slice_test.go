@@ -62,29 +62,6 @@ func TestPartition(t *testing.T) {
 	}
 }
 
-func TestReverse(t *testing.T) {
-	tests := []struct {
-		name  string
-		input []int
-		want  []int
-	}{
-		{"Nil", nil, nil},
-		{"Empty", []int{}, nil},
-		{"Single", []int{11}, []int{11}},
-		{"Multiple", []int{1, 2, 3, 4, 5}, []int{5, 4, 3, 2, 1}},
-		{"Palindrome", []int{1, 2, 3, 2, 1}, []int{1, 2, 3, 2, 1}},
-	}
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			cp := append([]int(nil), tc.input...)
-			slice.Reverse(cp)
-			if diff := cmp.Diff(tc.want, cp); diff != "" {
-				t.Errorf("Reverse(%v) result (-want, +got)\n%s", tc.input, diff)
-			}
-		})
-	}
-}
-
 func TestZero(t *testing.T) {
 	zs := []int{1, 2, 3, 4, 5}
 	slice.Zero(zs[3:])

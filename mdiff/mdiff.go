@@ -66,6 +66,8 @@
 package mdiff
 
 import (
+	"slices"
+
 	"github.com/creachadair/mds/slice"
 )
 
@@ -189,7 +191,7 @@ func (d *Diff) findContext(c *Chunk, n int) (pre, post []string) {
 		}
 		pre = append(pre, d.Left[p]) // they are equal, so pick one
 	}
-	slice.Reverse(pre) // we walked backward from the start
+	slices.Reverse(pre) // we walked backward from the start
 
 	for i := 0; i < n; i++ {
 		p, q := lend+i, rend+i

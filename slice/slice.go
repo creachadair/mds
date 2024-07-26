@@ -79,11 +79,10 @@ func Dedup[T comparable](vs []T) []T {
 }
 
 // Reverse reverses the contents of vs in-place.
+//
+// Deprecated: Use the equivalent [slices.Reverse] instead.
 func Reverse[T any, Slice ~[]T](vs Slice) {
-	for i, j := 0, len(vs)-1; i < j; i++ {
-		vs[i], vs[j] = vs[j], vs[i]
-		j--
-	}
+	slices.Reverse(vs)
 }
 
 // Zero sets all the elements of vs to their zero value.
