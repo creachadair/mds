@@ -44,7 +44,7 @@ func TestMaybe(t *testing.T) {
 			{v, "plum", "pear"},
 		}
 		for _, tc := range tests {
-			if got := tc.lhs.Or(tc.rhs); got != tc.want {
+			if got := tc.lhs.Or(tc.rhs); got != value.Just(tc.want) {
 				t.Errorf("%v.Or(%v): got %v, want %v", tc.lhs, tc.rhs, got, tc.want)
 			}
 		}

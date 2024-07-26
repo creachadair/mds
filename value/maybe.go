@@ -40,12 +40,12 @@ func (m Maybe[T]) GetOK() (T, bool) { return m.value, m.present }
 // Get returns value held in m, if present; otherwise it returns the zero of T.
 func (m Maybe[T]) Get() T { return m.value }
 
-// Or returns the value of m if a value is present, otherwise it returns o.
-func (m Maybe[T]) Or(o T) T {
+// Or returns m if m holds a value; otherwise it returns Just(o).
+func (m Maybe[T]) Or(o T) Maybe[T] {
 	if m.present {
-		return m.value
+		return m
 	}
-	return o
+	return Just(o)
 }
 
 // String returns the string representation of m. If m holds a value v, the
