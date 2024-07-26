@@ -23,9 +23,11 @@ func ExampleMaybe() {
 		}
 	}
 
-	fmt.Println(count)
-	fmt.Println(even)
+	fmt.Println("input:", randomValues)
+	fmt.Println("result:", even)
+	fmt.Println("count:", count)
 	// Output:
-	// 3
-	// [Absent[int] 6 16 Absent[int] 4]
+	// input: [1 6 16 19 4]
+	// result: [Absent[int] 6 16 Absent[int] 4]
+	// count: 3
 }
