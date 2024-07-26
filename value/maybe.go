@@ -18,14 +18,6 @@ type Maybe[T any] struct {
 // Just returns a Maybe holding the value v.
 func Just[T any](v T) Maybe[T] { return Maybe[T]{value: v, present: true} }
 
-// Check returns Just(v) if err == nil; otherwise it returns Absent().
-func Check[T any](v T, err error) Maybe[T] {
-	if err == nil {
-		return Just(v)
-	}
-	return Maybe[T]{}
-}
-
 // Absent returns a Maybe holding no value.
 // A zero Maybe is equivalent to Absent().
 func Absent[T any]() Maybe[T] { return Maybe[T]{} }
@@ -55,6 +47,14 @@ func (m Maybe[T]) String() string {
 		return fmt.Sprint(m.value)
 	}
 	return fmt.Sprintf("Absent[%T]", m.value)
+}
+
+// Check returns Just(v) if err == nil; otherwise it returns Absent().
+func Check[T any](v T, err error) Maybe[T] {
+	if err == nil {
+		return Just(v)
+	}
+	return Maybe[T]{}
 }
 
 // MapMaybe returns a function from Maybe[T] to Maybe[U].
