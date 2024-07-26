@@ -48,7 +48,7 @@ func (m Maybe[T]) Or(o T) T {
 	return o
 }
 
-// String returns the string representation of m.  If m holds a value v, the
+// String returns the string representation of m. If m holds a value v, the
 // string representation of m is that of v.
 func (m Maybe[T]) String() string {
 	if m.present {
@@ -59,7 +59,7 @@ func (m Maybe[T]) String() string {
 
 // MapMaybe returns a function from Maybe[T] to Maybe[U].
 // If the argument is present and has value v, the result is present and has
-// value f(v).  Otherwise, the result is absent and f is not called.
+// value f(v). Otherwise, the result is absent and f is not called.
 func MapMaybe[T, U any](f func(T) U) func(Maybe[T]) Maybe[U] {
 	return func(a Maybe[T]) Maybe[U] {
 		if v, ok := a.GetOK(); ok {
