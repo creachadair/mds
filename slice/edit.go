@@ -1,6 +1,9 @@
 package slice
 
-import "fmt"
+import (
+	"fmt"
+	"slices"
+)
 
 // LCS computes a longest common subsequence of as and bs.
 //
@@ -64,7 +67,7 @@ func LCSFunc[T any, Slice ~[]T](as, bs Slice, eq func(a, b T) bool) Slice {
 	for p := c[len(as)]; p.n > 0; p = p.prev {
 		out = append(out, as[p.i])
 	}
-	Reverse(out)
+	slices.Reverse(out)
 	return out
 }
 

@@ -25,16 +25,6 @@ func ExampleDedup() {
 	// [1 3 2 4 5 1 3]
 }
 
-func ExampleReverse() {
-	vs := []string{"red", "yellow", "blue", "green"}
-	fmt.Println("before:", strings.Join(vs, " "))
-	slice.Reverse(vs)
-	fmt.Println("after:", strings.Join(vs, " "))
-	// Ouput:
-	// before: red yellow blue green
-	// after: green blue yellow red
-}
-
 func ExampleSplit() {
 	vs := []int{1, 2, 3, 4, 5, 6, 7, 8}
 
