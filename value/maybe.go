@@ -2,8 +2,10 @@ package value
 
 import "fmt"
 
-// Maybe is a container that can hold a value of type T, which may either be
-// present or absent. A zero value is ready for use, and is absent.
+// Maybe is a container that can hold a value of type T.
+// Just(v) returns a Maybe holding the value v.
+// Absent() returns a Maybe that holds no value.
+// A zero Maybe is ready for use and is equivalent to Absent().
 //
 // It is safe to copy and assign a Maybe value, but note that if a value is
 // present, only a shallow copy of the underlying value is made. Maybe values
@@ -13,11 +15,10 @@ type Maybe[T any] struct {
 	present bool
 }
 
-// Just returns a Maybe whose present value is v.
+// Just returns a Maybe holding the value v.
 func Just[T any](v T) Maybe[T] { return Maybe[T]{value: v, present: true} }
 
-// Check returns a present Maybe with value v if err == nil; otherwise it
-// returns absent.
+// Check returns Just(v) if err == nil; otherwise it returns Absent().
 func Check[T any](v T, err error) Maybe[T] {
 	if err == nil {
 		return Just(v)
@@ -25,18 +26,18 @@ func Check[T any](v T, err error) Maybe[T] {
 	return Maybe[T]{}
 }
 
-// Absent returns an absent Maybe of the specified type.  It is a legibility
-// notation equivalent to the zero value of type Maybe[T].
+// Absent returns a Maybe holding no value.
+// A zero Maybe is equivalent to Absent().
 func Absent[T any]() Maybe[T] { return Maybe[T]{} }
 
-// Present reports whether a value is present in m.
+// Present reports whether m holds a value.
 func (m Maybe[T]) Present() bool { return m.present }
 
-// GetOK reports whether a value is present in m, and if so returns that value.
-// If a value is not present, GetOK returns the zero of T.
+// GetOK reports whether m holds a value, and if so returns that value.
+// If m is empty, GetOK returns the zero of T.
 func (m Maybe[T]) GetOK() (T, bool) { return m.value, m.present }
 
-// Get returns the value present in m, if any; or else the zero value.
+// Get returns value held in m, if present; otherwise it returns the zero of T.
 func (m Maybe[T]) Get() T { return m.value }
 
 // Or returns the value of m if a value is present, otherwise it returns o.
@@ -47,8 +48,8 @@ func (m Maybe[T]) Or(o T) T {
 	return o
 }
 
-// String returns the string representation of m.  If m is present, its string
-// representation is that of the enclosed value.
+// String returns the string representation of m.  If m holds a value v, the
+// string representation of m is that of v.
 func (m Maybe[T]) String() string {
 	if m.present {
 		return fmt.Sprint(m.value)
@@ -68,8 +69,8 @@ func MapMaybe[T, U any](f func(T) U) func(Maybe[T]) Maybe[U] {
 	}
 }
 
-// First returns the first present value in vs, if any exists; otherwise it
-// returns absent.
+// First returns the element of vs that holds a value, if any exists; otherwise
+// it returns Absent().
 func First[T any](vs ...Maybe[T]) Maybe[T] {
 	for _, v := range vs {
 		if v.Present() {
