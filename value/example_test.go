@@ -2,17 +2,16 @@ package value_test
 
 import (
 	"fmt"
-	"math/rand"
 
 	"github.com/creachadair/mds/value"
 )
 
-var rng = rand.New(rand.NewSource(104))
+var randomValues = []int{1, 6, 16, 19, 4}
 
 func ExampleMaybe() {
 	even := make([]value.Maybe[int], 5)
-	for i := range even {
-		if r := rng.Intn(20); r%2 == 0 {
+	for i, r := range randomValues {
+		if r%2 == 0 {
 			even[i] = value.Just(r)
 		}
 	}
