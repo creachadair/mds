@@ -49,6 +49,8 @@ func (s *Stack[T]) Peek(n int) (T, bool) {
 func (s *Stack[T]) Pop() (T, bool) {
 	out, ok := s.Peek(0)
 	if ok {
+		var zero T
+		s.list[len(s.list)-1] = zero
 		s.list = s.list[:len(s.list)-1]
 	}
 	return out, ok
