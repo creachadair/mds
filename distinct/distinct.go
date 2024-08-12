@@ -53,7 +53,7 @@ func (c *Counter[T]) Reset() { c.buf.Clear(); c.p = 1 }
 
 // Add adds v to the counter.
 func (c *Counter[T]) Add(v T) {
-	if c.rng.Float64() >= c.p {
+	if c.p < 1 && c.rng.Float64() >= c.p {
 		c.buf.Remove(v)
 		return
 	}
