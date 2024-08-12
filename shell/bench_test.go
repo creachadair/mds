@@ -33,7 +33,7 @@ func init() {
 		q byte
 		n int
 	}
-	for i := 0; i < inputLen; i++ {
+	for range inputLen {
 		if quote.n == 0 {
 			q := r.Float64()
 			if q < .1 {
@@ -69,7 +69,7 @@ func BenchmarkSplit(b *testing.B) {
 	b.ResetTimer()
 	for _, n := range lens {
 		b.Run(fmt.Sprintf("len_%d", n), func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
+			for range b.N {
 				shell.NewScanner(strings.NewReader(input[:n])).Each(ignore)
 			}
 		})

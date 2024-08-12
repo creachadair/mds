@@ -18,7 +18,7 @@ func TestConversion(t *testing.T) {
 		cmp := compare.FromLessFunc(less)
 		cless := compare.ToLessFunc(cmp)
 
-		for i := 0; i < 1000; i++ {
+		for range 1000 {
 			m := rand.IntN(1000) - 500
 			n := rand.IntN(1000) - 500
 
@@ -99,7 +99,7 @@ func TestReversed(t *testing.T) {
 	rev := compare.Reversed(cz)
 
 	slices.SortFunc(buf, rev)
-	for i := 0; i+1 < len(buf); i++ {
+	for i := range len(buf) - 1 {
 		if buf[i] <= buf[i+1] {
 			t.Errorf("Output disordered at %d: %d <= %d", i, buf[i], buf[i+1])
 		}

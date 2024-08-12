@@ -293,7 +293,7 @@ func quote(s string, buf *bytes.Buffer) string {
 
 	buf.Reset()
 	inq := false
-	for i := 0; i < len(s); i++ {
+	for i := range len(s) {
 		ch := s[i]
 		if ch == '\'' {
 			if inq {

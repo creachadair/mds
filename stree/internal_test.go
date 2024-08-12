@@ -11,8 +11,8 @@ func TestVine(t *testing.T) {
 
 	// Construct a tree with consecutive integers.
 	tree := New(100, cmp.Compare[int])
-	for i := 1; i <= numElem; i++ {
-		tree.Add(i)
+	for i := range numElem {
+		tree.Add(i + 1)
 	}
 
 	// Flatten the tree node into a right-linked vine and verify that the result

@@ -54,7 +54,7 @@ func TestLeadingZeroes(t *testing.T) {
 			}
 
 			// Test every possible offset.
-			for i := 0; i < len(buf); i++ {
+			for i := range len(buf) {
 				buf[i] = 1
 				if got := mbits.LeadingZeroes(buf); got != i {
 					t.Errorf("Got %d leading zeroes, want %d", got, i)
@@ -74,7 +74,7 @@ func TestTrailingZeroes(t *testing.T) {
 			}
 
 			// Test every possible offset.
-			for i := 0; i < len(buf); i++ {
+			for i := range len(buf) {
 				pos := len(buf) - i - 1
 				buf[pos] = 1
 				if got := mbits.TrailingZeroes(buf); got != i {

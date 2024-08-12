@@ -158,7 +158,7 @@ func TestNewWithData(t *testing.T) {
 	buf := make([]int, 0, bufSize)
 
 	var want []int
-	for i := 0; i < bufSize/2; i++ {
+	for range bufSize / 2 {
 		z := rand.IntN(500) - 250
 		buf = append(buf, z)
 		want = append(want, z) // keep track of what we added.
@@ -169,7 +169,7 @@ func TestNewWithData(t *testing.T) {
 	q := heapq.NewWithData(intCompare, buf)
 
 	// Add some more stuff via the queue.
-	for i := 0; i < bufSize/2; i++ {
+	for range bufSize / 2 {
 		z := rand.IntN(500) - 250
 		q.Add(z)
 		want = append(want, z)

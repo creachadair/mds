@@ -328,7 +328,7 @@ func TestChunks(t *testing.T) {
 	}
 	for _, tc := range tests {
 		got := slice.Chunks(strings.Fields(tc.input), tc.n)
-		for i := 0; i+1 < len(got); i++ {
+		for i := range len(got) - 1 {
 			if len(got[i]) != tc.n {
 				t.Errorf("Chunk %d has length %d, want %d", i+1, len(got[i]), tc.n)
 			}

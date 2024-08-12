@@ -51,8 +51,8 @@ func BenchmarkAddOrdered(b *testing.B) {
 	for _, β := range balances {
 		b.Run(fmt.Sprintf("β=%d", β), func(b *testing.B) {
 			tree := stree.New[int](β, intCompare)
-			for i := 1; i <= b.N; i++ {
-				tree.Add(i)
+			for i := range b.N {
+				tree.Add(i + 1)
 			}
 		})
 	}

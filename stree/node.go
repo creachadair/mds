@@ -72,7 +72,7 @@ func treeToVine[T any](n *node[T]) *node[T] {
 // Note that any of x, y, and z may be nil.
 func rotateLeft[T any](n *node[T], count int) {
 	next := n
-	for i := 0; i < count; i++ {
+	for range count {
 		C := next.right
 		R := C.right
 

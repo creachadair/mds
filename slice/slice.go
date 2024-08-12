@@ -196,7 +196,7 @@ func Rotate[T any, Slice ~[]T](ss Slice, k int) {
 	// starting points. Despite the nested loop here, we will visit each element
 	// of the slice only once (on its cycle).
 	g := gcd(k, len(ss))
-	for j := 0; j < g; j++ {
+	for j := range g {
 		i, cur := j, ss[j]
 		for {
 			next := (i + k) % len(ss)

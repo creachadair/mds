@@ -58,7 +58,7 @@ func TestLCS(t *testing.T) {
 func TestLCSRandom(t *testing.T) {
 	// Append n randomly generated letters from alpha to *ss.
 	pad := func(ss *[]string, n int, alpha string) {
-		for i := 0; i < n; i++ {
+		for range n {
 			j := rand.IntN(len(alpha))
 			*ss = append(*ss, alpha[j:j+1])
 		}
@@ -151,7 +151,7 @@ func equalEdits[T comparable](a, b []slice.Edit[T]) bool {
 	if len(a) != len(b) {
 		return false
 	}
-	for i := 0; i < len(a); i++ {
+	for i := range len(a) {
 		if a[i].Op != b[i].Op ||
 			!slices.Equal(a[i].X, b[i].X) ||
 			!slices.Equal(a[i].Y, b[i].Y) {

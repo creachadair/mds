@@ -184,8 +184,8 @@ func (d *Diff) findContext(c *Chunk, n int) (pre, post []string) {
 	lcur, rcur := c.LStart-1, c.RStart-1
 	lend, rend := c.LEnd-1, c.REnd-1
 
-	for i := 1; i <= n; i++ {
-		p, q := lcur-i, rcur-i
+	for i := range n {
+		p, q := lcur-(i+1), rcur-(i+1)
 		if p < 0 || q < 0 || d.Left[p] != d.Right[q] {
 			break
 		}
@@ -193,7 +193,7 @@ func (d *Diff) findContext(c *Chunk, n int) (pre, post []string) {
 	}
 	slices.Reverse(pre) // we walked backward from the start
 
-	for i := 0; i < n; i++ {
+	for i := range n {
 		p, q := lend+i, rend+i
 		if p >= len(d.Left) || q >= len(d.Right) || d.Left[p] != d.Right[q] {
 			break

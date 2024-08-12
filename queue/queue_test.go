@@ -107,7 +107,7 @@ func TestQueueRandom(t *testing.T) {
 		doTotal = doClear
 	)
 
-	for i := 0; i < 5000; i++ {
+	for range 5000 {
 		if len(has) > stats.MaxLen {
 			stats.MaxLen = len(has)
 		}

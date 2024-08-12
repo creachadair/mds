@@ -99,7 +99,7 @@ func (q *Queue[T]) Pop() (T, bool) {
 // Otherwise, Each returns true after visiting all elements of q.
 func (q *Queue[T]) Each(f func(T) bool) bool {
 	cur := q.head
-	for i := 0; i < q.n; i++ {
+	for range q.n {
 		if !f(q.vs[cur]) {
 			return false
 		}
@@ -116,7 +116,7 @@ func (q *Queue[T]) Slice() []T {
 	}
 	buf := make([]T, q.n)
 	cur := q.head
-	for i := 0; i < q.n; i++ {
+	for i := range q.n {
 		buf[i] = q.vs[cur]
 		cur = (cur + 1) % len(q.vs)
 	}

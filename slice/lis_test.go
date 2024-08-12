@@ -113,7 +113,7 @@ func TestLNDSAgainstLCS(t *testing.T) {
 
 	const numVals = 50
 	const numIters = 100
-	for i := 0; i < numIters; i++ {
+	for range numIters {
 		input := randomInts(numVals)
 
 		gotLNDS := slice.LNDS(input)
@@ -137,7 +137,7 @@ func TestLISAgainstLCS(t *testing.T) {
 
 	const numVals = 50
 	const numIters = 100
-	for i := 0; i < numIters; i++ {
+	for range numIters {
 		input := rand.Perm(numVals)
 
 		gotLIS := slice.LIS(input)
@@ -159,7 +159,7 @@ func TestLNDSRandom(t *testing.T) {
 	const numVals = 50
 	const numIters = 100
 
-	for i := 0; i < numIters; i++ {
+	for range numIters {
 		input := randomInts(numVals)
 		want := quadraticIncreasingSubsequence(input, false)
 		got := slice.LNDS(input)
@@ -179,7 +179,7 @@ func TestLISRandom(t *testing.T) {
 	const numVals = 50
 	const numIters = 100
 
-	for i := 0; i < numIters; i++ {
+	for range numIters {
 		input := randomInts(numVals)
 		want := quadraticIncreasingSubsequence(input, true)
 		got := slice.LIS(input)
