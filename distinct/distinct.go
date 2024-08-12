@@ -23,7 +23,7 @@ type Counter[T comparable] struct {
 	buf mapset.Set[T]
 	cap int     // maximum allowed size of buf
 	p   float64 // eviction probability
-	rng rng
+	rng *rand.Rand
 }
 
 // NewCounter constructs a new empty distinct-elements counter using a buffer
@@ -59,10 +59,20 @@ func (c *Counter[T]) Add(v T) {
 	}
 	c.buf.Add(v)
 	if c.buf.Len() >= c.cap {
+		// Instead of flipping a coin for each element, grab blocks of 64 random
+		// bits and use them directly, refilling only as needed.
+		var nb, rnd uint64
+
 		for elt := range c.buf {
-			if c.rng.Float64() < 0.5 {
+			if nb == 0 {
+				rnd = c.rng.Uint64() // refill
+				nb = 64
+			}
+			if rnd&1 == 0 {
 				c.buf.Remove(elt)
 			}
+			rnd >>= 1
+			nb--
 		}
 		c.p /= 2
 	}
@@ -94,12 +104,4 @@ func BufferSize(ε, δ float64, expSize int) int {
 
 	v := math.Ceil((12 / (ε * ε)) * math.Log2((8*float64(expSize))/δ))
 	return int(v)
-}
-
-// rng is a source of uniformly-distributed random or pseudo-random values.
-// This interface is satisfied by the [math/rand/v2.Rand] and [math/rand.Rand]
-// types.
-type rng interface {
-	// Float64 returns a random value in the half-open interval [0,1).
-	Float64() float64
 }
