@@ -78,4 +78,31 @@ func TestCounter(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("Saturate", func(t *testing.T) {
+		// To achieve a ± 5% error rate for 1M inputs, we theoretically need
+		// about 142K buffer slots. With 10K buffer slots the expected error rate
+		// for 1M inputs is about ± 18.8%. The predicted bound is correct, but is
+		// very conservative: With high probability the error will be much less,
+		// even when we greatly exceed the predicted load.
+		//
+		// In several hundred runs with random inputs, this configuration did not
+		// exceed 5% error, although it could have done so.
+
+		c := distinct.NewCounter[int](10_000)
+		var actual mapset.Set[int]
+		var maxErr float64
+		for i := 0; i < 1_000_000; i += 500 {
+			actual.AddAll(fill(c, 500))
+			e := float64(c.Count()-int64(actual.Len())) / float64(actual.Len())
+			if math.Abs(e) > math.Abs(maxErr) {
+				maxErr = e
+				t.Logf("At %d unique items, max error is %.4g%%", actual.Len(), 100*maxErr)
+			}
+		}
+		t.Logf("Actual count:    %d", actual.Len())
+		t.Logf("Estimated count: %d", c.Count())
+		t.Logf("Buffer size:     %d", c.Len())
+		t.Logf("Max error:       %.4g%%", 100*maxErr)
+	})
 }
