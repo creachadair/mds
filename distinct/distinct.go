@@ -9,6 +9,7 @@ import (
 	crand "crypto/rand"
 	"fmt"
 	"math"
+	"math/bits"
 	"math/rand/v2"
 
 	"github.com/creachadair/mds/mapset"
@@ -21,9 +22,13 @@ import (
 // obtain the current estimate of the number of distinct elements observed.
 type Counter[T comparable] struct {
 	buf mapset.Set[T]
-	cap int     // maximum allowed size of buf
-	p   float64 // eviction probability
-	rng *rand.Rand
+	cap int    // maximum allowed size of buf
+	p   uint64 // eviction probability (see below)
+	rng rand.Source
+
+	// To avoid the need for floating-point calculations during update, we
+	// express the probability as a fixed-point threshold in 0..MaxUint64, where
+	// 0 denotes probability 0 and ~0 denotes probability 1.
 }
 
 // NewCounter constructs a new empty distinct-elements counter using a buffer
@@ -39,8 +44,8 @@ func NewCounter[T comparable](size int) *Counter[T] {
 	return &Counter[T]{
 		buf: make(mapset.Set[T]),
 		cap: size,
-		p:   1,
-		rng: rand.New(rand.NewChaCha8(seed)),
+		p:   math.MaxUint64,
+		rng: rand.NewChaCha8(seed),
 	}
 }
 
@@ -49,11 +54,11 @@ func (c *Counter[T]) Len() int { return c.buf.Len() }
 
 // Reset resets c to its initial state, as if freshly constructed.
 // The internal buffer size limit remains unchanged.
-func (c *Counter[T]) Reset() { c.buf.Clear(); c.p = 1 }
+func (c *Counter[T]) Reset() { c.buf.Clear(); c.p = math.MaxUint64 }
 
 // Add adds v to the counter.
 func (c *Counter[T]) Add(v T) {
-	if c.p < 1 && c.rng.Float64() >= c.p {
+	if c.p < math.MaxUint64 && c.rng.Uint64() >= c.p {
 		c.buf.Remove(v)
 		return
 	}
@@ -74,13 +79,23 @@ func (c *Counter[T]) Add(v T) {
 			rnd >>= 1
 			nb--
 		}
-		c.p /= 2
+		c.p >>= 1
 	}
 }
 
 // Count returns the current estimate of the number of distinct elements
 // observed by the counter.
-func (c *Counter[T]) Count() int64 { return int64(float64(c.buf.Len()) / c.p) }
+func (c *Counter[T]) Count() uint64 {
+	// The estimate is |X| / p, where p = 1/2^k after k eviction passes.
+	// To convert our fixed-point probability, note that:
+	//
+	//   |X| / p == |X| * (1/p) == |X| * 2^k
+	//
+	// The number of leading zeroes of c.p records k, so we can do this all in
+	// fixed-point arithmetic with no floating point conversion.
+	p2k := uint64(1) << uint64(bits.LeadingZeros64(c.p))
+	return uint64(c.buf.Len()) * p2k
+}
 
 // BufferSize returns a buffer size sufficient to ensure that a counter using
 // this size will produce estimates within (1 ± ε) times the true count with
@@ -88,9 +103,9 @@ func (c *Counter[T]) Count() int64 { return int64(float64(c.buf.Len()) / c.p) }
 // counted is expSize.
 //
 // The suggested buffer size guarantees these constraints, but note that the
-// estimate is very conservative. In practice, the actual estimates will
-// usually be much more accurate. Empirically, values of ε and δ in the 0.05
-// range work well.
+// Chernoff bound estimate is very conservative. In practice, the actual
+// estimates will usually be much more accurate. Empirically, values of ε and δ
+// in the 0.05 range work well.
 func BufferSize(ε, δ float64, expSize int) int {
 	if ε < 0 || ε > 1 {
 		panic(fmt.Sprintf("error bound out of range: %v", ε))

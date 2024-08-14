@@ -61,7 +61,7 @@ func TestCounter(t *testing.T) {
 			t.Logf("Estimated count: %d", c.Count())
 			t.Logf("Buffer size:     %d", c.Len())
 
-			e := float64(c.Count()-int64(actual.Len())) / float64(actual.Len())
+			e := observedErrorRate(int(c.Count()), actual.Len())
 			t.Logf("Error:           %.4g%%", 100*e)
 
 			if math.Abs(e) > *errRate {
@@ -94,7 +94,7 @@ func TestCounter(t *testing.T) {
 		var maxErr float64
 		for i := 0; i < 1_000_000; i += 500 {
 			actual.AddAll(fill(c, 500))
-			e := float64(c.Count()-int64(actual.Len())) / float64(actual.Len())
+			e := observedErrorRate(int(c.Count()), actual.Len())
 			if math.Abs(e) > math.Abs(maxErr) {
 				maxErr = e
 				t.Logf("At %d unique items, max error is %.4g%%", actual.Len(), 100*maxErr)
@@ -106,3 +106,5 @@ func TestCounter(t *testing.T) {
 		t.Logf("Max error:       %.4g%%", 100*maxErr)
 	})
 }
+
+func observedErrorRate(got, want int) float64 { return float64(got-want) / float64(want) }
