@@ -59,6 +59,11 @@ func (c *Counter[T]) Reset() { c.buf.Clear(); c.p = math.MaxUint64 }
 // Add adds v to the counter.
 func (c *Counter[T]) Add(v T) {
 	if c.p < math.MaxUint64 && c.rng.Uint64() >= c.p {
+		// The first check avoids spending source entropy unless we need to.
+		//
+		// TODO(creachadair): We could reuse a single roll multiple times if we
+		// kept the pass count and masked off that many bits from a register.
+		// But then we have more state, and I'm not sure it's worth it.
 		c.buf.Remove(v)
 		return
 	}
