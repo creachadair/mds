@@ -76,4 +76,32 @@ func BenchmarkSplit(b *testing.B) {
 	}
 }
 
+func BenchmarkQuote(b *testing.B) {
+	const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789   \t\n\n\n"
+	src := rand.NewSource(67890)
+	r := rand.New(src)
+
+	var buf bytes.Buffer
+	for range 100000 {
+		switch v := r.Float64(); {
+		case v < 0.5:
+			buf.WriteByte('\'')
+		case v < 0.1:
+			buf.WriteByte('"')
+		case v < 0.15:
+			buf.WriteByte('\\')
+		default:
+			pos := math.Ceil(r.Float64()*float64(len(alphabet))) - 1
+			buf.WriteByte(alphabet[int(pos)])
+		}
+	}
+
+	input := buf.String()
+	b.ResetTimer()
+
+	for range b.N {
+		shell.Quote(input)
+	}
+}
+
 func ignore(string) bool { return true }

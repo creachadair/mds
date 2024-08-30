@@ -292,6 +292,7 @@ func quote(s string, buf *bytes.Buffer) string {
 	}
 
 	buf.Reset()
+	buf.Grow(len(s))
 	inq := false
 	for i := range len(s) {
 		ch := s[i]
