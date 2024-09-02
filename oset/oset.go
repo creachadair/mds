@@ -138,7 +138,8 @@ func (s Set[T]) Has(value T) bool {
 
 // Add adds the specified value to s, and returns s.
 //
-// This operation takes amortized O(lg n) time for a set with n elements.
+// This operation takes amortized O(lg n) time for each element, given a set
+// with n elements.
 func (s Set[T]) Add(values ...T) Set[T] {
 	for _, v := range values {
 		s.s.Add(v)
