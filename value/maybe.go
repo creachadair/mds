@@ -40,6 +40,15 @@ func (m Maybe[T]) Or(o T) Maybe[T] {
 	return Just(o)
 }
 
+// Ptr converts m to a pointer. It returns nil if m is empty, otherwise it
+// returns a pointer to a location containing the value held in m.
+func (m Maybe[T]) Ptr() *T {
+	if m.present {
+		return &m.value
+	}
+	return nil
+}
+
 // String returns the string representation of m. If m holds a value v, the
 // string representation of m is that of v.
 func (m Maybe[T]) String() string {

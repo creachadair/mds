@@ -28,3 +28,11 @@ func Cond[T any](b bool, x, y T) T {
 	}
 	return y
 }
+
+// AtMaybe returns Just(*p) if p != nil, or otherwise Absent().
+func AtMaybe[T any](p *T) Maybe[T] {
+	if p == nil {
+		return Absent[T]()
+	}
+	return Just(*p)
+}

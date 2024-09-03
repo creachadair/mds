@@ -50,6 +50,24 @@ func TestMaybe(t *testing.T) {
 		}
 	})
 
+	t.Run("Ptr", func(t *testing.T) {
+		t.Run("Present", func(t *testing.T) {
+			v := value.Just("plum")
+			if p := v.Ptr(); p == nil {
+				t.Errorf("Ptr(%v): got nil, want non-nil", v)
+			} else if *p != "plum" {
+				t.Errorf("*Ptr(%v): got %q, want %q", v, *p, "plum")
+			}
+		})
+
+		t.Run("Absent", func(t *testing.T) {
+			v := value.Absent[int]()
+			if p := v.Ptr(); p != nil {
+				t.Errorf("Ptr(%v): got %p (%d), want nil", v, p, *p)
+			}
+		})
+	})
+
 	t.Run("String", func(t *testing.T) {
 		v := value.Just("pear")
 		if got := v.String(); got != "pear" {
@@ -76,4 +94,20 @@ func TestCheck(t *testing.T) {
 			t.Errorf("Check(bogus): got %v, want absent", got)
 		}
 	})
+}
+
+func TestAtMaybe(t *testing.T) {
+	tests := []struct {
+		input *string
+		want  value.Maybe[string]
+	}{
+		{nil, value.Absent[string]()},
+		{value.Ptr("foo"), value.Just("foo")},
+		{value.Ptr(""), value.Just("")},
+	}
+	for _, tc := range tests {
+		if got := value.AtMaybe(tc.input); got != tc.want {
+			t.Errorf("MaybeAt(%p): got %q, want %q", tc.input, got, tc.want)
+		}
+	}
 }
