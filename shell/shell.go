@@ -22,6 +22,7 @@ import (
 	"bytes"
 	"io"
 	"strings"
+	"sync"
 )
 
 // These characters must be quoted to escape special meaning.  This list
@@ -161,10 +162,20 @@ type Scanner struct {
 
 // NewScanner returns a Scanner that reads input from r.
 func NewScanner(r io.Reader) *Scanner {
-	return &Scanner{
-		buf: bufio.NewReader(r),
-		st:  stBreak,
-	}
+	return &Scanner{buf: bufio.NewReader(r), st: stBreak}
+}
+
+// Reset discards the current token (if any) and all remaining input from s,
+// and resets its internal state to consume tokens from r.
+//
+// Reset retains the internal buffers of s, so when processing multiple
+// consecutive inputs, it will be more memory-efficient to read to allocate a
+// single scanner and reset it for each reader in sequence.
+func (s *Scanner) Reset(r io.Reader) {
+	s.buf.Reset(r)
+	s.cur.Reset()
+	s.st = stBreak
+	s.err = nil
 }
 
 // Next advances the scanner and reports whether there are any further tokens
@@ -206,8 +217,8 @@ func (s *Scanner) Text() string { return s.cur.String() }
 // Err returns the error, if any, that resulted from the most recent action.
 func (s *Scanner) Err() error { return s.err }
 
-// Complete reports whether the current token is complete, meaning that it is
-// unquoted or its quotes were balanced.
+// Complete reports whether the current token is complete, meaning either that
+// it is unquoted or that its quotes were balanced.
 func (s *Scanner) Complete() bool { return s.st == stBreak || s.st == stWord }
 
 // Rest returns an io.Reader for the remainder of the unconsumed input in s.
@@ -245,13 +256,22 @@ func (s *Scanner) Split() []string {
 	return tokens
 }
 
+// scanPool buffers reusable scanners so that Split does not need to allocate
+// new buffers in the common case.
+var scanPool = &sync.Pool{
+	New: func() any { return NewScanner(nil) },
+}
+
 // Split partitions s into tokens divided on space, tab, and newline characters
 // using a *Scanner.  Leading and trailing whitespace are ignored.
 //
 // The Boolean flag reports whether the final token is "valid", meaning there
 // were no unclosed quotations in the string.
 func Split(s string) ([]string, bool) {
-	sc := NewScanner(strings.NewReader(s))
+	sc := scanPool.Get().(*Scanner)
+	defer scanPool.Put(sc)
+
+	sc.Reset(strings.NewReader(s))
 	ss := sc.Split()
 	return ss, sc.Complete()
 }

@@ -66,11 +66,13 @@ func BenchmarkSplit(b *testing.B) {
 	}
 	lens = append(lens, len(input))
 
+	s := shell.NewScanner(nil)
 	b.ResetTimer()
 	for _, n := range lens {
 		b.Run(fmt.Sprintf("len_%d", n), func(b *testing.B) {
 			for range b.N {
-				shell.NewScanner(strings.NewReader(input[:n])).Each(ignore)
+				s.Reset(strings.NewReader(input[:n]))
+				s.Each(ignore)
 			}
 		})
 	}
