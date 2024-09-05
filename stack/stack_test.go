@@ -7,6 +7,8 @@ import (
 	"github.com/creachadair/mds/stack"
 )
 
+var _ mdtest.Shared[any] = (*stack.Stack[any])(nil)
+
 func TestStack(t *testing.T) {
 	s := stack.New[int]()
 	check := func(want ...int) { mdtest.CheckContents(t, s, want) }

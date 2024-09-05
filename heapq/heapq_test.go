@@ -7,8 +7,11 @@ import (
 	"testing"
 
 	"github.com/creachadair/mds/heapq"
+	"github.com/creachadair/mds/internal/mdtest"
 	"github.com/google/go-cmp/cmp"
 )
+
+var _ mdtest.Shared[any] = (*heapq.Queue[any])(nil)
 
 func intCompare(a, b int) int    { return stdcmp.Compare(a, b) }
 func revIntCompare(a, b int) int { return stdcmp.Compare(b, a) }

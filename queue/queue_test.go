@@ -9,6 +9,8 @@ import (
 	"github.com/creachadair/mds/queue"
 )
 
+var _ mdtest.Shared[any] = (*queue.Queue[any])(nil)
+
 func TestQueue(t *testing.T) {
 	var q queue.Queue[int]
 	check := func(want ...int) { mdtest.CheckContents(t, &q, want) }
