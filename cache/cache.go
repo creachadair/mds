@@ -194,7 +194,7 @@ type Store[Key comparable, Value any] interface {
 	// This counts as an access of the value.
 	//
 	// If key is already present, Store should panic.
-	// That condition should not be possible.
+	// That condition should not be possible when used from a [Cache].
 	Store(key Key, val Value)
 
 	// Remove removes the specified key from the cache.  If key is not present,
@@ -206,10 +206,10 @@ type Store[Key comparable, Value any] interface {
 	// each key/value pair to be evicted, if any, to obtain its effective size.
 	//
 	// If Evict cannot satisfy the specified size, it should panic.
-	// That condition should not be possible.
+	// That condition should not be possible when used from a [Cache].
 	Evict(need int64, sizeOf func(Key, Value) int64) int64
 }
 
-// Length is a convenience function using the length of a string or byte slice
-// as its size in a cache.
+// Length is a convenience function for using the length of a string or byte
+// slice as its size in a cache. It returns len(v).
 func Length[T ~[]byte | ~string](v T) int64 { return int64(len(v)) }
