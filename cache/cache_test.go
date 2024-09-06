@@ -105,11 +105,15 @@ func TestLRU(t *testing.T) {
 		wantVic(t, "k3")
 	})
 
+	t.Run("ReAdd", func(t *testing.T) {
+		cachetest.Run(t, c, "put k3 stump = true", "len = 3", "size = 25")
+	})
+
 	t.Run("Clear", func(t *testing.T) {
-		// Clearing evicts everything, which at this point are k6 and k2 in
+		// Clearing evicts everything, which at this point are k6, k2, and k3 in
 		// decreasing order of access time (the get of k2 above promoted it).
 		victims = nil
 		cachetest.Run(t, c, "clear", "len = 0", "size = 0")
-		wantVic(t, "k6", "k2")
+		wantVic(t, "k6", "k2", "k3")
 	})
 }

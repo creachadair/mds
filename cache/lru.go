@@ -88,6 +88,7 @@ func (c *LRUStore[Key, _]) Remove(key Key) {
 	pos, ok := c.present[key]
 	if ok {
 		c.access.Remove(pos)
+		delete(c.present, key)
 	}
 }
 
