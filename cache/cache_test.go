@@ -20,8 +20,10 @@ func TestLRU(t *testing.T) {
 		}
 	}
 
-	c := cache.New(25, cache.LRU[string, string](), &cache.Config[string, string]{
-		Size: cache.Length[string],
+	c := cache.New(cache.Config[string, string]{
+		Limit: 25,
+		Store: cache.LRU[string, string](),
+		Size:  cache.Length[string],
 
 		// Record evictions so we can verify they happened in the expected order.
 		OnEvict: func(key, val string) { victims = append(victims, key) },

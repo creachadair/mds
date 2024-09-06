@@ -132,29 +132,35 @@ func (c *Cache[K, V]) Size() int64 {
 	return c.size
 }
 
-// New constructs a new empty cache with the specified settings.  The store
-// must be non-nil, and limit must be positive.  A nil [Config] is valid, and
-// provides default values as described.
-func New[K comparable, V any](limit int64, store Store[K, V], config *Config[K, V]) *Cache[K, V] {
-	if limit <= 0 {
+// New constructs a new empty cache with the specified settings.  The store and
+// limit fields must be set.
+func New[K comparable, V any](config Config[K, V]) *Cache[K, V] {
+	if config.Limit <= 0 {
 		panic("cache: limit must be positive")
 	}
-	if store == nil {
+	if config.Store == nil {
 		panic("cache: no store implementation")
 	}
 	return &Cache[K, V]{
-		store:   store,
-		limit:   limit,
+		store:   config.Store,
+		limit:   config.Limit,
 		sizeOf:  config.sizeOf(),
 		onEvict: config.onEvict(),
 	}
 }
 
-// A Config carries the settings for a cache implementation.  A nil *Config is
-// ready for use and provides default values as described.
+// A Config carries the settings for a cache implementation.
 type Config[Key comparable, Value any] struct {
-	// Size reports the effective size of v in the cache. If nil, or if the
-	// function returns a value ≤ 0, the default is 1.
+	// Limit is the maximum capacity of the cache.
+	// It must be > 0.
+	Limit int64
+
+	// Store is the storage implementation used by the cache.
+	// It must be non-nil.
+	Store Store[Key, Value]
+
+	// Size reports the effective size of v in the cache. If nil, the default
+	// size is 1, meaning the limit is a number of cache entries.
 	Size func(v Value) int64
 
 	// OnEvict, if non-nil, is called for each entry evicted from the cache.
