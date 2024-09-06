@@ -106,7 +106,7 @@ func TestLRU(t *testing.T) {
 	})
 
 	t.Run("Clear", func(t *testing.T) {
-		// Clearing evicts everything, which at this point are k3, k6, and k2 in
+		// Clearing evicts everything, which at this point are k6 and k2 in
 		// decreasing order of access time (the get of k2 above promoted it).
 		victims = nil
 		cachetest.Run(t, c, "clear", "len = 0", "size = 0")
