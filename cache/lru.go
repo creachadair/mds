@@ -7,9 +7,9 @@ import (
 	"github.com/creachadair/mds/heapq"
 )
 
-// LRUStore is an implementation of the [Store] interface.  When evicting
-// items, it removes items starting with those least-recently accessed.
-type LRUStore[Key comparable, Value any] struct {
+// lruStore is an implementation of the [Store] interface.
+// Eviction chooses the least-recently accessed elements first.
+type lruStore[Key comparable, Value any] struct {
 	present map[Key]int // :: Key → offset in access
 	access  *heapq.Queue[prioKey[Key, Value]]
 	clock   int64
@@ -28,9 +28,10 @@ func comparePrio[Key comparable, Value any](a, b prioKey[Key, Value]) int {
 	return cmp.Compare(a.lastAccess, b.lastAccess) // logical time order
 }
 
-// LRU constructs a [Config] with its store set to a new empty LRUStore.
+// LRU constructs a [Config] with a cache store that manages entries with a
+// least-recently used eviction policy.
 func LRU[Key comparable, Value any]() Config[Key, Value] {
-	lru := &LRUStore[Key, Value]{
+	lru := &lruStore[Key, Value]{
 		present: make(map[Key]int),
 		access:  heapq.New(comparePrio[Key, Value]),
 	}
@@ -41,7 +42,7 @@ func LRU[Key comparable, Value any]() Config[Key, Value] {
 }
 
 // Check implements part of the [Store] interface.
-func (c *LRUStore[Key, Value]) Check(key Key) (Value, bool) {
+func (c *lruStore[Key, Value]) Check(key Key) (Value, bool) {
 	pos, ok := c.present[key]
 	if !ok {
 		var zero Value
@@ -52,7 +53,7 @@ func (c *LRUStore[Key, Value]) Check(key Key) (Value, bool) {
 }
 
 // Access implements part of the [Store] interface.
-func (c *LRUStore[Key, Value]) Access(key Key) (Value, bool) {
+func (c *lruStore[Key, Value]) Access(key Key) (Value, bool) {
 	pos, ok := c.present[key]
 	if !ok {
 		var zero Value
@@ -69,7 +70,7 @@ func (c *LRUStore[Key, Value]) Access(key Key) (Value, bool) {
 }
 
 // Store implements part of the [Store] interface.
-func (c *LRUStore[Key, Value]) Store(key Key, val Value) {
+func (c *lruStore[Key, Value]) Store(key Key, val Value) {
 	if _, ok := c.present[key]; ok {
 		panic(fmt.Sprintf("lru store: unexpected key %v", key))
 	}
@@ -84,7 +85,7 @@ func (c *LRUStore[Key, Value]) Store(key Key, val Value) {
 }
 
 // Remove implements part of the [Store] interface.
-func (c *LRUStore[Key, _]) Remove(key Key) {
+func (c *lruStore[Key, _]) Remove(key Key) {
 	pos, ok := c.present[key]
 	if ok {
 		c.access.Remove(pos)
@@ -93,7 +94,7 @@ func (c *LRUStore[Key, _]) Remove(key Key) {
 }
 
 // Evict implements part of the [Store] interface.
-func (c *LRUStore[Key, Value]) Evict(_ func(Value) int64) (Key, Value) {
+func (c *lruStore[Key, Value]) Evict(_ func(Value) int64) (Key, Value) {
 	out, ok := c.access.Pop()
 	if !ok {
 		panic("lru evict: no entries left")

@@ -8,8 +8,6 @@ import (
 	gocmp "github.com/google/go-cmp/cmp"
 )
 
-var _ cache.Store[int, int] = (*cache.LRUStore[int, int])(nil)
-
 func TestLRU(t *testing.T) {
 	var victims []string
 
