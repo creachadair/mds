@@ -134,49 +134,68 @@ func (c *Cache[K, V]) Size() int64 {
 
 // New constructs a new empty cache with the specified settings.  The store and
 // limit fields must be set.
-func New[K comparable, V any](config Config[K, V]) *Cache[K, V] {
-	if config.Limit <= 0 {
+func New[K comparable, V any](limit int64, config Config[K, V]) *Cache[K, V] {
+	if limit <= 0 {
 		panic("cache: limit must be positive")
 	}
-	if config.Store == nil {
+	if config.store == nil {
 		panic("cache: no store implementation")
 	}
 	return &Cache[K, V]{
-		store:   config.Store,
-		limit:   config.Limit,
-		sizeOf:  config.sizeOf(),
-		onEvict: config.onEvict(),
+		store:   config.store,
+		limit:   limit,
+		sizeOf:  config.sizeFunc(),
+		onEvict: config.onEvictFunc(),
 	}
 }
 
 // A Config carries the settings for a cache implementation.
+// To set options:
+//
+//   - Use [Config.WithStore] to set the storage implementation.
+//   - Use [Config.WithSize] to set the size function.
+//   - Use [Config.OnEvict] to set the eviction callback.
+//
+// A zero Config is invalid; at least the store field must be set.
 type Config[Key comparable, Value any] struct {
-	// Limit is the maximum capacity of the cache.
-	// It must be > 0.
-	Limit int64
-
-	// Store is the storage implementation used by the cache.
+	// store is the storage implementation used by the cache.
 	// It must be non-nil.
-	Store Store[Key, Value]
+	store Store[Key, Value]
 
-	// Size reports the effective size of v in the cache. If nil, the default
+	// sizeOf reports the effective size of v in the cache. If nil, the default
 	// size is 1, meaning the limit is a number of cache entries.
-	Size func(v Value) int64
+	sizeOf func(v Value) int64
 
-	// OnEvict, if non-nil, is called for each entry evicted from the cache.
-	OnEvict func(key Key, val Value)
+	// onEvict, if non-nil, is called for each entry evicted from the cache.
+	onEvict func(key Key, val Value)
 }
 
-func (c *Config[K, V]) sizeOf() func(V) int64 {
-	if c != nil && c.Size != nil {
-		return c.Size
+// WithStore returns a copy of c with its storage implementation set to s.
+// The storage implementation must be set, or [New] will panic.
+func (c Config[K, V]) WithStore(s Store[K, V]) Config[K, V] { c.store = s; return c }
+
+// WithSize returns a copy of c with its size function set to sizeOf.
+//
+// If no size function is set, the default size of an entry is 1, meaning the
+// limit is based on the number of entries in the cache.
+func (c Config[K, V]) WithSize(sizeOf func(V) int64) Config[K, V] { c.sizeOf = sizeOf; return c }
+
+// OnEvict returns a copy of c with its eviction callback set to f.
+//
+// If an eviction callback is set, it is called for each entry removed or
+// evicted from the cache.
+func (c Config[K, V]) OnEvict(f func(K, V)) Config[K, V] { c.onEvict = f; return c }
+
+func (c Config[K, V]) sizeFunc() func(V) int64 {
+	if c.sizeOf != nil {
+		return c.sizeOf
 	}
 	return func(V) int64 { return 1 }
 }
 
-func (c *Config[K, V]) onEvict() func(K, V) {
-	if c != nil && c.OnEvict != nil {
-		return c.OnEvict
+func (c Config[K, V]) onEvictFunc() func(K, V) {
+	if c.onEvict != nil {
+		return c.onEvict
 	}
 	return func(K, V) {}
 }

@@ -8,7 +8,7 @@ import (
 )
 
 // LRUStore is an implementation of the [Store] interface.  When evicting
-// items, it removing the least-recently accessed elements.
+// items, it removes items starting with those least-recently accessed.
 type LRUStore[Key comparable, Value any] struct {
 	present map[Key]int // :: Key → offset in access
 	access  *heapq.Queue[prioKey[Key, Value]]
@@ -28,8 +28,8 @@ func comparePrio[Key comparable, Value any](a, b prioKey[Key, Value]) int {
 	return cmp.Compare(a.lastAccess, b.lastAccess) // logical time order
 }
 
-// LRU constructs a new empty LRUStore.
-func LRU[Key comparable, Value any]() *LRUStore[Key, Value] {
+// LRU constructs a [Config] with its store set to a new empty LRUStore.
+func LRU[Key comparable, Value any]() Config[Key, Value] {
 	lru := &LRUStore[Key, Value]{
 		present: make(map[Key]int),
 		access:  heapq.New(comparePrio[Key, Value]),
@@ -37,7 +37,7 @@ func LRU[Key comparable, Value any]() *LRUStore[Key, Value] {
 	lru.access.Update(func(v prioKey[Key, Value], pos int) {
 		lru.present[v.key] = pos
 	})
-	return lru
+	return Config[Key, Value]{store: lru}
 }
 
 // Check implements part of the [Store] interface.
