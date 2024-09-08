@@ -1,4 +1,6 @@
-package mlink
+// Package ring implements a doubly-linked circular chain of data items,
+// called a "ring".
+package ring
 
 import (
 	"fmt"
@@ -30,9 +32,9 @@ func (r *Ring[T]) String() string {
 	return fmt.Sprintf("Ring(%v, %v%v)", r.Value, r.ptr(r.prev), r.ptr(r.next))
 }
 
-// NewRing constructs a new ring with n zero-valued elements.
-// If n ≤ 0, NewRing returns nil.
-func NewRing[T any](n int) *Ring[T] {
+// New constructs a new ring with n zero-valued elements.
+// If n ≤ 0, New returns nil.
+func New[T any](n int) *Ring[T] {
 	if n <= 0 {
 		return nil
 	}
@@ -48,9 +50,9 @@ func NewRing[T any](n int) *Ring[T] {
 	return r
 }
 
-// RingOf constructs a new ring containing the given elements.
-func RingOf[T any](vs ...T) *Ring[T] {
-	r := NewRing[T](len(vs))
+// Of constructs a new ring containing the given elements.
+func Of[T any](vs ...T) *Ring[T] {
+	r := New[T](len(vs))
 	cur := r
 	for _, v := range vs {
 		cur.Value = v
