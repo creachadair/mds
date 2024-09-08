@@ -67,17 +67,11 @@ func (c *Cache[K, V]) Put(key K, val V) bool {
 
 	// If necessary, evict items to make room.
 	newSize := c.size + valSize
-	if newSize > c.limit {
-		want := int64(newSize - c.limit)
-		got := c.store.Evict(want, func(ek K, ev V) int64 {
-			c.onEvict(ek, ev)
-			c.count--
-			return c.sizeOf(ev)
-		})
-		if got < want {
-			panic(fmt.Sprintf("store: evicted %d units, need %d", got, want))
-		}
-		newSize -= got
+	for newSize > c.limit {
+		ek, ev := c.store.Evict(c.sizeOf)
+		c.onEvict(ek, ev)
+		c.count--
+		newSize -= c.sizeOf(ev)
 	}
 
 	// Now there is room.
@@ -115,14 +109,15 @@ func (c *Cache[K, V]) Clear() {
 	c.μ.Lock()
 	defer c.μ.Unlock()
 
-	if got := c.store.Evict(c.size, func(ek K, ev V) int64 {
+	for c.count > 0 {
+		ek, ev := c.store.Evict(c.sizeOf)
 		c.onEvict(ek, ev)
-		return c.sizeOf(ev)
-	}); got != c.size {
-		panic(fmt.Sprintf("store: evicted %d units, need %d", got, c.size))
+		c.size -= c.sizeOf(ev)
+		c.count--
 	}
-	c.size = 0
-	c.count = 0
+	if c.size != 0 || c.count != 0 {
+		panic(fmt.Sprintf("cache: after clear size=%d count=%d", c.size, c.count))
+	}
 }
 
 // Size reports the current size of the items in c.
@@ -189,6 +184,8 @@ func (c Config[K, V]) OnEvict(f func(K, V)) Config[K, V] { c.onEvict = f; return
 func (c Config[K, V]) sizeFunc() func(V) int64 {
 	if c.sizeOf != nil {
 		return c.sizeOf
+
+		// TODO(creachadair): Maybe defensively take max(_, 1)?
 	}
 	return func(V) int64 { return 1 }
 }
@@ -219,20 +216,20 @@ type Store[Key comparable, Value any] interface {
 	// This counts as an access of the value.
 	//
 	// If key is already present, Store should panic.
-	// That condition should not be possible when used from a [Cache].
+	// That condition should not be possible when used from a Cache.
 	Store(key Key, val Value)
 
 	// Remove removes the specified key from the cache.  If key is not present,
 	// Remove should do nothing.
 	Remove(key Key)
 
-	// Evict evicts entries from the cache whose total size is at least need.
-	// It reports the actual size of the evicted items.  It must call sizeOf on
-	// each key/value pair to be evicted, if any, to obtain its effective size.
+	// Evict evicts an entry from the cache, chosen by the Store, and returns
+	// the key and value evicted. The Store may optionally use sizeOf to compute
+	// the effective size of values for selection.
 	//
-	// If Evict cannot satisfy the specified size, it should panic.
-	// That condition should not be possible when used from a [Cache].
-	Evict(need int64, sizeOf func(Key, Value) int64) int64
+	// If there are no items in the store, it should panic.
+	// That condition should not be possible when used from a Cache.
+	Evict(sizeOf func(Value) int64) (Key, Value)
 }
 
 // Length is a convenience function for using the length of a string or byte

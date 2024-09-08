@@ -93,15 +93,11 @@ func (c *LRUStore[Key, _]) Remove(key Key) {
 }
 
 // Evict implements part of the [Store] interface.
-func (c *LRUStore[Key, Value]) Evict(need int64, sizeOf func(Key, Value) int64) int64 {
-	var evicted int64
-	for evicted < need {
-		out, ok := c.access.Pop()
-		if !ok {
-			panic(fmt.Sprintf("lru evict: need %d units, no entries left", need-evicted))
-		}
-		delete(c.present, out.key)
-		evicted += sizeOf(out.key, out.value)
+func (c *LRUStore[Key, Value]) Evict(_ func(Value) int64) (Key, Value) {
+	out, ok := c.access.Pop()
+	if !ok {
+		panic("lru evict: no entries left")
 	}
-	return evicted
+	delete(c.present, out.key)
+	return out.key, out.value
 }
