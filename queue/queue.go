@@ -31,7 +31,9 @@ func (q *Queue[T]) Add(v T) {
 		q.n++
 		q.vs[pos] = v
 		return
-	} else if q.head > 0 {
+	}
+
+	if q.head > 0 {
 		// Shift the existing items to initial position so that the append below
 		// can handle extending the buffer. This costs O(1) space, O(n) time; but
 		// we amortize this against the allocation we're (probably) going to do.
