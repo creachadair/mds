@@ -13,7 +13,7 @@ var _ mdtest.Shared[any] = (*queue.Queue[any])(nil)
 
 func TestQueue(t *testing.T) {
 	var q queue.Queue[int]
-	check := func(want ...int) { mdtest.CheckContents(t, &q, want) }
+	check := func(want ...int) { t.Helper(); mdtest.CheckContents(t, &q, want) }
 
 	// Front and Pop of an empty queue report no value.
 	if v := q.Front(); v != 0 {
@@ -65,8 +65,18 @@ func TestQueue(t *testing.T) {
 	}
 	check(2, 3)
 
+	q.Push(1)
+	check(1, 2, 3)
+	q.Add(4)
+	check(1, 2, 3, 4)
+	q.Push(0)
+	check(0, 1, 2, 3, 4)
+
 	q.Clear()
 	check()
+
+	q.Push(25)
+	check(25)
 }
 
 var doDebug = flag.Bool("debug", false, "Enable debug logging")

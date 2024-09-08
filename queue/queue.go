@@ -8,8 +8,8 @@ import (
 // Queue is an array-based first-in, first-out sequence of values.
 // A zero Queue is ready for use.
 //
-// Add and Pop operations take amortized O(1) time and storage.
-// All other operations on a Queue are constant time.
+// Add, Push, and Pop operations take amortized O(1) time and storage.
+// All other operations on a Queue are constant time and space.
 type Queue[T any] struct {
 	vs   []T
 	head int
@@ -27,9 +27,12 @@ func NewSize[T any](n int) *Queue[T] { return &Queue[T]{vs: make([]T, n)} }
 func (q *Queue[T]) Add(v T) {
 	if q.n < len(q.vs) {
 		// We have spaces left in the buffer.
-		pos := (q.head + q.n) % len(q.vs)
-		q.n++
+		pos := q.head + q.n
+		if pos >= len(q.vs) {
+			pos -= len(q.vs)
+		}
 		q.vs[pos] = v
+		q.n++
 		return
 	}
 
@@ -44,6 +47,34 @@ func (q *Queue[T]) Add(v T) {
 	// The buffer is in the initial regime, head == 0.
 	w := append(q.vs, v)
 	q.vs = w[:cap(w)]
+	q.n++
+}
+
+// Push adds v to the front of q.
+func (q *Queue[T]) Push(v T) {
+	if q.n < len(q.vs) {
+		// We have spaces left in the buffer.
+		pos := q.head - 1
+		if pos < 0 {
+			pos = len(q.vs) - 1
+		}
+		q.vs[pos] = v
+		q.head = pos
+		q.n++
+		return
+	}
+
+	if q.head > 0 {
+		slice.Rotate(q.vs, -q.head) // as in Add
+		q.head = 0
+	}
+
+	// N.B. This append does not put v in the correct location, we just need a
+	// value to trigger the reallocation.
+	w := append(q.vs, v)
+	q.vs = w[:cap(w)]
+	q.head = len(q.vs) - 1
+	q.vs[q.head] = v
 	q.n++
 }
 
