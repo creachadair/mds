@@ -50,27 +50,44 @@ func TestQueue(t *testing.T) {
 	if front != 1 {
 		t.Errorf("Front: got %v, want 1", front)
 	}
-	if v, ok := q.Peek(0); !ok || v != front {
-		t.Errorf("Peek(0): got (%v, %v), want (%v, true)", v, ok, front)
+
+	// Make sure we can peek all the locations.
+	for i, want := range []int{1, 2, 3} {
+		if v, ok := q.Peek(i); !ok || v != want {
+			t.Errorf("Peek(0): got (%v, %v), want (%v, true)", v, ok, want)
+		}
 	}
-	if v, ok := q.Peek(1); !ok || v != 2 {
-		t.Errorf("Peek(1): got (%v, %v), want (2, true)", v, ok)
-	}
-	if v, ok := q.Peek(10); ok {
+
+	// Peek off the end should return 0, false.
+	if v, ok := q.Peek(10); ok || v != 0 {
 		t.Errorf("Peek(10): got (%v, %v), want (0, false)", v, ok)
 	}
 
-	if v, ok := q.Pop(); !ok || v != front {
-		t.Errorf("Pop: got (%v, %v), want (%v, true)", v, ok, front)
+	// Pop should work in order.
+	for i, want := range []int{1, 2, 3} {
+		if v, ok := q.Pop(); !ok || v != want {
+			t.Errorf("Pop %d: got (%v, %v), want (%v, true)", i+1, v, ok, want)
+		}
 	}
-	check(2, 3)
+	check()
 
+	q.Add(2)
+	q.Add(3)
 	q.Push(1)
 	check(1, 2, 3)
+
 	q.Add(4)
 	check(1, 2, 3, 4)
+
 	q.Push(0)
 	check(0, 1, 2, 3, 4)
+
+	for _, want := range []int{4, 3, 2} {
+		if v, ok := q.PopLast(); !ok || v != want {
+			t.Errorf("PopLast: got (%v, %v), want (%v, true)", v, ok, want)
+		}
+	}
+	check(0, 1)
 
 	q.Clear()
 	check()

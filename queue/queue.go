@@ -127,6 +127,25 @@ func (q *Queue[T]) Pop() (T, bool) {
 	return out, true
 }
 
+// PopLast reports whether q is non-empty, and if so removes and returns its
+// rearmost (newest) value. If q is empty, PopLast returns a zero value.
+func (q *Queue[T]) PopLast() (T, bool) {
+	if q.n == 0 {
+		var zero T
+		return zero, false
+	}
+	pos := q.head + q.n - 1
+	if pos >= len(q.vs) {
+		pos -= len(q.vs)
+	}
+	out := q.vs[pos]
+	q.n--
+	if q.n == 0 {
+		q.head = 0 // reset to initial conditions
+	}
+	return out, true
+}
+
 // Each calls f with each value in q, in order from oldest to newest.
 // If f returns false, Each stops and returns false.
 // Otherwise, Each returns true after visiting all elements of q.
