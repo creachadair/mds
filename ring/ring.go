@@ -67,6 +67,7 @@ func Of[T any](vs ...T) *Ring[T] {
 // elements of s are spliced in after r1 and the resulting ring is:
 //
 //	[r1 s1 ... sm r2 ... rn]
+//	    ^^^^^^^^^
 //
 // In this case Join returns the ring [r2 ... rn r1 ... sm].
 //
