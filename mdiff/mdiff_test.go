@@ -219,7 +219,9 @@ func TestRead(t *testing.T) {
 
 		// The output should round-trip
 		var buf bytes.Buffer
-		mdiff.Format(&buf, &mdiff.Diff{Chunks: p.Chunks}, nil)
+		if err := p.Format(&buf, mdiff.Format); err != nil {
+			t.Errorf("Format: unexpected error: %v", err)
+		}
 		if got := buf.String(); got != odiff {
 			t.Errorf("Read: got:\n%s\nwant:\n%s", got, odiff)
 		}
@@ -234,7 +236,9 @@ func TestRead(t *testing.T) {
 
 		// The output should round-trip.
 		var buf bytes.Buffer
-		mdiff.FormatUnified(&buf, &mdiff.Diff{Chunks: p.Chunks}, p.FileInfo)
+		if err := p.Format(&buf, mdiff.FormatUnified); err != nil {
+			t.Errorf("Format: unexpected error: %v", err)
+		}
 		if got := buf.String(); got != udiff {
 			t.Errorf("ReadUnified: got:\n%s\nwant:\n%s", got, udiff)
 		}
@@ -270,7 +274,9 @@ func TestRead(t *testing.T) {
 			// Render the first patch back out, it should look like the unified
 			// diff it came from (with the header shimmed).
 			var buf bytes.Buffer
-			mdiff.FormatUnified(&buf, &mdiff.Diff{Chunks: ps[0].Chunks}, u.FileInfo)
+			if err := u.Format(&buf, mdiff.FormatUnified); err != nil {
+				t.Errorf("Format: unexpected error: %v", err)
+			}
 			if diff := gocmp.Diff(buf.String(), udiff); diff != "" {
 				t.Errorf("Git patch output (-got, +want):\n%s", diff)
 			}
