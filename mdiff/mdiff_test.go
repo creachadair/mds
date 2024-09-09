@@ -18,9 +18,9 @@ import (
 
 // Type satisfaction checks.
 var (
-	_ mdiff.FormatFunc = mdiff.Format
-	_ mdiff.FormatFunc = mdiff.FormatContext
-	_ mdiff.FormatFunc = mdiff.FormatUnified
+	_ mdiff.FormatFunc = mdiff.Normal
+	_ mdiff.FormatFunc = mdiff.Context
+	_ mdiff.FormatFunc = mdiff.Unified
 )
 
 var (
@@ -120,7 +120,7 @@ func TestFormat(t *testing.T) {
 		logDiff(t, d)
 
 		var buf bytes.Buffer
-		mdiff.Format(&buf, d, nil)
+		d.Format(&buf, mdiff.Normal, nil)
 		if got := buf.String(); got != odiff {
 			t.Errorf("Normal diff disagrees with testdata.\nGot:\n%s\n\nWant:\n%s", got, odiff)
 		}
@@ -135,7 +135,7 @@ func TestFormat(t *testing.T) {
 		when := time.Date(2024, 3, 16, 18, 53, 15, 123450000, time.UTC)
 
 		var buf bytes.Buffer
-		mdiff.FormatContext(&buf, d, &mdiff.FileInfo{
+		d.Format(&buf, mdiff.Context, &mdiff.FileInfo{
 			Left:       "testdata/lhs.txt",
 			LeftTime:   when,
 			Right:      "testdata/rhs.txt",
@@ -155,7 +155,7 @@ func TestFormat(t *testing.T) {
 		when := time.Date(2024, 3, 16, 17, 47, 40, 123450000, time.UTC)
 
 		var buf bytes.Buffer
-		mdiff.FormatUnified(&buf, d, &mdiff.FileInfo{
+		d.Format(&buf, mdiff.Unified, &mdiff.FileInfo{
 			Left:      "testdata/lhs.txt",
 			LeftTime:  when,
 			Right:     "testdata/rhs.txt",
@@ -170,7 +170,7 @@ func TestFormat(t *testing.T) {
 		d := mdiff.New(lhsLines, rhsLines).AddContext(3).Unify()
 
 		var buf bytes.Buffer
-		mdiff.FormatUnified(&buf, d, &mdiff.FileInfo{Left: "a/fuzzy", Right: "b/wuzzy"})
+		d.Format(&buf, mdiff.Unified, &mdiff.FileInfo{Left: "a/fuzzy", Right: "b/wuzzy"})
 		lines := mstr.Lines(buf.String())
 		if diff := gocmp.Diff(slice.Head(lines, 2), []string{
 			"--- a/fuzzy",
@@ -184,7 +184,7 @@ func TestFormat(t *testing.T) {
 	t.Run("Empty/Normal", func(t *testing.T) {
 		empty := mdiff.New(lhsLines, lhsLines)
 		var buf bytes.Buffer
-		mdiff.Format(&buf, empty, nil)
+		empty.Format(&buf, mdiff.Normal, nil)
 		if got := buf.String(); got != "" {
 			t.Errorf("Format: got:\n%s\nwant empty", got)
 		}
@@ -193,7 +193,7 @@ func TestFormat(t *testing.T) {
 	t.Run("Empty/Context", func(t *testing.T) {
 		empty := mdiff.New(lhsLines, lhsLines).AddContext(3).Unify()
 		var buf bytes.Buffer
-		mdiff.FormatContext(&buf, empty, nil)
+		empty.Format(&buf, mdiff.Context, nil)
 		if got := buf.String(); got != "" {
 			t.Errorf("Format: got:\n%s\nwant empty", got)
 		}
@@ -202,7 +202,7 @@ func TestFormat(t *testing.T) {
 	t.Run("Empty/Unified", func(t *testing.T) {
 		empty := mdiff.New(lhsLines, lhsLines).AddContext(3).Unify()
 		var buf bytes.Buffer
-		mdiff.FormatUnified(&buf, empty, nil)
+		empty.Format(&buf, mdiff.Unified, nil)
 		if got := buf.String(); got != "" {
 			t.Errorf("Format: got:\n%s\nwant empty", got)
 		}
@@ -219,7 +219,7 @@ func TestRead(t *testing.T) {
 
 		// The output should round-trip
 		var buf bytes.Buffer
-		if err := p.Format(&buf, mdiff.Format); err != nil {
+		if err := p.Format(&buf, mdiff.Normal); err != nil {
 			t.Errorf("Format: unexpected error: %v", err)
 		}
 		if got := buf.String(); got != odiff {
@@ -236,7 +236,7 @@ func TestRead(t *testing.T) {
 
 		// The output should round-trip.
 		var buf bytes.Buffer
-		if err := p.Format(&buf, mdiff.FormatUnified); err != nil {
+		if err := p.Format(&buf, mdiff.Unified); err != nil {
 			t.Errorf("Format: unexpected error: %v", err)
 		}
 		if got := buf.String(); got != udiff {
@@ -274,7 +274,7 @@ func TestRead(t *testing.T) {
 			// Render the first patch back out, it should look like the unified
 			// diff it came from (with the header shimmed).
 			var buf bytes.Buffer
-			if err := u.Format(&buf, mdiff.FormatUnified); err != nil {
+			if err := u.Format(&buf, mdiff.Unified); err != nil {
 				t.Errorf("Format: unexpected error: %v", err)
 			}
 			if diff := gocmp.Diff(buf.String(), udiff); diff != "" {

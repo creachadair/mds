@@ -10,13 +10,13 @@ import (
 	"github.com/creachadair/mds/mdiff"
 )
 
-func ExampleFormat() {
+func ExampleNormal() {
 	diff := mdiff.New(
 		[]string{"I", "saw", "three", "mice", "running", "away"},
 		[]string{"three", "blind", "mice", "ran", "home"},
 	)
 
-	mdiff.Format(os.Stdout, diff, nil)
+	diff.Format(os.Stdout, mdiff.Normal, nil)
 
 	// Output:
 	//
@@ -33,14 +33,14 @@ func ExampleFormat() {
 	// > home
 }
 
-func ExampleFormatContext() {
+func ExampleContext() {
 	diff := mdiff.New(
 		[]string{"I", "saw", "three", "mice", "running", "away"},
 		[]string{"three", "blind", "mice", "ran", "home"},
 	).AddContext(3).Unify()
 
 	ts := time.Date(2024, 3, 18, 22, 30, 35, 0, time.UTC)
-	mdiff.FormatContext(os.Stdout, diff, &mdiff.FileInfo{
+	diff.Format(os.Stdout, mdiff.Context, &mdiff.FileInfo{
 		Left: "old", LeftTime: ts,
 		Right: "new", RightTime: ts.Add(3 * time.Second),
 		TimeFormat: time.ANSIC,
@@ -67,13 +67,13 @@ func ExampleFormatContext() {
 
 }
 
-func ExampleFormatUnified() {
+func ExampleUnified() {
 	diff := mdiff.New(
 		[]string{"I", "saw", "three", "mice", "running", "away"},
 		[]string{"three", "blind", "mice", "ran", "home"},
 	).AddContext(3).Unify()
 
-	mdiff.FormatUnified(os.Stdout, diff, nil) // nil means "no header"
+	diff.Format(os.Stdout, mdiff.Unified, nil) // nil means "no header"
 
 	// Output:
 	//

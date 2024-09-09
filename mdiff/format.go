@@ -10,11 +10,11 @@ import (
 	"github.com/creachadair/mds/slice"
 )
 
-// FormatFunc is a function that renders a Diff as text to an io.Writer.
+// FormatFunc is a function that renders diff chunks as text to an io.Writer.
 //
 // A FormatFunc should accept a nil info pointer, and should skip or supply
 // default values for missing fields.
-type FormatFunc func(w io.Writer, d *Diff, fi *FileInfo) error
+type FormatFunc func(w io.Writer, ch []*Chunk, fi *FileInfo) error
 
 // TimeFormat is the default format string used to render timestamps in context
 // and unified diff outputs. It is based on the RFC 2822 time format.
@@ -40,19 +40,19 @@ type FileInfo struct {
 	TimeFormat string
 }
 
-// FormatUnified is a [FormatFunc] that renders d in the [unified diff] format
+// Unified is a [FormatFunc] that renders ch in the [unified diff] format
 // introduced by GNU diff. If fi == nil, the file header is omitted.
 //
 // [unified diff]: https://www.gnu.org/software/diffutils/manual/html_node/Unified-Format.html
-func FormatUnified(w io.Writer, d *Diff, fi *FileInfo) error {
-	if len(d.Chunks) == 0 {
+func Unified(w io.Writer, ch []*Chunk, fi *FileInfo) error {
+	if len(ch) == 0 {
 		return nil
 	}
 	if fi != nil {
 		fmtFileHeader(w, "--- ", cmp.Or(fi.Left, "a"), fi.LeftTime, cmp.Or(fi.TimeFormat, TimeFormat))
 		fmtFileHeader(w, "+++ ", cmp.Or(fi.Right, "b"), fi.RightTime, cmp.Or(fi.TimeFormat, TimeFormat))
 	}
-	for _, c := range d.Chunks {
+	for _, c := range ch {
 		fmt.Fprintln(w, "@@", uspan("-", c.LStart, c.LEnd), uspan("+", c.RStart, c.REnd), "@@")
 		for _, e := range c.Edits {
 			switch e.Op {
@@ -79,19 +79,19 @@ func fmtFileHeader(w io.Writer, prefix, name string, ts time.Time, tfmt string) 
 	fmt.Fprintln(w)
 }
 
-// FormatContext is a [FormatFunc] that renders d in the [context diff] format
+// Context is a [FormatFunc] that renders ch in the [context diff] format
 // introduced by BSD diff. If fi == nil, the file header is omitted.
 //
 // [context diff]: https://www.gnu.org/software/diffutils/manual/html_node/Context-Format.html
-func FormatContext(w io.Writer, d *Diff, fi *FileInfo) error {
-	if len(d.Chunks) == 0 {
+func Context(w io.Writer, ch []*Chunk, fi *FileInfo) error {
+	if len(ch) == 0 {
 		return nil
 	}
 	if fi != nil {
 		fmtFileHeader(w, "*** ", cmp.Or(fi.Left, "a"), fi.LeftTime, cmp.Or(fi.TimeFormat, TimeFormat))
 		fmtFileHeader(w, "--- ", cmp.Or(fi.Right, "b"), fi.RightTime, cmp.Or(fi.TimeFormat, TimeFormat))
 	}
-	for _, c := range d.Chunks {
+	for _, c := range ch {
 		// Why 15 stars? I can't say. Berkeley just liked it better that way.
 		fmt.Fprintln(w, "***************")
 		fmt.Fprintf(w, "*** %s ****\n", dspan(c.LStart, c.LEnd))
@@ -124,12 +124,12 @@ func FormatContext(w io.Writer, d *Diff, fi *FileInfo) error {
 	return nil
 }
 
-// Format is a [FormatFunc] that renders d in the "normal" [Unix diff] format.
+// Normal is a [FormatFunc] that renders ch in the "normal" [Unix diff] format.
 // This format does not include a file header, so the FileInfo is ignored.
 //
 // [Unix diff]: https://www.gnu.org/software/diffutils/manual/html_node/Detailed-Normal.html
-func Format(w io.Writer, d *Diff, _ *FileInfo) error {
-	for _, c := range d.Chunks {
+func Normal(w io.Writer, ch []*Chunk, _ *FileInfo) error {
+	for _, c := range ch {
 		lpos, rpos := c.LStart, c.RStart
 		for _, e := range c.Edits {
 			switch e.Op {

@@ -27,18 +27,19 @@
 //
 // # Output
 //
-// To write a diff in textual format, use one of the formatting functions.  For
-// example, use [Format] to write an old-style Unix diff output to stdout:
+// To write a diff in textual format, use the [Diff.Format] or [Patch.Format]
+// method with a formatting function.  For example, use [Normal] to write an
+// old-style Unix diff output to stdout:
 //
-//	mdiff.Format(os.Stdout, diff, nil)
+//	diff.Format(os.Stdout, mdiff.Normal, nil)
 //
-// The [FormatContext] and [FormatUnified] functions allow rendering a diff in
-// those formats instead. Use [FileInfo] to tell the formatter the names and
+// The [Context] and [Unified] functions allow rendering a diff in those
+// formats instead. Use [FileInfo] to tell the formatter the names and
 // timestamps to use for their file headers:
 //
-//	mdiff.FormatUnified(os.Stdout, diff, &mdiff.FileInfo{
-//	   Left:  "dir/original.go",
-//	   Right: "dir/patched.go",
+//	diff.Format(os.Stdout, mdiff.Unified, &mdiff.FileInfo{
+//	    Left:  "dir/original.go",
+//	    Right: "dir/patched.go",
 //	})
 //
 // If the options are omitted, the formatters defined by this package provide
@@ -66,6 +67,7 @@
 package mdiff
 
 import (
+	"io"
 	"slices"
 
 	"github.com/creachadair/mds/slice"
@@ -176,6 +178,10 @@ func (d *Diff) AddContext(n int) *Diff {
 // Unify updates the edits of any merged chunks, but does not modify the
 // original edit sequence in d.Edits.
 func (d *Diff) Unify() *Diff { d.Chunks = UnifyChunks(d.Chunks); return d }
+
+// Format renders a diff in textual format using the specified format function.
+// If fi == nil, no file header is generated.
+func (d *Diff) Format(w io.Writer, f FormatFunc, fi *FileInfo) error { return f(w, d.Chunks, fi) }
 
 // findContext returns slices of up to n strings before and after the specified
 // chunk that are equal on the left and right sides of the diff.  Either or

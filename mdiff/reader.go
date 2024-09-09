@@ -18,11 +18,8 @@ type Patch struct {
 	Chunks   []*Chunk
 }
 
-// Format renders a patch in textual format using the specified format
-// function.
-func (p *Patch) Format(w io.Writer, f FormatFunc) error {
-	return f(w, &Diff{Chunks: p.Chunks}, p.FileInfo)
-}
+// Format renders a patch in textual format using the specified format function.
+func (p *Patch) Format(w io.Writer, f FormatFunc) error { return f(w, p.Chunks, p.FileInfo) }
 
 // ReadGitPatch reads a sequence of unified diff [patches] in the format
 // produced by "git diff -p" with default settings. The commit metadata and
