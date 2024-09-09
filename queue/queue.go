@@ -99,10 +99,12 @@ func (q *Queue[T]) Front() T {
 
 // Peek reports whether q has a value at offset n from the front of the queue,
 // and if so returns its value. Peek(0) returns the same value as Front.
+// Negative offsets count forward from the end of the queue.
 func (q *Queue[T]) Peek(n int) (T, bool) {
 	if n < 0 {
-		panic("index out of range")
-	} else if n >= q.n {
+		n += q.n
+	}
+	if n < 0 || n >= q.n {
 		var zero T
 		return zero, false
 	}

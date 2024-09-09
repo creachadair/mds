@@ -51,16 +51,24 @@ func TestQueue(t *testing.T) {
 		t.Errorf("Front: got %v, want 1", front)
 	}
 
-	// Make sure we can peek all the locations.
+	// Make sure we can peek all the locations, both positive and negative.
 	for i, want := range []int{1, 2, 3} {
 		if v, ok := q.Peek(i); !ok || v != want {
-			t.Errorf("Peek(0): got (%v, %v), want (%v, true)", v, ok, want)
+			t.Errorf("Peek(%d): got (%v, %v), want (%v, true)", i, v, ok, want)
+		}
+	}
+	for i, want := range []int{3, 2, 1} {
+		pos := -(i + 1)
+		if v, ok := q.Peek(pos); !ok || v != want {
+			t.Errorf("Peek(%d): got (%v, %v), want (%v, true)", pos, v, ok, want)
 		}
 	}
 
-	// Peek off the end should return 0, false.
-	if v, ok := q.Peek(10); ok || v != 0 {
-		t.Errorf("Peek(10): got (%v, %v), want (0, false)", v, ok)
+	// Peek off the end (in either direction) should return 0, false.
+	for _, pos := range []int{-10, -4, 5, 9} {
+		if v, ok := q.Peek(pos); ok || v != 0 {
+			t.Errorf("Peek(%d): got (%v, %v), want (0, false)", pos, v, ok)
+		}
 	}
 
 	// Pop should work in order.
@@ -82,6 +90,7 @@ func TestQueue(t *testing.T) {
 	q.Push(0)
 	check(0, 1, 2, 3, 4)
 
+	// PopLast should work in reverse order.
 	for _, want := range []int{4, 3, 2} {
 		if v, ok := q.PopLast(); !ok || v != want {
 			t.Errorf("PopLast: got (%v, %v), want (%v, true)", v, ok, want)
