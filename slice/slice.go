@@ -234,7 +234,7 @@ func Chunks[T any, Slice ~[]T](vs Slice, n int) []Slice {
 	i := 0
 	for i < len(vs) {
 		end := min(i+n, len(vs))
-		out = append(out, vs[i:end])
+		out = append(out, vs[i:end:end])
 		i = end
 	}
 	return out
@@ -262,7 +262,7 @@ func Batches[T any, Slice ~[]T](vs Slice, n int) []Slice {
 			end++
 			rem--
 		}
-		out = append(out, vs[i:end])
+		out = append(out, vs[i:end:end])
 		i = end
 	}
 	return out
