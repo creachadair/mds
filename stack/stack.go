@@ -56,16 +56,14 @@ func (s *Stack[T]) Pop() (T, bool) {
 	return out, ok
 }
 
-// Each calls f with each value in s, in order from newest to oldest.
-// If f returns false, Each stops and returns false.
-// Otherwise, Each returns true after visiting all elements of s.
-func (s *Stack[T]) Each(f func(T) bool) bool {
+// Each is a range function that calls f with each value in s, in order from
+// newest to oldest.  If f returns false, Each returns immediately.
+func (s *Stack[T]) Each(f func(T) bool) {
 	for i := len(s.list) - 1; i >= 0; i-- {
 		if !f(s.list[i]) {
-			return false
+			return
 		}
 	}
-	return true
 }
 
 // Len reports the number of elements in s. This is a constant-time operation.

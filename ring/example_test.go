@@ -19,10 +19,9 @@ func ExampleRing() {
 	s.Prev().Join(r)
 
 	// Iterate over the elements of a ring.
-	r.Each(func(s string) bool {
+	for s := range r.Each {
 		fmt.Println(s)
-		return true
-	})
+	}
 
 	// Output:
 	// fruit

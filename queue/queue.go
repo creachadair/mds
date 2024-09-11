@@ -148,18 +148,16 @@ func (q *Queue[T]) PopLast() (T, bool) {
 	return out, true
 }
 
-// Each calls f with each value in q, in order from oldest to newest.
-// If f returns false, Each stops and returns false.
-// Otherwise, Each returns true after visiting all elements of q.
-func (q *Queue[T]) Each(f func(T) bool) bool {
+// Each is a range function that calls f with each value, in q, in order from
+// oldest to newest.  If f returns false, Each returns immediately.
+func (q *Queue[T]) Each(f func(T) bool) {
 	cur := q.head
 	for range q.n {
 		if !f(q.vs[cur]) {
-			return false
+			return
 		}
 		cur = (cur + 1) % len(q.vs)
 	}
-	return true
 }
 
 // Slice returns a slice of the values of q in order from oldest to newest.

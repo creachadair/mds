@@ -56,10 +56,9 @@ func (q *Queue[T]) Pop() (T, bool) {
 	return out, true
 }
 
-// Each calls f with each value in q, in order from oldest to newest.
-// If f returns false, Each stops and returns false.
-// Otherwise, Each returns true after visiting all elements of q.
-func (q *Queue[T]) Each(f func(T) bool) bool { return q.list.Each(f) }
+// Each is a range function that calls f with each value in q, in order from
+// oldest to newest.  If f returns false, Each returns immediately.
+func (q *Queue[T]) Each(f func(T) bool) { q.list.Each(f) }
 
 // Len reports the number of elements in q. This is a constant-time operation.
 func (q *Queue[T]) Len() int { return q.size }

@@ -13,14 +13,14 @@ import (
 type Shared[T any] interface {
 	Clear()
 	Peek(int) (T, bool)
-	Each(func(T) bool) bool
+	Each(func(T) bool)
 	IsEmpty() bool
 	Len() int
 }
 
 // Eacher is the subset of Shared provided by iterable elements.
 type Eacher[T any] interface {
-	Each(func(T) bool) bool
+	Each(func(T) bool)
 	Len() int
 }
 
@@ -29,7 +29,9 @@ type Eacher[T any] interface {
 func CheckContents[T any](t *testing.T, s Eacher[T], want []T) {
 	t.Helper()
 	var got []T
-	s.Each(func(v T) bool { got = append(got, v); return true })
+	for v := range s.Each {
+		got = append(got, v)
+	}
 	if diff := cmp.Diff(want, got, cmpopts.EquateEmpty()); diff != "" {
 		t.Errorf("Wrong contents (-got, +want):\n%s", diff)
 	}

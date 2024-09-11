@@ -31,10 +31,9 @@ func ExampleList() {
 	name.Remove()
 
 	// Print out everything in the list.
-	lst.Each(func(s string) bool {
+	for s := range lst.Each {
 		fmt.Print(" ", s)
-		return true
-	})
+	}
 	fmt.Println()
 
 	// Calculate the length of the list.

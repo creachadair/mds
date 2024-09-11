@@ -7,6 +7,16 @@ This repository defines generic data structures in Go.
 
 ## Data Structures
 
+Most of the types in this module share common behaviors:
+
+- A `Clear` method that discards all the contents of the container.
+- A `Peek` method that returns an order statistic of the container.
+- An `Each` method that iterates the container in its natural order (usable as a [range function](https://go.dev/blog/range-functions)).
+- An `IsEmpty` method that reports whether the container is empty.
+- A `Len` method that reports the number of elements in the container.
+
+### Packages
+
 - [heapq](./heapq) a heap-structured priority queue ([package docs](https://godoc.org/github.com/creachadair/mds/heapq))
 - [mapset](./mapset) a basic map-based set implementation ([package docs](https://godoc.org/github.com/creachadair/mds/mapset))
 - [mlink](./mlink) basic linked sequences (list, queue) ([package docs](https://godoc.org/github.com/creachadair/mds/mlink))

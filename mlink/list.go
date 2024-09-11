@@ -29,24 +29,23 @@ func (lst *List[T]) Peek(n int) (T, bool) {
 	return cur.Get(), !cur.AtEnd()
 }
 
-// Each calls f with each value in lst, in order from first to last.
-// If f returns false, Each stops and returns false.
-// Otherwise, Each returns true after visiting all elements of lst.
-func (lst *List[T]) Each(f func(T) bool) bool {
+// Each is a range function that calls f with each value in lst in order from
+// first to last.  If f returns false, Each returns immediately.
+func (lst *List[T]) Each(f func(T) bool) {
 	for cur := lst.cfirst(); !cur.AtEnd(); cur.Next() {
 		if !f(cur.Get()) {
-			return false
+			return
 		}
 	}
-	return true
 }
 
 // Len reports the number of elements in lst. This method takes time proportional
 // to the length of the list.
-func (lst *List[T]) Len() int {
-	var n int
-	lst.Each(func(T) bool { n++; return true })
-	return n
+func (lst *List[T]) Len() (n int) {
+	for range lst.Each {
+		n++
+	}
+	return
 }
 
 // At returns a cursor to the element at index n ≥ 0 in the list.  If n is
