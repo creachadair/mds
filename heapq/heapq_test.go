@@ -32,10 +32,9 @@ func runTests(t *testing.T, q *heapq.Queue[int]) {
 	check := func(want ...int) {
 		t.Helper()
 		var got []int
-		q.Each(func(v int) bool {
+		for v := range q.Each {
 			got = append(got, v)
-			return true
-		})
+		}
 		if diff := cmp.Diff(want, got); diff != "" {
 			t.Errorf("Queue contents (+want, -got):\n%s", diff)
 			t.Logf("Got:  %v", got)

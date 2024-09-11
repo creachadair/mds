@@ -150,11 +150,10 @@ func (r *Ring[T]) Peek(n int) (T, bool) {
 	return cur.Value, true
 }
 
-// Each calls f with each value in r, in circular order. If f returns false,
-// Each stops and returns false.  Otherwise, Each returns true after visiting
-// all elements of r.
-func (r *Ring[T]) Each(f func(v T) bool) bool {
-	return scan(r, func(cur *Ring[T]) bool { return f(cur.Value) })
+// Each is a range function that calls f with each value of r in circular
+// order.  If f returns false, Each returns immediately.
+func (r *Ring[T]) Each(f func(v T) bool) {
+	scan(r, func(cur *Ring[T]) bool { return f(cur.Value) })
 }
 
 // Len reports the number of elements in r. If r == nil, Len is 0.
@@ -171,19 +170,18 @@ func (r *Ring[T]) Len() int {
 // IsEmpty reports whether r is the empty ring.
 func (r *Ring[T]) IsEmpty() bool { return r == nil }
 
-func scan[T any](r *Ring[T], f func(*Ring[T]) bool) bool {
+func scan[T any](r *Ring[T], f func(*Ring[T]) bool) {
 	if r == nil {
-		return true
+		return
 	}
 
 	cur := r
 	for f(cur) {
 		if cur.next == r {
-			return true
+			return
 		}
 		cur = cur.next
 	}
-	return false
 }
 
 func newRing[T any]() *Ring[T] { r := new(Ring[T]); r.next = r; r.prev = r; return r }

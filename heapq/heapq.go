@@ -156,16 +156,14 @@ func (q *Queue[T]) Reorder(cmp func(a, b T) int) {
 	}
 }
 
-// Each calls f for each value in q in heap order. If f returns false, Each
-// stops and returns false. Otherwise, Each returns true after visiting all
-// elements of q.
-func (q *Queue[T]) Each(f func(T) bool) bool {
+// Each is a range function that calls f with each value in q in heap order.
+// If f returns false, Each returns immediately.
+func (q *Queue[T]) Each(f func(T) bool) {
 	for _, v := range q.data {
 		if !f(v) {
-			return false
+			return
 		}
 	}
-	return true
 }
 
 // Clear discards all the entries in q, leaving it empty.
