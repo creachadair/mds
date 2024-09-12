@@ -68,7 +68,7 @@ func (c *Cache[K, V]) Put(key K, val V) bool {
 	// If necessary, evict items to make room.
 	newSize := c.size + valSize
 	for newSize > c.limit {
-		ek, ev := c.store.Evict(c.sizeOf)
+		ek, ev := c.store.Evict()
 		c.onEvict(ek, ev)
 		c.count--
 		newSize -= c.sizeOf(ev)
@@ -110,7 +110,7 @@ func (c *Cache[K, V]) Clear() {
 	defer c.μ.Unlock()
 
 	for c.count > 0 {
-		ek, ev := c.store.Evict(c.sizeOf)
+		ek, ev := c.store.Evict()
 		c.onEvict(ek, ev)
 		c.size -= c.sizeOf(ev)
 		c.count--
@@ -224,12 +224,11 @@ type Store[Key comparable, Value any] interface {
 	Remove(key Key)
 
 	// Evict evicts an entry from the cache, chosen by the Store, and returns
-	// the key and value evicted. The Store may optionally use sizeOf to compute
-	// the effective size of values for selection.
+	// the key and value evicted.
 	//
 	// If there are no items in the store, it should panic.
 	// That condition should not be possible when used from a Cache.
-	Evict(sizeOf func(Value) int64) (Key, Value)
+	Evict() (Key, Value)
 }
 
 // Length is a convenience function for using the length of a string or byte
