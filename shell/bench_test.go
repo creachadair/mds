@@ -99,11 +99,19 @@ func BenchmarkQuote(b *testing.B) {
 	}
 
 	input := buf.String()
-	b.ResetTimer()
+	parts, _ := shell.Split(input)
+	b.Logf("Input length: %d bytes, %d tokens", len(input), len(parts))
 
-	for range b.N {
-		shell.Quote(input)
-	}
+	b.Run("Quote", func(b *testing.B) {
+		for range b.N {
+			shell.Quote(input)
+		}
+	})
+	b.Run("Join", func(b *testing.B) {
+		for range b.N {
+			shell.Join(parts)
+		}
+	})
 }
 
 func ignore(string) bool { return true }
