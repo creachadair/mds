@@ -1,6 +1,7 @@
 package slice_test
 
 import (
+	"slices"
 	"sort"
 	"strings"
 	"testing"
@@ -483,6 +484,31 @@ func TestTail(t *testing.T) {
 		got := slice.Tail(strings.Fields(tc.input), tc.n)
 		if diff := cmp.Diff(got, strings.Fields(tc.want)); diff != "" {
 			t.Errorf("Tail %d (-got, +want):\n%s", tc.n, diff)
+		}
+	}
+}
+
+func TestSelect(t *testing.T) {
+	tests := []struct {
+		input, want []int
+	}{
+		{nil, nil},
+		{[]int{}, nil},
+		{[]int{1}, nil},
+		{[]int{4}, []int{4}},
+		{[]int{1, 4}, []int{4}},
+		{[]int{4, 1}, []int{4}},
+		{[]int{1, 2, 3}, []int{2}},
+		{[]int{1, 2, 3, 2}, []int{2, 2}},
+		{[]int{8, 6, 7, 5, 3, 0, 9}, []int{8, 6, 0}},
+		{[]int{8, 8, 1, 1, 2, 3, 2}, []int{8, 8, 2, 2}},
+	}
+
+	isEven := func(z int) bool { return z%2 == 0 }
+	for _, tc := range tests {
+		got := slices.Collect(slice.Select(tc.input, isEven))
+		if diff := cmp.Diff(got, tc.want); diff != "" {
+			t.Errorf("Select %v (-got, +want):\n%s", tc.input, diff)
 		}
 	}
 }

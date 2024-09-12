@@ -303,3 +303,15 @@ func Tail[T any, Slice ~[]T](vs Slice, n int) Slice {
 	}
 	return vs[len(vs)-n:]
 }
+
+// Select returns an iterator over the elements v of vs for which f(v) is true,
+// in the same order they occur in the input.
+func Select[T any, Slice ~[]T](vs Slice, f func(T) bool) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for _, v := range vs {
+			if f(v) && !yield(v) {
+				return
+			}
+		}
+	}
+}
