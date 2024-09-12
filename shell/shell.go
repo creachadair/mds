@@ -290,26 +290,42 @@ func quotable(s string) (hasQ, hasOther bool) {
 	return v&quote != 0, v&other != 0
 }
 
+var bufPool = &sync.Pool{
+	New: func() any { return new(bytes.Buffer) },
+}
+
 // Quote returns a copy of s in which shell metacharacters are quoted to
 // protect them from evaluation.
 func Quote(s string) string {
-	var buf bytes.Buffer
-	return quote(s, &buf)
-}
-
-// quote implements quotation, using the provided buffer as scratch space.  The
-// existing contents of the buffer are clobbered.
-func quote(s string, buf *bytes.Buffer) string {
 	if s == "" {
 		return "''"
 	}
-	hasQ, hasOther := quotable(s)
-	if !hasQ && !hasOther {
-		return s // fast path: nothing needs quotation
+	if hasQ, hasOther := quotable(s); !hasQ && !hasOther {
+		return s // no quotation needed
+	}
+	buf := bufPool.Get().(*bytes.Buffer)
+	defer bufPool.Put(buf)
+	buf.Reset()
+
+	quote(s, buf)
+	return buf.String()
+}
+
+// quote appends the quoted representation of s to buf.
+// Any existing contents in buf are not modified.
+func quote(s string, buf *bytes.Buffer) {
+	if s == "" {
+		buf.WriteString("''")
+		return
 	}
 
-	buf.Reset()
-	buf.Grow(len(s))
+	hasQ, hasOther := quotable(s)
+	if !hasQ && !hasOther {
+		buf.WriteString(s)
+		return // fast path: nothing needs quotation
+	}
+
+	buf.Grow(len(s) + 2) // +2 for expected quotes; it may be more
 	inq := false
 	for i := range len(s) {
 		ch := s[i]
@@ -328,16 +344,22 @@ func quote(s string, buf *bytes.Buffer) string {
 	if inq {
 		buf.WriteByte('\'')
 	}
-	return buf.String()
 }
 
 // Join quotes each element of ss with Quote and concatenates the resulting
 // strings separated by spaces.
 func Join(ss []string) string {
-	quoted := make([]string, len(ss))
-	var buf bytes.Buffer
-	for i, s := range ss {
-		quoted[i] = quote(s, &buf)
+	if len(ss) == 0 {
+		return ""
 	}
-	return strings.Join(quoted, " ")
+	buf := bufPool.Get().(*bytes.Buffer)
+	defer bufPool.Put(buf)
+	buf.Reset()
+
+	quote(ss[0], buf)
+	for _, s := range ss[1:] {
+		buf.WriteByte(' ')
+		quote(s, buf)
+	}
+	return buf.String()
 }
