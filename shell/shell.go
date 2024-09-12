@@ -231,18 +231,15 @@ func (s *Scanner) Rest() io.Reader {
 	return s.buf
 }
 
-// Each calls f for each token in the scanner until the input is exhausted, f
-// returns false, or an error occurs.
-func (s *Scanner) Each(f func(tok string) bool) error {
+// Each is a range function that calls f for each token in the scanner.  It
+// continues until the input is exhausted, f returns false, or an error other
+// than [io.EOF] occurs. Use the Err method to check for an error.
+func (s *Scanner) Each(f func(tok string) bool) {
 	for s.Next() {
 		if !f(s.Text()) {
-			return nil
+			return
 		}
 	}
-	if err := s.Err(); err != io.EOF {
-		return err
-	}
-	return nil
 }
 
 // Split returns the remaining tokens in s, not including the current token if
