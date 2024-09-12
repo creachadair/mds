@@ -9,12 +9,15 @@ import (
 
 func TestMaybe(t *testing.T) {
 	t.Run("Zero", func(t *testing.T) {
-		var v value.Maybe[int]
-		if v.Present() {
-			t.Error("Zero maybe should not be present")
-		}
-		if got := v.Get(); got != 0 {
-			t.Errorf("Get: got %d, want 0", got)
+		var v1 value.Maybe[int]
+
+		for _, v := range []value.Maybe[int]{v1, value.Absent[int]()} {
+			if v.Present() {
+				t.Error("Zero maybe should not be present")
+			}
+			if got := v.Get(); got != 0 {
+				t.Errorf("Get: got %d, want 0", got)
+			}
 		}
 	})
 
