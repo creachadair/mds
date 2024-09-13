@@ -1,7 +1,10 @@
 // Package slice implements some useful functions for slices.
 package slice
 
-import "slices"
+import (
+	"iter"
+	"slices"
+)
 
 // Partition rearranges the elements of vs in-place so that all the elements v
 // for which keep(v) is true precede all those for which it is false.  It
@@ -152,16 +155,18 @@ func PtrAt[T any, Slice ~[]T](ss Slice, i int) *T {
 	return nil
 }
 
-// MatchingKeys returns a slice of the keys k of m for which f(m[k]) is true.
-// The resulting slice is in arbitrary order.
-func MatchingKeys[T comparable, U any](m map[T]U, f func(U) bool) []T {
-	var out []T
-	for k, v := range m {
-		if f(v) {
-			out = append(out, k)
+// MatchingKeys returns an iterator over the keys k of m for which f(m[k]) is
+// true.  The results are delivered in arbitrary order.
+func MatchingKeys[T comparable, U any](m map[T]U, f func(U) bool) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for k, v := range m {
+			if f(v) {
+				if !yield(k) {
+					return
+				}
+			}
 		}
 	}
-	return out
 }
 
 // Rotate permutes the elements of ss in-place by k positions.

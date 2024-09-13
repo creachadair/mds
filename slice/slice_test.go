@@ -156,7 +156,10 @@ func TestMatchingKeys(t *testing.T) {
 			[]string{"a", "b", "c"}},
 	}
 	for _, tc := range tests {
-		got := slice.MatchingKeys(tc.m, tc.f)
+		var got []string
+		for key := range slice.MatchingKeys(tc.m, tc.f) {
+			got = append(got, key)
+		}
 		sort.Strings(got)
 		sort.Strings(tc.want)
 		if diff := cmp.Diff(tc.want, got); diff != "" {

@@ -35,8 +35,7 @@ func ExampleSplit() {
 func ExampleMatchingKeys() {
 	vs := map[string]int{"red": 3, "yellow": 6, "blue": 4, "green": 5}
 
-	keys := slice.MatchingKeys(vs, isEven)
-	for _, key := range keys {
+	for key := range slice.MatchingKeys(vs, isEven) {
 		fmt.Println(key, vs[key])
 	}
 	// Unordered output:
