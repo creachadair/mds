@@ -81,7 +81,7 @@ func Of[T any](vs ...T) *Ring[T] {
 // may be empty (nil) if there were no elements between r1 and s1.
 func (r *Ring[T]) Join(s *Ring[T]) *Ring[T] {
 	if r == s || r.next == s {
-		return nil // same ring, nothing to do
+		return nil // same ring, no elements between r and s to remove
 	}
 	rnext, sprev := r.next, s.prev
 

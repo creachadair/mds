@@ -21,7 +21,7 @@ func TestRing(t *testing.T) {
 	})
 
 	t.Run("Joining", func(t *testing.T) {
-		r := ring.New[int](1)
+		r := ring.Of(0)
 		r.Join(ring.Of(1, 2, 3))
 		rc(t, r, 0, 1, 2, 3)
 
