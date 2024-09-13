@@ -1,20 +1,21 @@
 package heapq_test
 
 import (
-	stdcmp "cmp"
+	"cmp"
 	"math/rand/v2"
 	"sort"
 	"testing"
 
+	"github.com/creachadair/mds/compare"
 	"github.com/creachadair/mds/heapq"
 	"github.com/creachadair/mds/internal/mdtest"
-	"github.com/google/go-cmp/cmp"
+	gocmp "github.com/google/go-cmp/cmp"
 )
 
 var _ mdtest.Shared[any] = (*heapq.Queue[any])(nil)
 
-func intCompare(a, b int) int    { return stdcmp.Compare(a, b) }
-func revIntCompare(a, b int) int { return stdcmp.Compare(b, a) }
+var intCompare = cmp.Compare[int]
+var revIntCompare = compare.Reversed(cmp.Compare[int])
 
 func TestHeap(t *testing.T) {
 	t.Run("New", func(t *testing.T) {
@@ -35,7 +36,7 @@ func runTests(t *testing.T, q *heapq.Queue[int]) {
 		for v := range q.Each {
 			got = append(got, v)
 		}
-		if diff := cmp.Diff(want, got); diff != "" {
+		if diff := gocmp.Diff(want, got); diff != "" {
 			t.Errorf("Queue contents (+want, -got):\n%s", diff)
 			t.Logf("Got:  %v", got)
 			t.Logf("Want: %v", want)
@@ -184,7 +185,7 @@ func TestNewWithData(t *testing.T) {
 	sort.Ints(got)
 	sort.Ints(want)
 
-	if diff := cmp.Diff(want, got); diff != "" {
+	if diff := gocmp.Diff(want, got); diff != "" {
 		t.Errorf("Queue contents (+want, -got):\n%s", diff)
 	}
 }
@@ -218,7 +219,7 @@ func TestSort(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			in := append([]int(nil), tc.input...)
 			heapq.Sort(tc.cmp, in)
-			if diff := cmp.Diff(tc.want, in); diff != "" {
+			if diff := gocmp.Diff(tc.want, in); diff != "" {
 				t.Errorf("Sort (-want, +got):\n%s", diff)
 			}
 		})
@@ -228,7 +229,7 @@ func TestSort(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	m := make(map[string]int)                // tracks the offsets of strings in the queue
 	up := func(s string, p int) { m[s] = p } // update the offsets map
-	q := heapq.New(stdcmp.Compare[string]).Update(up)
+	q := heapq.New(cmp.Compare[string]).Update(up)
 
 	// Verify that all the elements know their current offset correctly.
 	check := func() {
@@ -273,7 +274,7 @@ func TestUpdate(t *testing.T) {
 		}
 
 	}
-	if diff := cmp.Diff(got, []string{"a", "b", "c", "k", "m", "t", "z"}); diff != "" {
+	if diff := gocmp.Diff(got, []string{"a", "b", "c", "k", "m", "t", "z"}); diff != "" {
 		t.Errorf("Values (-got, +want):\n%s", diff)
 	}
 }
