@@ -55,7 +55,7 @@ func ReadGitPatch(r io.Reader) ([]*Patch, error) {
 		for {
 			err := readUnifiedChunk(rd)
 			if err == io.EOF || errors.Is(err, errUnexpectedPrefix) {
-				out = append(out, &Patch{Chunks: rd.chunks})
+				out = append(out, &Patch{Chunks: rd.chunks, FileInfo: rd.fileInfo})
 				rd.chunks = nil
 				break
 			} else if err != nil {

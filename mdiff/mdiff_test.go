@@ -232,6 +232,11 @@ func TestRead(t *testing.T) {
 		if err != nil {
 			t.Fatalf("ReadUnified: unexpected error: %v", err)
 		}
+		if p.FileInfo == nil {
+			t.Error("Missing file header")
+		} else {
+			t.Logf("Header: %v", p.FileInfo)
+		}
 		logChunks(t, p.Chunks)
 
 		// The output should round-trip.
@@ -268,6 +273,11 @@ func TestRead(t *testing.T) {
 			}
 			for i, p := range ps {
 				t.Logf("-- Patch %d", i+1)
+				if p.FileInfo == nil {
+					t.Error("Missing file header")
+				} else {
+					t.Logf("   Header: %v", p.FileInfo)
+				}
 				logChunks(t, p.Chunks)
 			}
 
