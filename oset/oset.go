@@ -152,10 +152,9 @@ func (s Set[T]) AddAll(t Set[T]) Set[T] {
 	if t.s == nil {
 		return s
 	}
-	t.s.Inorder(func(v T) bool {
+	for v := range t.s.Inorder {
 		s.s.Add(v)
-		return true
-	})
+	}
 	return s
 }
 
@@ -187,10 +186,9 @@ func (s Set[T]) Slice() []T {
 		return nil
 	}
 	out := make([]T, 0, s.Len())
-	s.s.Inorder(func(val T) bool {
+	for val := range s.s.Inorder {
 		out = append(out, val)
-		return true
-	})
+	}
 	return out
 }
 
@@ -241,10 +239,10 @@ func (it *Iter[T]) Value() T { return it.c.Key() }
 func (it *Iter[T]) Seek(value T) *Iter[T] {
 	it.c = nil
 	if it.s != nil {
-		it.s.InorderAfter(value, func(key T) bool {
+		for key := range it.s.InorderAfter(value) {
 			it.c = it.s.Cursor(key)
-			return false
-		})
+			break
+		}
 	}
 	return it
 }

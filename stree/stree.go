@@ -19,6 +19,7 @@ package stree
 
 import (
 	"fmt"
+	"iter"
 	"math"
 	"slices"
 )
@@ -276,16 +277,15 @@ func (t *Tree[T]) Get(key T) (_ T, ok bool) {
 	return
 }
 
-// Inorder calls f for each key of t in order. If f returns false, Inorder
-// stops and returns false; otherwise it returns true after visiting all
-// elements of t.
-func (t *Tree[T]) Inorder(f func(key T) bool) bool { return t.root.inorder(f) }
+// Inorder is a range function that visits each key of t in order.
+func (t *Tree[T]) Inorder(yield func(key T) bool) { t.root.inorder(yield) }
 
-// InorderAfter calls f for each key greater than or equal to key, in order.
-// if f returns false, InorderAfter stops and returns false. Otherwise, it
-// returns true after visiting all eligible elements of t.
-func (t *Tree[T]) InorderAfter(key T, f func(key T) bool) bool {
-	return t.root.inorderAfter(key, t.compare, f)
+// InorderAfter returns a range function for each key greater than or equal to
+// key, in order.
+func (t *Tree[T]) InorderAfter(key T) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		t.root.inorderAfter(key, t.compare, yield)
+	}
 }
 
 // Cursor constructs a cursor to the specified key, or nil if key is not

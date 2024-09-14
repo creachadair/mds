@@ -232,12 +232,9 @@ func (c *Cursor[T]) Max() *Cursor[T] {
 	return c
 }
 
-// Inorder calls f for each key of the subtree rooted at c in order. If f
-// returns false, Inorder stops and returns false; otherwise it returns true
-// after visiting all elements of c.
-func (c *Cursor[T]) Inorder(f func(key T) bool) bool {
+// Inorder is a range function over each key of the subtree at c in order.
+func (c *Cursor[T]) Inorder(yield func(key T) bool) {
 	if c.Valid() {
-		return c.path[len(c.path)-1].inorder(f)
+		c.path[len(c.path)-1].inorder(yield)
 	}
-	return true
 }

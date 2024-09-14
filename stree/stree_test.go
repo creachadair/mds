@@ -25,11 +25,10 @@ var (
 
 // Export all the words in tree in their stored order.
 func allWords(tree *stree.Tree[string]) []string {
-	var got []string
-	tree.Inorder(func(key string) bool {
+	got := make([]string, 0, tree.Len())
+	for key := range tree.Inorder {
 		got = append(got, key)
-		return true
-	})
+	}
 	return got
 }
 
@@ -154,10 +153,9 @@ func TestInorderAfter(t *testing.T) {
 	for _, test := range tests {
 		want := strings.Fields(test.want)
 		var got []string
-		tree.InorderAfter(test.key, func(key string) bool {
+		for key := range tree.InorderAfter(test.key) {
 			got = append(got, key)
-			return true
-		})
+		}
 		if diff := gocmp.Diff(want, got, cmpopts.EquateEmpty()); diff != "" {
 			t.Errorf("InorderAfter(%v) result differed from expected\n%s", test.key, diff)
 		}
@@ -317,10 +315,9 @@ func TestCursor(t *testing.T) {
 
 	t.Run("Traverse", func(t *testing.T) {
 		var got []string
-		tree.Cursor("f").Inorder(func(s string) bool {
-			got = append(got, s)
-			return true
-		})
+		for key := range tree.Cursor("f").Inorder {
+			got = append(got, key)
+		}
 		if diff := gocmp.Diff(got, []string{"e", "f", "g"}); diff != "" {
 			t.Errorf("Right tree (-got, +want):\n%s", diff)
 		}
@@ -342,11 +339,10 @@ func TestKV(t *testing.T) {
 
 	var gotk []string
 	var gotv []int
-	st.Inorder(func(kv kv) bool {
+	for kv := range st.Inorder {
 		gotk = append(gotk, kv.Key)
 		gotv = append(gotv, kv.Value)
-		return true
-	})
+	}
 
 	if diff := gocmp.Diff(gotk, []string{"anybody", "hello", "here", "in", "is", "there"}); diff != "" {
 		t.Errorf("Keys (-got, +want):\n%s", diff)

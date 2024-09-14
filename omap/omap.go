@@ -160,10 +160,9 @@ func (m Map[T, U]) Keys() []T {
 		return nil
 	}
 	out := make([]T, 0, m.Len())
-	m.m.Inorder(func(kv stree.KV[T, U]) bool {
+	for kv := range m.m.Inorder {
 		out = append(out, kv.Key)
-		return true
-	})
+	}
 	return out
 }
 
@@ -215,10 +214,10 @@ func (it *Iter[T, U]) Value() U { return it.c.Key().Value }
 func (it *Iter[T, U]) Seek(key T) *Iter[T, U] {
 	it.c = nil
 	if it.m != nil {
-		it.m.InorderAfter(stree.KV[T, U]{Key: key}, func(kv stree.KV[T, U]) bool {
+		for kv := range it.m.InorderAfter(stree.KV[T, U]{Key: key}) {
 			it.c = it.m.Cursor(kv)
-			return false
-		})
+			break
+		}
 	}
 	return it
 }
