@@ -61,10 +61,9 @@ func ExampleTree_Get() {
 
 func ExampleTree_Inorder() {
 	tree := stree.New(15, strings.Compare, "eat", "those", "bloody", "vegetables")
-	tree.Inorder(func(key string) bool {
+	for key := range tree.Inorder {
 		fmt.Println(key)
-		return true
-	})
+	}
 	// Output:
 	// bloody
 	// eat
