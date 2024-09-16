@@ -33,7 +33,7 @@ Most of the types in this module share common behaviors:
 - [distinct](./distinct) a probabilistic distinct-elements counter (CVM) ([package docs](https://godoc.org/github.com/creachadair/mds/distinct))
 - [slice](./slice) helpful functions for manipulating slices ([package docs](https://godoc.org/github.com/creachadair/mds/slice))
 - [mbits](./mbits) helpful functions for manipulating bits and bytes ([package docs](https://godoc.org/github.com/creachadair/mds/mbits))
-- [mdiff](./mdiff) supports creating textual diffs ([package docs](https://godoc.org/github.com/creachadair/mds/mdiff), [example](https://go.dev/play/p/DFL6f7WLcff))
+- [mdiff](./mdiff) supports creating textual diffs ([package docs](https://godoc.org/github.com/creachadair/mds/mdiff), [example](https://go.dev/play/p/xUYbbwnMkw3))
 - [mstr](./mstr) helpful functions for manipulating strings ([package docs](https://godoc.org/github.com/creachadair/mds/mstr))
 - [mtest](./mtest) a support library for writing tests ([package docs](https://godoc.org/github.com/creachadair/mds/mtest))
 - [shell](./shell) POSIX shell quoting and splitting ([package docs](https://godoc.org/github.com/creachadair/mds/shell))
