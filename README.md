@@ -21,7 +21,6 @@ Most of the types in this module share common behaviors:
 - [mapset](./mapset) a basic map-based set implementation ([package docs](https://godoc.org/github.com/creachadair/mds/mapset))
 - [mlink](./mlink) basic linked sequences (list, queue) ([package docs](https://godoc.org/github.com/creachadair/mds/mlink))
 - [omap](./omap) ordered key-value map ([package docs](https://godoc.org/github.com/creachadair/mds/omap))
-- [oset](./oset) ordered set ([package docs](https://godoc.org/github.com/creachadair/mds/oset))
 - [queue](./queue) an array-based FIFO queue ([package docs](https://godoc.org/github.com/creachadair/mds/queue))
 - [ring](./ring) a circular doubly-linked sequence ([package docs](https://godoc.org/github.com/creachadair/mds/ring))
 - [stack](./stack) an array-based LIFO stack ([package docs](https://godoc.org/github.com/creachadair/mds/stack))
