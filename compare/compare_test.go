@@ -110,3 +110,20 @@ func TestReversed(t *testing.T) {
 		t.Errorf("Reversed output is not sorted: %v", buf)
 	}
 }
+
+func TestBool(t *testing.T) {
+	tests := []struct {
+		a, b bool
+		want int
+	}{
+		{false, false, 0},
+		{false, true, -1},
+		{true, false, 1},
+		{true, true, 0},
+	}
+	for _, tc := range tests {
+		if got := compare.Bool(tc.a, tc.b); got != tc.want {
+			t.Errorf("Bool(%v, %v): got %v, want %v", tc.a, tc.b, got, tc.want)
+		}
+	}
+}

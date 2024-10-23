@@ -50,3 +50,13 @@ func Time(a, b time.Time) int { return a.Compare(b) }
 func Reversed[T any](c func(a, b T) int) func(a, b T) int {
 	return func(a, b T) int { return -c(a, b) }
 }
+
+// Bool is a comparison function for bool values that orders false before true.
+func Bool(a, b bool) int {
+	if a == b {
+		return 0
+	} else if a {
+		return 1
+	}
+	return -1
+}
