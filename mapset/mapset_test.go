@@ -1,6 +1,8 @@
 package mapset_test
 
 import (
+	"iter"
+	"slices"
 	"strings"
 	"testing"
 
@@ -343,5 +345,28 @@ func TestAppend(t *testing.T) {
 	got := s.Append(in)
 	if diff := cmp.Diff(got, []string{"X", "Y", "a", "b", "c", "d"}, opt); diff != "" {
 		t.Errorf("Append (-got, +want):\n%s", diff)
+	}
+}
+
+func TestRange(t *testing.T) {
+	rng := func(items ...int) iter.Seq[int] {
+		return slices.Values(items)
+	}
+
+	tests := []struct {
+		input iter.Seq[int]
+		want  []int
+	}{
+		{rng(), nil},
+		{rng(6), []int{6}},
+		{rng(1, 2, 3, 4), []int{1, 2, 3, 4}},
+		{rng(0, 2, 1, 0, 1, 3, 1, 2, 1), []int{0, 1, 2, 3}},
+	}
+	for _, tc := range tests {
+		got := mapset.Range(tc.input)
+		want := mapset.New(tc.want...)
+		if diff := cmp.Diff(got, want); diff != "" {
+			t.Errorf("Range (-got, +want):\n%s", diff)
+		}
 	}
 }

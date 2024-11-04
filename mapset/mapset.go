@@ -4,7 +4,10 @@
 // for concurrent use without external synchronization.
 package mapset
 
-import "maps"
+import (
+	"iter"
+	"maps"
+)
 
 // A Set represents a set of distinct values. It is implemented via the
 // built-in map type, and the underlying map can also be used directly to add
@@ -221,6 +224,15 @@ nextElt:
 		out.Add(v)
 	}
 
+	return out
+}
+
+// Range constructs a new Set containing the values of it.
+func Range[T comparable](it iter.Seq[T]) Set[T] {
+	out := make(Set[T])
+	for v := range it {
+		out.Add(v)
+	}
 	return out
 }
 
