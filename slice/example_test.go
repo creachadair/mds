@@ -18,20 +18,6 @@ func ExamplePartition() {
 	// [3 1 9 5 7]
 }
 
-func ExampleSplit() {
-	vs := []int{1, 2, 3, 4, 5, 6, 7, 8}
-
-	fmt.Println("input:", vs)
-	first3, tail := slice.Split(vs, 3)
-	head, last3 := slice.Split(vs, -3)
-	fmt.Println("first3:", first3, "tail:", tail)
-	fmt.Println("last3:", last3, "head:", head)
-	// Output:
-	// input: [1 2 3 4 5 6 7 8]
-	// first3: [1 2 3] tail: [4 5 6 7 8]
-	// last3: [6 7 8] head: [1 2 3 4 5]
-}
-
 func ExampleMatchingKeys() {
 	vs := map[string]int{"red": 3, "yellow": 6, "blue": 4, "green": 5}
 
