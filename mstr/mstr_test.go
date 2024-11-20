@@ -7,7 +7,7 @@ import (
 	gocmp "github.com/google/go-cmp/cmp"
 )
 
-func TestString(t *testing.T) {
+func TestTrunc(t *testing.T) {
 	tests := []struct {
 		input string
 		size  int
@@ -55,6 +55,27 @@ func TestLines(t *testing.T) {
 	for _, tc := range tests {
 		if diff := gocmp.Diff(mstr.Lines(tc.input), tc.want); diff != "" {
 			t.Errorf("Lines %q (-got, +want):\n%s", tc.input, diff)
+		}
+	}
+}
+
+func TestSplit(t *testing.T) {
+	tests := []struct {
+		input, sep string
+		want       []string
+	}{
+		{"", "x", nil},
+		{"y", "x", []string{"y"}},
+		{"x", "x", []string{"", ""}},
+		{"ax", "x", []string{"a", ""}},
+		{"xa", "x", []string{"", "a"}},
+		{"axbxc", "x", []string{"a", "b", "c"}},
+		{"axxc", "x", []string{"a", "", "c"}},
+		{"a,b,c,,d", ",", []string{"a", "b", "c", "", "d"}},
+	}
+	for _, tc := range tests {
+		if diff := gocmp.Diff(mstr.Split(tc.input, tc.sep), tc.want); diff != "" {
+			t.Errorf("Split %q on %q (-got, +want):\n%s", tc.input, tc.sep, diff)
 		}
 	}
 }

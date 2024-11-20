@@ -33,12 +33,21 @@ func Trunc(s string, n int) string {
 
 // Lines splits its argument on newlines. It is a convenience function for
 // [strings.Split], except that it returns empty if s == "" and treats a
-// trailing newline as the end of the file.
+// trailing newline as the end of the file rather than an empty line.
 func Lines(s string) []string {
 	if s == "" {
 		return nil
 	}
 	return strings.Split(strings.TrimSuffix(s, "\n"), "\n")
+}
+
+// Split splits its argument on sep. It is a convenience function for
+// [strings.Split], except that it returns empty if s == "".
+func Split(s, sep string) []string {
+	if s == "" {
+		return nil
+	}
+	return strings.Split(s, sep)
 }
 
 // CompareNatural compares its arguments lexicographically, but treats runs of
