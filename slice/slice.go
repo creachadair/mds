@@ -28,6 +28,9 @@ import (
 // returned slice is:
 //
 //	[6, 2, 8, 4]
+//
+// The capacity of the slice returned is clipped to its length, so that
+// appending to it will not modify the elements of vs after those kept.
 func Partition[T any](vs []T, keep func(T) bool) []T {
 	if len(vs) == 0 {
 		return vs
@@ -51,7 +54,7 @@ func Partition[T any](vs []T, keep func(T) bool) []T {
 		// If the right cursor reached the end, we're done: Everything left of i
 		// is kept, everything ≥ i is unkept.
 		if j == len(vs) {
-			return vs[:i]
+			return vs[:i:i]
 		}
 
 		// Reaching here, the elements under both cursors are out of
@@ -69,7 +72,7 @@ func Partition[T any](vs []T, keep func(T) bool) []T {
 		i++
 		j++
 	}
-	return vs[:i]
+	return vs[:i:i]
 }
 
 // Dedup rearranges the elements of vs in-place to deduplicate consecutive runs

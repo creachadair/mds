@@ -489,6 +489,14 @@ func (tc *testCase[T]) partition(t *testing.T) {
 	if diff != "" {
 		t.Errorf("Partition result (-want, +got)\n%s", diff)
 	}
+
+	// Verify that the output is clipped to its length.
+	cp2 := copyOf(cp)
+	var zero T
+	_ = append(got, zero)
+	if diff := cmp.Diff(cp, cp2); diff != "" {
+		t.Errorf("After append to result (-got, +want):\n%s", diff)
+	}
 }
 
 func copyOf[T any](vs []T) []T {
