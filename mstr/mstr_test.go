@@ -28,7 +28,10 @@ func TestTrunc(t *testing.T) {
 	for _, tc := range tests {
 		got := mstr.Trunc(tc.input, tc.size)
 		if got != tc.want {
-			t.Errorf("Trunc(%q, %d): got %q, want %q", tc.input, tc.size, got, tc.want)
+			t.Errorf("Trunc(%q, %d) [string]: got %q, want %q", tc.input, tc.size, got, tc.want)
+		}
+		if got := mstr.Trunc([]byte(tc.input), tc.size); string(got) != tc.want {
+			t.Errorf("Trunc(%q, %d) [bytes]: got %q, want %q", tc.input, tc.size, got, tc.want)
 		}
 	}
 }

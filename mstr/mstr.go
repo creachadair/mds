@@ -10,7 +10,7 @@ import (
 // exceeds this length, it is truncated at a point ≤ n so that the result does
 // not end in a partial UTF-8 encoding. Trunc does not verify that s is valid
 // UTF-8, but if it is the result will remain valid after truncation.
-func Trunc(s string, n int) string {
+func Trunc[String ~string | ~[]byte](s String, n int) String {
 	if n >= len(s) {
 		return s
 	}
