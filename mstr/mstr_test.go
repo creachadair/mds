@@ -13,19 +13,22 @@ func TestTrunc(t *testing.T) {
 		size  int
 		want  string
 	}{
-		{"", 1000, ""},                 // n > length
-		{"abc", 4, "abc"},              // n > length
-		{"abc", 3, "abc"},              // n == length
-		{"abcdefg", 4, "abcd"},         // n < length, safe
-		{"abcdefg", 0, ""},             // n < length, safe
-		{"abc\U0001fc2d", 3, "abc"},    // n < length, at boundary
-		{"abc\U0001fc2d", 4, "abc"},    // n < length, mid-rune
-		{"abc\U0001fc2d", 5, "abc"},    // n < length, mid-rune
-		{"abc\U0001fc2d", 6, "abc"},    // n < length, mid-rune
-		{"abc\U0001fc2defg", 7, "abc"}, // n < length, cut multibyte
+		{"", 0, ""},                               // n == length
+		{"", 1000, ""},                            // n > length
+		{"abc", 4, "abc"},                         // n > length
+		{"abc", 3, "abc"},                         // n == length
+		{"abcdefg", 4, "abcd"},                    // n < length, safe
+		{"abcdefg", 0, ""},                        // n < length, safe
+		{"abc\U0001f60a", 3, "abc"},               // n < length, at boundary
+		{"abc\U0001f60a", 4, "abc"},               // n < length, mid-rune
+		{"abc\U0001f60a", 5, "abc"},               // n < length, mid-rune
+		{"abc\U0001f60a", 6, "abc"},               // n < length, mid-rune
+		{"abc\U0001f60axxx", 7, "abc"},            // n < length, cut multibyte
+		{"abc\U0001f60axxx", 8, "abc\U0001f60ax"}, // n < length, keep multibyte
 	}
 
 	for _, tc := range tests {
+		t.Logf("Input %q len=%d n=%d", tc.input, len(tc.input), tc.size)
 		got := mstr.Trunc(tc.input, tc.size)
 		if got != tc.want {
 			t.Errorf("Trunc(%q, %d) [string]: got %q, want %q", tc.input, tc.size, got, tc.want)
