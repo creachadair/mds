@@ -280,11 +280,16 @@ func (t *Tree[T]) Get(key T) (_ T, ok bool) {
 // Find returns a cursor to the smallest key in the tree greater than or equal
 // to key. If no such key exists, Find returns nil.
 func (t *Tree[T]) Find(key T) *Cursor[T] {
-	path := t.root.pathTo(key, t.compare)
-	if len(path) == 0 || t.compare(path[len(path)-1].X, key) < 0 {
+	var next T
+	var found bool
+	t.root.inorderAfter(key, t.compare, func(k T) bool {
+		next, found = k, true
+		return false
+	})
+	if !found {
 		return nil
 	}
-	return &Cursor[T]{path: path}
+	return t.Cursor(next)
 }
 
 // Inorder is a range function that visits each key of t in order.
