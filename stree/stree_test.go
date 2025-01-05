@@ -324,7 +324,7 @@ func TestCursor(t *testing.T) {
 	})
 
 	t.Run("Find", func(t *testing.T) {
-		tree := stree.New(250, strings.Compare, "a", "e", "i", "o", "u")
+		tree := stree.New(250, strings.Compare, "apple", "ennui", "iota", "opal", "usury")
 
 		t.Run("None", func(t *testing.T) {
 			if got := tree.Find("z"); got != nil {
@@ -332,32 +332,38 @@ func TestCursor(t *testing.T) {
 			}
 		})
 		t.Run("Exact", func(t *testing.T) {
-			if got := tree.Find("e"); got.Key() != "e" {
-				t.Errorf("Find e: got %q, want e", got.Key())
+			if got := tree.Find("ennui"); got.Key() != "ennui" {
+				t.Errorf("Find ennui: got %q, want ennui", got.Key())
 			}
 		})
 		t.Run("Before", func(t *testing.T) {
 			got := tree.Find("0")
-			if got.Key() != "a" {
-				t.Errorf("Find 0: got %q, want a", got.Key())
+			if got.Key() != "apple" {
+				t.Errorf("Find 0: got %q, want apple", got.Key())
 			}
-			if next := got.Next(); next.Key() != "e" {
-				t.Errorf("Next a: got %q, want e", next.Key())
+			if next := got.Next(); next.Key() != "ennui" {
+				t.Errorf("Next apple: got %q, want ennui", next.Key())
 			}
 			if prev := got.Prev().Prev(); prev.Valid() {
-				t.Errorf("Prev a: got %v, want invalid", prev)
+				t.Errorf("Prev apple: got %q, want invalid", prev.Key())
+			}
+		})
+		t.Run("Edge", func(t *testing.T) {
+			got := tree.Find("e")
+			if got.Key() != "ennui" {
+				t.Errorf("Find e: got %q, want ennui", got.Key())
 			}
 		})
 		t.Run("Between", func(t *testing.T) {
 			got := tree.Find("k")
-			if got.Key() != "o" {
-				t.Errorf("Find k: got %q, want o", got.Key())
+			if got.Key() != "opal" {
+				t.Errorf("Find k: got %q, want opal", got.Key())
 			}
-			if next := got.Next(); next.Key() != "u" {
-				t.Errorf("Next o: got %q, want u", next.Key())
+			if next := got.Next(); next.Key() != "usury" {
+				t.Errorf("Next opal: got %q, want usuru", next.Key())
 			}
-			if prev := got.Prev().Prev(); prev.Key() != "i" {
-				t.Errorf("Prev o: got %q, want i", prev.Key())
+			if prev := got.Prev().Prev(); prev.Key() != "iota" {
+				t.Errorf("Prev opal: got %q, want iota", prev.Key())
 			}
 		})
 	})
