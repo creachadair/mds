@@ -322,6 +322,45 @@ func TestCursor(t *testing.T) {
 			t.Errorf("Right tree (-got, +want):\n%s", diff)
 		}
 	})
+
+	t.Run("Find", func(t *testing.T) {
+		tree := stree.New(250, strings.Compare, "a", "e", "i", "o", "u")
+
+		t.Run("None", func(t *testing.T) {
+			if got := tree.Find("z"); got != nil {
+				t.Errorf("Find z: got %v, want nil", got)
+			}
+		})
+		t.Run("Exact", func(t *testing.T) {
+			if got := tree.Find("e"); got.Key() != "e" {
+				t.Errorf("Find e: got %q, want e", got.Key())
+			}
+		})
+		t.Run("Before", func(t *testing.T) {
+			got := tree.Find("0")
+			if got.Key() != "a" {
+				t.Errorf("Find 0: got %q, want a", got.Key())
+			}
+			if next := got.Next(); next.Key() != "e" {
+				t.Errorf("Next a: got %q, want e", next.Key())
+			}
+			if prev := got.Prev().Prev(); prev.Valid() {
+				t.Errorf("Prev a: got %v, want invalid", prev)
+			}
+		})
+		t.Run("Between", func(t *testing.T) {
+			got := tree.Find("k")
+			if got.Key() != "o" {
+				t.Errorf("Find k: got %q, want o", got.Key())
+			}
+			if next := got.Next(); next.Key() != "u" {
+				t.Errorf("Next o: got %q, want u", next.Key())
+			}
+			if prev := got.Prev().Prev(); prev.Key() != "i" {
+				t.Errorf("Prev o: got %q, want i", prev.Key())
+			}
+		})
+	})
 }
 
 func TestKV(t *testing.T) {
