@@ -11,12 +11,9 @@ type TB interface {
 // MustPanic executes a function f that is expected to panic.
 // If it does so, MustPanic returns the value recovered from the
 // panic. Otherwise, it logs a fatal error in t.
-func MustPanic(t TB, f func()) (val any) {
+func MustPanic(t TB, f func()) any {
 	t.Helper()
-	defer func() { val = recover() }()
-	f()
-	t.Fatalf("expected panic was not observed")
-	return
+	return MustPanicf(t, f, "expected panic was not observed")
 }
 
 // MustPanicf executes a function f that is expected to panic.  If it does so,
