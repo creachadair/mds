@@ -127,10 +127,10 @@ func (c *Cache[K, V]) Size() int64 {
 	return c.size
 }
 
-// New constructs a new empty cache with the specified settings.  The store and
-// limit fields must be set.
-func New[K comparable, V any](limit int64, config Config[K, V]) *Cache[K, V] {
-	if limit <= 0 {
+// New constructs a new empty cache with the specified settings.
+// The store and capacity limits of config must be set or New will panic.
+func New[K comparable, V any](config Config[K, V]) *Cache[K, V] {
+	if config.limit <= 0 {
 		panic("cache: limit must be positive")
 	}
 	if config.store == nil {
@@ -138,7 +138,7 @@ func New[K comparable, V any](limit int64, config Config[K, V]) *Cache[K, V] {
 	}
 	return &Cache[K, V]{
 		store:   config.store,
-		limit:   limit,
+		limit:   config.limit,
 		sizeOf:  config.sizeFunc(),
 		onEvict: config.onEvictFunc(),
 	}
@@ -147,12 +147,17 @@ func New[K comparable, V any](limit int64, config Config[K, V]) *Cache[K, V] {
 // A Config carries the settings for a cache implementation.
 // To set options:
 //
+//   - Use [Config.WithLimit] to set the capacity.
 //   - Use [Config.WithStore] to set the storage implementation.
 //   - Use [Config.WithSize] to set the size function.
 //   - Use [Config.OnEvict] to set the eviction callback.
 //
 // A zero Config is invalid; at least the store field must be set.
 type Config[Key comparable, Value any] struct {
+	// limit is the capacity limit for the cache.
+	// It must be positive. The interpretation depends on sizeOf.
+	limit int64
+
 	// store is the storage implementation used by the cache.
 	// It must be non-nil.
 	store Store[Key, Value]
@@ -164,6 +169,10 @@ type Config[Key comparable, Value any] struct {
 	// onEvict, if non-nil, is called for each entry evicted from the cache.
 	onEvict func(key Key, val Value)
 }
+
+// WithLimit returns a copy of c with its capacity set to n.
+// The limit implementation must be positive, or [New] will panic.
+func (c Config[K, V]) WithLimit(n int64) Config[K, V] { c.limit = n; return c }
 
 // WithStore returns a copy of c with its storage implementation set to s.
 // The storage implementation must be set, or [New] will panic.
