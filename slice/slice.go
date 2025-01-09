@@ -3,7 +3,6 @@ package slice
 
 import (
 	"iter"
-	"slices"
 )
 
 // Partition rearranges the elements of vs in-place so that all the elements v
@@ -73,22 +72,6 @@ func Partition[T any](vs []T, keep func(T) bool) []T {
 		j++
 	}
 	return vs[:i:i]
-}
-
-// Dedup rearranges the elements of vs in-place to deduplicate consecutive runs
-// of identical elements.  It returns a prefix of vs that contains the first
-// element of each run found.
-//
-// Deprecated: Use the equivalent [slices.Compact] instead.
-func Dedup[T comparable](vs []T) []T {
-	return slices.Compact(vs)
-}
-
-// Reverse reverses the contents of vs in-place.
-//
-// Deprecated: Use the equivalent [slices.Reverse] instead.
-func Reverse[T any, Slice ~[]T](vs Slice) {
-	slices.Reverse(vs)
 }
 
 // Zero sets all the elements of vs to their zero value.
