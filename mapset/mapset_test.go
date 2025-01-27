@@ -315,6 +315,15 @@ func TestKeys(t *testing.T) {
 			1: "red", 2: "orange", 3: "yellow",
 		}), 1, 2, 3)
 	})
+	t.Run("MapType", func(t *testing.T) {
+		type M map[string]int
+		check(t, mapset.Keys(M{"foo": 1, "bar": 2, "baz": 3}),
+			"foo", "bar", "baz")
+	})
+	t.Run("Set", func(t *testing.T) {
+		check(t, mapset.Keys(mapset.New("x", "y", "z")),
+			"x", "y", "z")
+	})
 }
 
 func TestValues(t *testing.T) {
@@ -333,6 +342,15 @@ func TestValues(t *testing.T) {
 		check(t, mapset.Values(map[string]int{
 			"red": 1, "green": 1, "blue": 2, "white": 2,
 		}), 1, 2)
+	})
+	t.Run("MapType", func(t *testing.T) {
+		type M map[string]int
+		check(t, mapset.Values(M{"foo": 1, "bar": 2, "baz": 3}),
+			1, 2, 3)
+	})
+	t.Run("Set", func(t *testing.T) {
+		check(t, mapset.Values(mapset.New("x", "y", "z")),
+			struct{}{})
 	})
 }
 
