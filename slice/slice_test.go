@@ -278,15 +278,15 @@ func TestChunks(t *testing.T) {
 		want  [][]string
 	}{
 		// An empty slice has only one covering.
-		{"", 0, [][]string{{}}},
-		{"", 1, [][]string{{}}},
-		{"", 5, [][]string{{}}},
+		{"", 0, nil},
+		{"", 1, nil},
+		{"", 5, nil},
 
-		{"x", 0, [][]string{{"x"}}},
+		{"x", 0, nil},
 		{"x", 1, [][]string{{"x"}}},
 		{"x", 2, [][]string{{"x"}}},
 
-		{"a b c d e", 0, [][]string{{"a", "b", "c", "d", "e"}}},
+		{"a b c d e", 0, nil},
 		{"a b c d e", 1, [][]string{{"a"}, {"b"}, {"c"}, {"d"}, {"e"}}},
 		{"a b c d e", 2, [][]string{{"a", "b"}, {"c", "d"}, {"e"}}},
 		{"a b c d e", 3, [][]string{{"a", "b", "c"}, {"d", "e"}}},
@@ -295,7 +295,7 @@ func TestChunks(t *testing.T) {
 		{"a b c d e", 6, [][]string{{"a", "b", "c", "d", "e"}}}, // n > len(input)
 	}
 	for _, tc := range tests {
-		got := slice.Chunks(strings.Fields(tc.input), tc.n)
+		got := slices.Collect(slice.Chunks(strings.Fields(tc.input), tc.n))
 		for i := range len(got) - 1 {
 			if len(got[i]) != tc.n {
 				t.Errorf("Chunk %d has length %d, want %d", i+1, len(got[i]), tc.n)
@@ -332,7 +332,7 @@ func TestBatches(t *testing.T) {
 		{100, [][]int{{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}}},
 	}
 	for _, tc := range tests {
-		got := slice.Batches(input, tc.n)
+		got := slices.Collect(slice.Batches(input, tc.n))
 		if diff := cmp.Diff(got, tc.want); diff != "" {
 			t.Errorf("Batches(%v, %d): (-got, +want)\n%s", input, tc.n, diff)
 		}
