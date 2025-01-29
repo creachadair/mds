@@ -196,55 +196,58 @@ func gcd(a, b int) int {
 	return a
 }
 
-// Chunks returns a slice of contiguous subslices ("chunks") of vs, each having
-// length at most n and together covering the input.  All slices except the
-// last will have length exactly n; the last may have fewer. The slices
-// returned share storage with the input.
+// Chunks iterates a sequence of contiguous subslices ("chunks") of vs, each
+// having length at most n and together covering the input.  All slices except
+// the last will have length exactly n; the last may have fewer. The slices
+// yielded share storage with the input.
 //
-// Chunks will panic if n < 0. If n == 0, Chunks returns a single chunk
-// containing the entire input.
-func Chunks[T any, Slice ~[]T](vs Slice, n int) []Slice {
+// Chunks will panic if n < 0. If n == 0, Chunks yields no chunks.
+func Chunks[T any, Slice ~[]T](vs Slice, n int) iter.Seq[Slice] {
 	if n < 0 {
 		panic("max must be positive")
-	} else if n == 0 || n >= len(vs) {
-		return []Slice{vs}
+	} else if n == 0 {
+		return func(func(Slice) bool) {}
 	}
-	out := make([]Slice, 0, (len(vs)+n-1)/n)
-	i := 0
-	for i < len(vs) {
-		end := min(i+n, len(vs))
-		out = append(out, vs[i:end:end])
-		i = end
+	return func(yield func(Slice) bool) {
+		i := 0
+		for i < len(vs) {
+			end := min(i+n, len(vs))
+			if !yield(vs[i:end:end]) {
+				return
+			}
+			i = end
+		}
 	}
-	return out
 }
 
-// Batches returns a slice of up to n contiguous subslices ("batches") of vs,
-// each having nearly as possible to equal length and together covering the
+// Batches iterates a sequence of up to n contiguous subslices ("batches") of
+// vs, each having nearly as possible to equal length and together covering the
 // input. The slices returned share storage with the input. If n > len(vs), the
 // number of batches is capped at len(vs); otherwise exactly n are constructed.
 //
-// Batches will panic if n < 0. If n == 0 Batches returns nil.
-func Batches[T any, Slice ~[]T](vs Slice, n int) []Slice {
+// Batches will panic if n < 0. If n == 0 Batches yields no batches.
+func Batches[T any, Slice ~[]T](vs Slice, n int) iter.Seq[Slice] {
 	if n < 0 {
 		panic("n out of range")
 	} else if n == 0 {
-		return nil
+		return func(func(Slice) bool) {}
 	} else if n > len(vs) {
 		n = len(vs)
 	}
-	out := make([]Slice, 0, n)
-	i, size, rem := 0, len(vs)/n, len(vs)%n
-	for i < len(vs) {
-		end := i + size
-		if rem > 0 {
-			end++
-			rem--
+	return func(yield func(Slice) bool) {
+		i, size, rem := 0, len(vs)/n, len(vs)%n
+		for i < len(vs) {
+			end := i + size
+			if rem > 0 {
+				end++
+				rem--
+			}
+			if !yield(vs[i:end:end]) {
+				return
+			}
+			i = end
 		}
-		out = append(out, vs[i:end:end])
-		i = end
 	}
-	return out
 }
 
 // Stripe returns a "stripe" of the ith elements of each slice in vs.  Any

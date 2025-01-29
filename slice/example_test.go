@@ -41,7 +41,7 @@ func ExampleRotate() {
 func ExampleChunks() {
 	vs := strings.Fields("my heart is a fish hiding in the water grass")
 
-	for _, c := range slice.Chunks(vs, 3) {
+	for c := range slice.Chunks(vs, 3) {
 		fmt.Println(c)
 	}
 	// Output:
@@ -54,7 +54,7 @@ func ExampleChunks() {
 func ExampleBatches() {
 	vs := strings.Fields("the freckles in our eyes are mirror images that when we kiss are perfectly aligned")
 
-	for _, b := range slice.Batches(vs, 4) {
+	for b := range slice.Batches(vs, 4) {
 		fmt.Println(b)
 	}
 	// Output:
