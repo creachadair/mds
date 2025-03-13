@@ -1,6 +1,8 @@
 // Package stack implements an array-based LIFO stack.
 package stack
 
+import "slices"
+
 // A Stack is a last-in, first-out sequence of values.
 // A zero value is ready for use.
 type Stack[T any] struct {
@@ -72,13 +74,7 @@ func (s *Stack[T]) Len() int { return len(s.list) }
 // Slice returns a slice containing a copy of the elmeents of s in order from
 // newest to oldest. If s is empty, Slice returns nil.
 func (s *Stack[T]) Slice() []T {
-	if len(s.list) == 0 {
-		return nil
-	}
-	cp := make([]T, len(s.list))
-	for i, e := 0, len(s.list)-1; i < len(s.list); i++ {
-		cp[i] = s.list[e]
-		e--
-	}
+	cp := slices.Clone(s.list) // Clone preserves nil
+	slices.Reverse(cp)
 	return cp
 }
