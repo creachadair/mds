@@ -6,20 +6,7 @@ import (
 )
 
 // Zero sets the contents of data to zero and returns len(data).
-func Zero(data []byte) int {
-	n := len(data)
-	m := n &^ 7 // end of 64-bit chunks spanned by data
-
-	i := 0
-	for ; i < m; i += 8 {
-		v := (*uint64)(unsafe.Pointer(&data[i]))
-		*v = 0
-	}
-	for ; i < n; i++ {
-		data[i] = 0
-	}
-	return n
-}
+func Zero(data []byte) int { clear(data); return len(data) }
 
 // LeadingZeroes reports the number of leading zero bytes at the beginning of data.
 func LeadingZeroes(data []byte) int {
