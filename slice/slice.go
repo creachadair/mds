@@ -75,12 +75,9 @@ func Partition[T any](vs []T, keep func(T) bool) []T {
 }
 
 // Zero sets all the elements of vs to their zero value.
-func Zero[T any, Slice ~[]T](vs Slice) {
-	var zero T
-	for i := range vs {
-		vs[i] = zero
-	}
-}
+//
+// Deprecated: Use the built-in clear function instead.
+func Zero[T any, Slice ~[]T](vs Slice) { clear(vs) }
 
 // MapKeys extracts a slice of the keys from a map.  The resulting slice is in
 // arbitrary order.
