@@ -199,6 +199,8 @@ func gcd(a, b int) int {
 // yielded share storage with the input.
 //
 // Chunks will panic if n < 0. If n == 0, Chunks yields no chunks.
+//
+// Deprecated: Use [slices.Chunk] instead.
 func Chunks[T any, Slice ~[]T](vs Slice, n int) iter.Seq[Slice] {
 	if n < 0 {
 		panic("max must be positive")
