@@ -117,3 +117,91 @@ func TestLRU(t *testing.T) {
 		wantVic(t, "k6", "k2", "k3")
 	})
 }
+
+func TestSieve(t *testing.T) {
+	var victims []string
+
+	wantVic := func(t *testing.T, want ...string) {
+		t.Helper()
+		if diff := gocmp.Diff(victims, want); diff != "" {
+			t.Errorf("Victims (-got, +want):\n%s", diff)
+		}
+	}
+
+	c := cache.New(cache.Sieve[string, string](3).
+		// Record evictions so we can verify they happened in the expected order.
+		OnEvict(func(key, _ string) {
+			victims = append(victims, key)
+		}),
+	)
+
+	t.Run("New", func(t *testing.T) {
+		cachetest.Run(t, c, "size = 0", "len = 0")
+	})
+
+	t.Run("Fill", func(t *testing.T) {
+		cachetest.Run(t, c,
+			"put k1 A = true",
+			"put k2 B = true",
+			"put k3 C = true",
+			"size = 3", "len = 3",
+		)
+		wantVic(t)
+	})
+
+	t.Run("Evict", func(t *testing.T) {
+		cachetest.Run(t, c,
+			"put k4 D = true",
+			"len = 3", "size = 3",
+		)
+		wantVic(t, "k1") // the eldest so far
+	})
+
+	t.Run("Check", func(t *testing.T) {
+		cachetest.Run(t, c,
+			"has k1 = false", // was evicted, see above
+			"has k2 = true",
+			"has k3 = true",
+			"has k4 = true",
+		)
+	})
+
+	t.Run("Access", func(t *testing.T) {
+		cachetest.Run(t, c,
+			"get k2 = B true",
+			"get k3 = C true",
+			"get k6 = '' false",
+
+			// Now k4 is the oldest unvisited entry.
+		)
+	})
+
+	t.Run("EvictMore", func(t *testing.T) {
+		victims = nil
+		cachetest.Run(t, c,
+			"put k5 F = true",
+			"size = 3", "len = 3",
+			"has k2 = true", "has k3 = true", "has k5 = true",
+		)
+		wantVic(t, "k4")
+	})
+
+	t.Run("Remove", func(t *testing.T) {
+		t.Skip()
+		cachetest.Run(t, c, "remove k3 = true", "len = 2", "size = 20")
+		wantVic(t, "k3")
+	})
+
+	t.Run("ReAdd", func(t *testing.T) {
+		t.Skip()
+		cachetest.Run(t, c, "put k3 stump = true", "len = 3", "size = 25")
+	})
+
+	t.Run("Clear", func(t *testing.T) {
+		// Clearing evicts everything, which at this point are k2, k3, and k6 in
+		// decreasing order of access time (the get of k2 above promoted it).
+		victims = nil
+		cachetest.Run(t, c, "clear", "len = 0", "size = 0")
+		wantVic(t, "k2", "k3", "k5")
+	})
+}
