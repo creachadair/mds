@@ -5,10 +5,12 @@ import (
 	"github.com/creachadair/mds/slice"
 )
 
-// Queue is an array-based first-in, first-out sequence of values.
-// A zero Queue is ready for use.
+// Queue is an array-based queue of values.  A zero Queue is ready for use.
+// Items can be added and removed at either end of the queue.  Use Add and Pop
+// for last-in, first-out semantics; use Push and PopLast for first-in,
+// first-out semantics.
 //
-// Add, Push, and Pop operations take amortized O(1) time and storage.
+// Add, Push, Pop, and PopLast operations take amortized O(1) time and storage.
 // All other operations on a Queue are constant time and space.
 type Queue[T any] struct {
 	vs   []T
@@ -23,7 +25,7 @@ func New[T any]() *Queue[T] { return new(Queue[T]) }
 // The queue will automatically grow beyond the initial size as needed.
 func NewSize[T any](n int) *Queue[T] { return &Queue[T]{vs: make([]T, n)} }
 
-// Add adds v to the end of q.
+// Add adds v to the end (tail) of q.
 func (q *Queue[T]) Add(v T) {
 	if q.n < len(q.vs) {
 		// We have spaces left in the buffer.
@@ -50,7 +52,7 @@ func (q *Queue[T]) Add(v T) {
 	q.n++
 }
 
-// Push adds v to the front of q.
+// Push adds v to the front (head) of q.
 func (q *Queue[T]) Push(v T) {
 	if q.n < len(q.vs) {
 		// We have spaces left in the buffer.
