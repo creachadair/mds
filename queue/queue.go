@@ -2,6 +2,8 @@
 package queue
 
 import (
+	"slices"
+
 	"github.com/creachadair/mds/slice"
 )
 
@@ -164,14 +166,15 @@ func (q *Queue[T]) Each(f func(T) bool) {
 
 // Slice returns a slice of the values of q in order from oldest to newest.
 // If q is empty, Slice returns nil.
-func (q *Queue[T]) Slice() []T {
-	if q.n == 0 {
-		return nil
-	}
-	buf := make([]T, q.n)
+func (q *Queue[T]) Slice() []T { return q.Append(nil) }
+
+// Append appends the values of q to ts in order from oldest to newest, and
+// returns the resulting slice.
+func (q *Queue[T]) Append(ts []T) []T {
+	buf := slices.Grow(ts, q.n)
 	cur := q.head
-	for i := range q.n {
-		buf[i] = q.vs[cur]
+	for range q.n {
+		buf = append(buf, q.vs[cur])
 		cur = (cur + 1) % len(q.vs)
 	}
 	return buf
