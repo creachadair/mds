@@ -35,7 +35,7 @@ func LRU[Key comparable, Value any](limit int64) Config[Key, Value] {
 		present: make(map[Key]int),
 		access:  heapq.New(comparePrio[Key, Value]),
 	}
-	lru.access.Update(func(v prioKey[Key, Value], pos int) {
+	lru.access.SetUpdate(func(v prioKey[Key, Value], pos int) {
 		lru.present[v.key] = pos
 	})
 	return Config[Key, Value]{limit: limit, store: lru}

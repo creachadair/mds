@@ -46,15 +46,15 @@ func NewWithData[T any](cmp func(a, b T) int, data []T) *Queue[T] {
 	return q
 }
 
-// Update sets u as the update function on q. This function is called whenever
-// an element of the queue is moved to a new position, giving the value and its
-// new position. If u == nil, an existing update function is removed.  Update
-// returns q to allow chaining.
+// SetUpdate sets u as the update function on q. This function is called
+// whenever an element of the queue is moved to a new position, giving the
+// value and its new position. If u == nil, an existing update function is
+// removed.  SetUpdate returns q to allow chaining.
 //
 // Setting an update function makes q intrusive, allowing values in the queue
 // to keep track of their current offset in the queue as items are added and
 // removed. By default location information is not reported.
-func (q *Queue[T]) Update(u func(T, int)) *Queue[T] {
+func (q *Queue[T]) SetUpdate(u func(T, int)) *Queue[T] {
 	if u == nil {
 		q.move = nmove[T]
 	} else {

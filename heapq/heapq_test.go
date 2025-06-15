@@ -226,10 +226,10 @@ func TestSort(t *testing.T) {
 	}
 }
 
-func TestUpdate(t *testing.T) {
+func TestSetUpdate(t *testing.T) {
 	m := make(map[string]int)                // tracks the offsets of strings in the queue
 	up := func(s string, p int) { m[s] = p } // update the offsets map
-	q := heapq.New(cmp.Compare[string]).Update(up)
+	q := heapq.New(cmp.Compare[string]).SetUpdate(up)
 
 	// Verify that all the elements know their current offset correctly.
 	check := func() {
