@@ -188,6 +188,7 @@ func (q *Queue[T]) pop(i int) T {
 // pushUp pushes the value at index i of the heap up until it is correctly
 // ordered relative to its parent, and returns the resulting heap index.
 func (q *Queue[T]) pushUp(i int) int {
+	old := i
 	for i > 0 {
 		par := i / 2
 		if q.cmp(q.data[i], q.data[par]) >= 0 {
@@ -196,12 +197,17 @@ func (q *Queue[T]) pushUp(i int) int {
 		q.swap(i, par)
 		i = par
 	}
+	// If the input moved, update its final position.
+	if old != i {
+		q.move(q.data[i], i)
+	}
 	return i
 }
 
 // pushDown pushes the value at index i of the heap down until it is correctly
 // ordered relative to its children, and returns the resulting heap index.
 func (q *Queue[T]) pushDown(i int) int {
+	old := i
 	lc := 2*i + 1
 	for lc < len(q.data) {
 		min := i
@@ -217,6 +223,10 @@ func (q *Queue[T]) pushDown(i int) int {
 		q.swap(i, min)
 		i, lc = min, 2*min+1
 	}
+	// If the input moved, update its final position.
+	if i != old {
+		q.move(q.data[i], i)
+	}
 	return i
 }
 
@@ -224,8 +234,12 @@ func (q *Queue[T]) pushDown(i int) int {
 // update function as needed.
 func (q *Queue[T]) swap(i, j int) {
 	q.data[i], q.data[j] = q.data[j], q.data[i]
+
+	// Update the position of the item that was exchanged with the LHS
+	// (originally at j), but not the new position of LHS itself (originally at
+	// i). This avoids repeatedly updating LHS in the middle of a push up or
+	// down until it lands in its final location.
 	q.move(q.data[i], i)
-	q.move(q.data[j], j)
 }
 
 // Sort reorders the contents of vs in-place using the heap-sort algorithm, in
