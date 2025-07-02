@@ -112,3 +112,47 @@ func parseStr(s string) (pfx, sfx string) {
 }
 
 func isDigit(b byte) bool { return b >= '0' && b <= '9' }
+
+// Match reports whether s matches the specified pattern.  An occurrence of "*"
+// in the pattern matches zero or more arbitrary bytes in s; otherwise the
+// corresponding positions of s and the pattern must be equal.
+//
+// Match takes time proportional to the lengths of its arguments, and does not
+// allocate memory.
+func Match(s, pattern string) bool {
+	head, rest, ok := strings.Cut(pattern, "*")
+	if !ok {
+		// No wildcards, the entire pattern must match exactly.
+		return s == pattern
+	}
+	tail, ok := strings.CutPrefix(s, head)
+	if !ok {
+		return false
+	}
+	return matchSuffix(tail, rest)
+}
+
+// matchSuffix reports whether a suffix of s matches pattern.
+// As with Match, the "*" wildcard matches zero or more bytes.
+func matchSuffix(s, pattern string) bool {
+	for pattern != "" {
+		phead, prest, ok := strings.Cut(pattern, "*")
+		if !ok {
+			// No further globs, the entire remaining pattern must be a suffix.
+			return strings.HasSuffix(s, phead)
+		}
+		_, stail, ok := strings.Cut(s, phead)
+		if !ok {
+			// The static prefix of the pattern is not found, match is impossible.
+			return false
+		}
+
+		// Reaching here:
+		// pattern == <phead> *|<prest>
+		// s       == <phead>  |<stail>
+		//
+		// so we can recur on the pieces after the |.
+		s, pattern = stail, prest
+	}
+	return true
+}

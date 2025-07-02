@@ -146,3 +146,52 @@ func TestCompareNatural(t *testing.T) {
 		}
 	}
 }
+
+func TestMatch(t *testing.T) {
+	tests := []struct {
+		s, pattern string
+		want       bool
+	}{
+		{"", "", true},
+		{"", "*", true},
+		{"", "**", true},
+		{"*", "*", true},
+		{"*", "**", true},
+		{"", "abc", false},
+		{"abc", "", false},
+		{"abc", "abc", true},
+		{"abc", "abc*", true},
+		{"abc", "*abc", true},
+		{"abc", "a*c", true},
+		{"abc", "a*cd", false},
+		{"abcd", "a*cd", true},
+		{"abXcd", "a*cd", true},
+		{"abcdef", "ab**ef", true},
+		{"abc_def", "abc**def", true},
+		{"____xyz", "*xyz", true},
+		{"____xy", "*xyz", false},
+		{"abc", "abc*", true},
+		{"abc___", "abc*", true},
+		{"ab___", "abc*", false},
+	}
+	for _, tc := range tests {
+		if got := mstr.Match(tc.s, tc.pattern); got != tc.want {
+			t.Errorf("Match(%q, %q): got %v, want %v", tc.s, tc.pattern, got, tc.want)
+		}
+	}
+
+	t.Run("NoAlloc", func(t *testing.T) {
+		const numRuns = 5000
+		const needle = "ohai aaaX_XaaaY_YaaaZ_ZaaaP_PaaaD_DaaaQ_QaaaZ_ZaaaV_VaaaM_MaaaO_OaaaM_MaaaG_GaaaW_WaaaT_TaaaF_Faaa_aaa_aaa kthxbai"
+		const pattern = "*a*a*a*a*a*a*a*a*a*a*a*a*a*"
+
+		na := testing.AllocsPerRun(numRuns, func() {
+			if !mstr.Match(needle, pattern) {
+				t.Fatal("no match")
+			}
+		})
+		if na != 0 {
+			t.Fatalf("Saw %f allocations, want 0", na)
+		}
+	})
+}
