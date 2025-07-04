@@ -173,6 +173,8 @@ func TestMatch(t *testing.T) {
 		{"abc", "abc*", true},
 		{"abc___", "abc*", true},
 		{"ab___", "abc*", false},
+		{"ab___", "ab*c*", false},
+		{"ab__cd_", "ab*c*", true},
 	}
 	for _, tc := range tests {
 		if got := mstr.Match(tc.s, tc.pattern); got != tc.want {
