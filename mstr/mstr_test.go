@@ -1,6 +1,8 @@
 package mstr_test
 
 import (
+	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/creachadair/mds/mstr"
@@ -184,16 +186,40 @@ func TestMatch(t *testing.T) {
 
 	t.Run("NoAlloc", func(t *testing.T) {
 		const numRuns = 5000
-		const needle = "ohai aaaX_XaaaY_YaaaZ_ZaaaP_PaaaD_DaaaQ_QaaaZ_ZaaaV_VaaaM_MaaaO_OaaaM_MaaaG_GaaaW_WaaaT_TaaaF_Faaa_aaa_aaa kthxbai"
+		const text = "ohai aaaX_XaaaY_YaaaZ_ZaaaP_PaaaD_DaaaQ_QaaaZ_ZaaaV_VaaaM_MaaaO_OaaaM_MaaaG_GaaaW_WaaaT_TaaaF_Faaa_aaa_aaa kthxbai"
 		const pattern = "*a*a*a*a*a*a*a*a*a*a*a*a*a*"
 
 		na := testing.AllocsPerRun(numRuns, func() {
-			if !mstr.Match(needle, pattern) {
+			if !mstr.Match(text, pattern) {
 				t.Fatal("no match")
 			}
 		})
 		if na != 0 {
 			t.Fatalf("Saw %f allocations, want 0", na)
+		}
+	})
+}
+
+func BenchmarkMatch(b *testing.B) {
+	const text = "ohai aaaX_XaaaY_YaaaZ_ZaaaP_PaaaD_DaaaQ_QaaaZ_ZaaaV_VaaaM_MaaaO_OaaaM_MaaaG_GaaaW_WaaaT_TaaaF_Faaa_aaa_aaa kthxbai"
+	const pattern = "*a*a*a*a*a*a*a*a*a*a*a*a*a*"
+
+	b.Run("Match", func(b *testing.B) {
+		for b.Loop() {
+			_ = mstr.Match(text, pattern)
+		}
+	})
+
+	b.Run("Regexp", func(b *testing.B) {
+		// Don't charge the cost of compiling the expression against the match.
+		parts := strings.Split(pattern, "*")
+		for i, p := range parts {
+			parts[i] = regexp.QuoteMeta(p)
+		}
+		m := regexp.MustCompile(`^` + strings.Join(parts, ".*") + `$`)
+
+		for b.Loop() {
+			_ = m.MatchString(text)
 		}
 	})
 }
