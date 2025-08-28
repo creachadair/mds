@@ -50,6 +50,10 @@ func TestQueue(t *testing.T) {
 	if front != 1 {
 		t.Errorf("Front: got %v, want 1", front)
 	}
+	back := q.Back()
+	if back != 3 {
+		t.Errorf("Back: got %v, want 3", back)
+	}
 
 	// Make sure we can peek all the locations, both positive and negative.
 	for i, want := range []int{1, 2, 3} {

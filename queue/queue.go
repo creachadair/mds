@@ -92,14 +92,12 @@ func (q *Queue[T]) Len() int { return q.n }
 func (q *Queue[T]) Clear() { q.vs, q.head, q.n = nil, 0, 0 }
 
 // Front returns the frontmost (oldest) element of q.  If q is empty, Front
-// returns a zero value.
-func (q *Queue[T]) Front() T {
-	if q.n == 0 {
-		var zero T
-		return zero
-	}
-	return q.vs[q.head]
-}
+// returns a zero value. This is symmetric with Peek(0).
+func (q *Queue[T]) Front() T { v, _ := q.Peek(0); return v }
+
+// Back returns the backmost (newest) element of q.  If q is empty, Back
+// returns a zero value. This is symmetric with Peek(-1).
+func (q *Queue[T]) Back() T { v, _ := q.Peek(-1); return v }
 
 // Peek reports whether q has a value at offset n from the front of the queue,
 // and if so returns its value. Peek(0) returns the same value as Front.
