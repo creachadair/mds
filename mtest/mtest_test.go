@@ -93,3 +93,36 @@ func TestSwap(t *testing.T) {
 		t.Errorf("Test value after is %q, want original", testValue)
 	}
 }
+
+func TestDiffLines(t *testing.T) {
+	const s1 = "a\nbc\ndef\ng"
+	const s2 = "a\nbc\nqq\ndef\n"
+	if s1 == s2 {
+		t.Fatalf("Probe strings are equal: %q", s1)
+	}
+
+	t.Run("Equal", func(t *testing.T) {
+		if diff := mtest.DiffLines(s1, s1); diff != "" {
+			t.Errorf("Diff %q, %q: got %q, want empty", s1, s1, diff)
+		}
+		if diff := mtest.DiffLines(s2, s2); diff != "" {
+			t.Errorf("Diff %q, %q: got %q, want empty", s2, s2, diff)
+		}
+	})
+
+	t.Run("Unequal", func(t *testing.T) {
+		const want = `@@ -1,4 +1,5 @@
+ a
+ bc
++qq
+ def
+-g
++
+`
+		diff := mtest.DiffLines(s1, s2)
+		t.Logf("Diff from %q to %q is\n%s", s1, s2, diff)
+		if diff != want {
+			t.Errorf("Wrong diff:\ngot  %q\nwant %q", diff, want)
+		}
+	})
+}

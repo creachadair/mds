@@ -1,6 +1,13 @@
 // Package mtest is a support library for writing tests.
 package mtest
 
+import (
+	"bytes"
+	"strings"
+
+	"github.com/creachadair/mds/mdiff"
+)
+
 // TB is the subset of the testing.TB interface used by this package.
 type TB interface {
 	Cleanup(func())
@@ -34,4 +41,16 @@ func Swap[T any](t TB, p *T, v T) T {
 	*p = v
 	t.Cleanup(func() { *p = save })
 	return save
+}
+
+// DiffLines returns a unified diff in textual format of the line-oriented
+// difference between got and want, or "" if the strings are equal.
+func DiffLines(got, want string) string {
+	d := mdiff.New(strings.Split(got, "\n"), strings.Split(want, "\n"))
+	if len(d.Chunks) == 0 {
+		return ""
+	}
+	var buf bytes.Buffer
+	d.AddContext(3).Unify().Format(&buf, mdiff.Unified, nil)
+	return buf.String()
 }
