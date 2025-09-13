@@ -71,7 +71,9 @@ func CompareNatural(a, b string) int {
 				return c
 			}
 			a, b = ra, rb
-			continue
+
+			// Reaching here, neither suffix can begin with digits (or we would
+			// have consumed them above), so fall through to the non-digit case.
 		} else if aok != bok {
 			// One begins with digits, the other does not.
 			// They cannot be equal, so compare them lexicographically.
