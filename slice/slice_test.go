@@ -3,6 +3,7 @@ package slice_test
 import (
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -473,6 +474,28 @@ func TestSelect(t *testing.T) {
 		got := slices.Collect(slice.Select(tc.input, isEven))
 		if diff := cmp.Diff(got, tc.want); diff != "" {
 			t.Errorf("Select %v (-got, +want):\n%s", tc.input, diff)
+		}
+	}
+}
+
+func TestMap(t *testing.T) {
+	strlen := func(s string) int { return len(s) }
+	atoi := func(s string) int { v, _ := strconv.Atoi(s); return v }
+	tests := []struct {
+		input []string
+		f     func(string) int
+		want  []int
+	}{
+		{nil, strlen, nil},
+		{[]string{}, strlen, []int{}},
+		{[]string{"a", "be", "sea"}, strlen, []int{1, 2, 3}},
+		{[]string{"23", "37", "-59"}, atoi, []int{23, 37, -59}},
+		{[]string{"xx", "15", "yy", "30"}, atoi, []int{0, 15, 0, 30}},
+	}
+	for _, tc := range tests {
+		got := slice.Map(tc.input, tc.f)
+		if diff := cmp.Diff(got, tc.want); diff != "" {
+			t.Errorf("Map %q (-got, +want):\n%s", tc.input, diff)
 		}
 	}
 }

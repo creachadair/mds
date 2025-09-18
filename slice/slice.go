@@ -291,3 +291,17 @@ func Select[T any, Slice ~[]T](vs Slice, f func(T) bool) iter.Seq[T] {
 		}
 	}
 }
+
+// Map maps the elements of the input slice through f.  If vs == nil, it
+// returns nil; otherwise it returns a non-nil slice of the same length as vs,
+// whose ith value is f(vs[i]).
+func Map[T, U any, Slice ~[]T](vs Slice, f func(T) U) []U {
+	if vs == nil {
+		return nil
+	}
+	out := make([]U, len(vs))
+	for i, in := range vs {
+		out[i] = f(in)
+	}
+	return out
+}
