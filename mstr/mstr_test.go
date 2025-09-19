@@ -1,6 +1,7 @@
 package mstr_test
 
 import (
+	"path"
 	"regexp"
 	"strings"
 	"testing"
@@ -220,6 +221,15 @@ func BenchmarkMatch(b *testing.B) {
 
 		for b.Loop() {
 			_ = m.MatchString(text)
+		}
+	})
+
+	b.Run("PathMatch", func(b *testing.B) {
+		// The pattern grammar for path.Match has more operators than mstr.Match,
+		// but the test probes we are using here relies only on the "*".
+		// We should expect mstr.Match performance to be comparable with path.Match.
+		for b.Loop() {
+			_, _ = path.Match(pattern, text)
 		}
 	})
 }
