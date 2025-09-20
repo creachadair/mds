@@ -31,16 +31,17 @@ func BenchmarkEdit(b *testing.B) {
 	for i := range rhs {
 		rhs[i] = rand.IntN(10000000)
 	}
+	b.Logf("LHS size=%d, RHS size=%d", *lhsSize, *rhsSize)
 
 	b.Run("LCS", func(b *testing.B) {
 		b.ReportAllocs()
-		for range b.N {
+		for b.Loop() {
 			_ = slice.LCS(lhs, rhs)
 		}
 	})
 	b.Run("EditScript", func(b *testing.B) {
 		b.ReportAllocs()
-		for range b.N {
+		for b.Loop() {
 			_ = slice.EditScript(lhs, rhs)
 		}
 	})
@@ -66,7 +67,7 @@ func BenchmarkLNDSFunc(b *testing.B) {
 			}
 
 			b.ReportAllocs()
-			for range b.N {
+			for b.Loop() {
 				_ = slice.LNDSFunc(input, cmpFn)
 			}
 
@@ -98,7 +99,7 @@ func BenchmarkLISFunc(b *testing.B) {
 			}
 
 			b.ReportAllocs()
-			for range b.N {
+			for b.Loop() {
 				_ = slice.LISFunc(input, cmpFn)
 			}
 
