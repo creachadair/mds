@@ -1,13 +1,14 @@
 package heapq_test
 
 import (
+	"cmp"
 	"fmt"
 
 	"github.com/creachadair/mds/heapq"
 )
 
 func ExampleNew() {
-	q := heapq.New(intCompare)
+	q := heapq.New(cmp.Compare[int])
 
 	q.Add(8)
 	q.Add(6)
