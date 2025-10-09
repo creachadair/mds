@@ -118,8 +118,7 @@ func TestIterEdit(t *testing.T) {
 	for it := m.First(); it.IsValid(); {
 		key := it.Key()
 		if key == "b" || key == "d" {
-			m.Delete(key)
-			it.Seek(key)
+			it.Delete()
 		} else {
 			got = append(got, key)
 			it.Next()

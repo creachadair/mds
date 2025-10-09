@@ -38,8 +38,32 @@
 //	   doThingsWith(it.Key(), it.Value())
 //	}
 //
-// Note that it is not safe to modify the map while iterating it.  If you
-// modify a map while iterating it, you will need to re-synchronize any
+// Note that it is not generally safe to modify the map while iterating it.
+// If you do insert any keys into a map during iteration, use [Iter.Seek] after doing so to
+// re-synchronize the iterator:
+//
+//   m := omap.New[string, int]()
+//   // ...
+//   it := m.Seek("apple")
+//   // ...
+//   m.Insert("pear", 25)
+//   it.Seek("apple") // re-synchronize after insertion
+//
+// As a special case [Iter.Delete] method will handle this for deleting the
+// current element being iterated:
+//
+//    for it := m.First(); it.IsValid() {
+//       if shouldDelete(it.Key()) {
+//         it.Delete() // this is safe
+//       } else {
+//         it.Next()
+//       }
+//    }
+//
+// However, if you insert
+// It is safe to delete the current key using [Iter.Delete], but i
+
+// you modify a map while iterating it, you will need to re-synchronize any
 // iterators after the edits, e.g.,
 //
 //	for it := m.First(); it.IsValid(); {
@@ -208,6 +232,18 @@ func (it *Iter[T, U]) Key() T { return it.c.Key().Key }
 
 // Value returns the current value, or a zero value if it is invalid.
 func (it *Iter[T, U]) Value() U { return it.c.Key().Value }
+
+// Delete deletes the indicated element from the map, if any.
+// It is a no-op if no item is currently indicated.
+func (it *Iter[T, U]) Delete() *Iter[T, U] {
+	if it.c == nil {
+		return it
+	}
+	key := it.c.Key().Key
+	it.m.Remove(stree.KV[T, U]{Key: key})
+	it.Seek(key)
+	return it
+}
 
 // Seek advances it to the first key greater than or equal to key.
 // If no such key exists, it becomes invalid.
