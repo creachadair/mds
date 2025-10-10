@@ -148,6 +148,24 @@ func TestCompareNatural(t *testing.T) {
 			t.Errorf("Compare(%q, %q): got %v, want %v", tc.a, tc.b, got, tc.want)
 		}
 	}
+
+	t.Run("NoAlloc", func(t *testing.T) {
+		const numRuns = 5000
+
+		// We want the test probe to have a difference, but make it go all the way to the end before discovering it.
+		// In between there are some numeric spans with leading zeroes that we expect to compare equal.
+		const lhs = "a 2 b 034 c 567 d 89-1 e f 23456.78 ghijk 9abc225 10 11 121 lmnopq 999 end"
+		const rhs = "a 02 b 34 c 567 d 89-01 e f 23456.78 ghijk 9abc225 010 11 121 lmnopq 999 end EXTRA"
+
+		na := testing.AllocsPerRun(numRuns, func() {
+			if c := mstr.CompareNatural(lhs, rhs); c >= 0 {
+				t.Fatalf("wrong comparison result: %d", c)
+			}
+		})
+		if na != 0 {
+			t.Fatalf("Saw %f allocations, want 0", na)
+		}
+	})
 }
 
 func TestMatch(t *testing.T) {
