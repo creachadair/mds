@@ -41,6 +41,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"maps"
 	"net"
 	"runtime"
@@ -204,6 +205,16 @@ func (m mnetAddr) String() string  { return m.address }
 type addrPipe struct {
 	net.Conn
 	local, remote mnetAddr
+}
+
+// Read delegates to the underlying pipe, but treats [io.ErrClosedPipe] as
+// equivalent to [io.EOF] since most callers do not know how to deal with that.
+func (p addrPipe) Read(data []byte) (int, error) {
+	n, err := p.Conn.Read(data)
+	if errors.Is(err, io.ErrClosedPipe) {
+		err = io.EOF
+	}
+	return n, err
 }
 
 func (p addrPipe) LocalAddr() net.Addr  { return p.local }
