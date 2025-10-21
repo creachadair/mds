@@ -165,7 +165,7 @@ func (n *Network) DialContext(ctx context.Context, network, addr string) (_ net.
 
 // A Listener implements the [net.Listener] interface accepting connections
 // from calls to [Network.Dial] and [Network.DialContext]. It is the concrete
-// type returned of listeners returned by the [Network.Listen] method.
+// type of listeners returned by the [Network.Listen] method.
 type Listener struct {
 	netName string
 	addr    mnetAddr
