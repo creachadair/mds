@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/creachadair/mds/mnet"
+	"github.com/creachadair/mds/mtest"
 )
 
 func checkAddr(t *testing.T, label string, addr net.Addr, wantNet, wantAddr string) {
@@ -116,10 +117,50 @@ func TestNetwork(t *testing.T) {
 
 	t.Run("DialMissing", func(t *testing.T) {
 		n := mnet.New("empty")
+		defer n.Close()
+
 		conn, err := n.Dial("tcp", "nonesuch")
 		if !checkNetError(t, "Dial", err, mnet.ErrConnRefused, false) {
 			t.Logf("Got result: %+v", conn)
 		}
+	})
+
+	t.Run("DialListener", func(t *testing.T) {
+		synctest.Test(t, func(t *testing.T) {
+			n := mnet.New("test")
+			defer n.Close()
+
+			lst := n.MustListen("tcp", "whatever")
+			go func() {
+				acc, err := lst.Accept()
+				if err != nil {
+					t.Errorf("Accept failed: %v", err)
+				} else {
+					t.Logf("Accept OK: %T (%v)", acc, acc.RemoteAddr())
+					acc.Close()
+				}
+			}()
+
+			conn, err := lst.Dial()
+			if !checkNetError(t, "Dial", err, nil, false) {
+				t.Fatal("Dial failed")
+			}
+			conn.Close()
+
+			synctest.Wait() // allow logging to finish
+		})
+	})
+
+	t.Run("MustListenPanic", func(t *testing.T) {
+		n := mnet.New("test")
+		defer n.Close()
+
+		n.MustListen("test", "xyzzy") // succeed
+
+		v := mtest.MustPanicf(t, func() {
+			n.MustListen("test", "xyzzy")
+		}, "duplicate listen should panic")
+		t.Logf("Got expected panic: %v", v)
 	})
 
 	t.Run("DialOK", func(t *testing.T) {

@@ -117,6 +117,17 @@ func (n *Network) Listen(network, addr string) (net.Listener, error) {
 	return lst, nil
 }
 
+// MustListen returns a new [Listener] for the specified network and address.
+// It panics if a listener already exists for the given address.
+// This is intended for use in tests.
+func (n *Network) MustListen(network, addr string) Listener {
+	lst, err := n.Listen(network, addr)
+	if err != nil {
+		panic(err)
+	}
+	return lst.(Listener)
+}
+
 // Dial establishes a connection to the specified address on n.
 // It reports [ErrConnRefused] if there is no active listener for the address.
 // This is shorthand for [Network.DialContext] using a background context.
@@ -127,7 +138,7 @@ func (n *Network) Dial(network, addr string) (net.Conn, error) {
 // DialContext establishes a connection to the specified address on n.
 // It reports [ErrConnRefused] if there is no active listener for the address.
 // It reports a timeout if ctx ends before a connection can be established.
-func (n *Network) DialContext(ctx context.Context, network, addr string) (_ net.Conn, err error) {
+func (n *Network) DialContext(ctx context.Context, network, addr string) (net.Conn, error) {
 	n.μ.Lock()
 	key := mnetAddr{network: network, address: addr}
 	lst, ok := n.listen[key]
@@ -139,29 +150,7 @@ func (n *Network) DialContext(ctx context.Context, network, addr string) (_ net.
 	} else if !ok {
 		return nil, netErrorf(false, "[%s] dial %s %q: %w", n.name, network, addr, ErrConnRefused)
 	}
-
-	// Synthesize an "address" for the dialer based on its calling location.
-	dialer := mnetAddr{network: network, address: "dial:unknown"}
-	pc, _, _, _ := runtime.Caller(1)
-	if f := runtime.FuncForPC(pc); f != nil {
-		dialer.address = "dial:" + f.Name()
-	}
-
-	lhs, rhs := net.Pipe()
-	defer func() {
-		if err != nil {
-			lhs.Close()
-			rhs.Close()
-		}
-	}()
-	select {
-	case lst.conns <- addrPipe{Conn: rhs, local: key, remote: dialer}:
-		return addrPipe{Conn: lhs, local: dialer, remote: key}, nil
-	case <-lst.stopCtx.Done():
-		return nil, netErrorf(false, "[%s] dial %s %q: %w", n.name, network, addr, ErrConnRefused)
-	case <-ctx.Done():
-		return nil, netErrorf(true, "[%s] dial %s %q: %w", n.name, network, addr, ctx.Err())
-	}
+	return lst.dialContext(ctx)
 }
 
 // A Listener implements the [net.Listener] interface accepting connections
@@ -193,6 +182,37 @@ func (ln Listener) Close() error { ln.stop(); return nil }
 
 // Addr implements part of [net.Listener].
 func (ln Listener) Addr() net.Addr { return ln.addr }
+
+// Dial dials the address hosted by ln.
+func (ln Listener) Dial() (net.Conn, error) { return ln.dialContext(context.Background()) }
+
+// DialContext dials the address hosted by ln.
+func (ln Listener) DialContext(ctx context.Context) (net.Conn, error) { return ln.dialContext(ctx) }
+
+func (ln Listener) dialContext(ctx context.Context) (_ net.Conn, err error) {
+	// Synthesize an "address" for the dialer based on its calling location.
+	dialer := mnetAddr{network: ln.addr.network, address: "dial:unknown"}
+	pc, _, _, _ := runtime.Caller(2)
+	if f := runtime.FuncForPC(pc); f != nil {
+		dialer.address = "dial:" + f.Name()
+	}
+
+	lhs, rhs := net.Pipe()
+	defer func() {
+		if err != nil {
+			lhs.Close()
+			rhs.Close()
+		}
+	}()
+	select {
+	case ln.conns <- addrPipe{Conn: rhs, local: ln.addr, remote: dialer}:
+		return addrPipe{Conn: lhs, local: dialer, remote: ln.addr}, nil
+	case <-ln.stopCtx.Done():
+		return nil, netErrorf(false, "[%s] dial %s %q: %w", ln.netName, ln.addr.network, ln.addr.address, ErrConnRefused)
+	case <-ctx.Done():
+		return nil, netErrorf(true, "[%s] dial %s %q: %w", ln.netName, ln.addr.network, ln.addr.address, ctx.Err())
+	}
+}
 
 // mnetAddr implements the [net.Addr] interface.
 type mnetAddr struct {
