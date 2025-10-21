@@ -42,7 +42,7 @@ func ToLessFunc[T any](cmp func(a, b T) int) func(a, b T) bool {
 }
 
 // Time is a comparison function for time.Time values that orders earlier times
-// before later ones.
+// before later ones. This is a shim for [time.Time.Compare].
 func Time(a, b time.Time) int { return a.Compare(b) }
 
 // Reversed returns a comparison function that orders its elements in the
