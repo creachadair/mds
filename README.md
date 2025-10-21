@@ -56,7 +56,7 @@ Several of the data-types in this module share common behaviors:
 - [distinct](./distinct) a probabilistic distinct-elements counter (CVM) ([package docs](https://godoc.org/github.com/creachadair/mds/distinct))
 - [mbits](./mbits) helpful functions for manipulating bits and bytes ([package docs](https://godoc.org/github.com/creachadair/mds/mbits))
 - [mdiff](./mdiff) supports creating textual diffs ([package docs](https://godoc.org/github.com/creachadair/mds/mdiff), [example](https://go.dev/play/p/xUYbbwnMkw3))
-- [mnet](./mnet) provides an in-memory network implementation compatible with the `net` package ([package docs](https://godoc.org/github.com/creachadair/mds/mnet)
+- [mnet](./mnet) provides an in-memory network implementation compatible with the `net` package ([package docs](https://godoc.org/github.com/creachadair/mds/mnet))
 - [mstr](./mstr) helpful functions for manipulating strings ([package docs](https://godoc.org/github.com/creachadair/mds/mstr))
 - [mtest](./mtest) a support library for writing tests ([package docs](https://godoc.org/github.com/creachadair/mds/mtest))
 - [shell](./shell) POSIX shell quoting and splitting ([package docs](https://godoc.org/github.com/creachadair/mds/shell))
