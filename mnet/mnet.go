@@ -44,8 +44,10 @@ import (
 	"io"
 	"maps"
 	"net"
+	"path/filepath"
 	"runtime"
 	"slices"
+	"strings"
 	"sync"
 )
 
@@ -132,13 +134,25 @@ func (n *Network) MustListen(network, addr string) Listener {
 // It reports [ErrConnRefused] if there is no active listener for the address.
 // This is shorthand for [Network.DialContext] using a background context.
 func (n *Network) Dial(network, addr string) (net.Conn, error) {
-	return n.DialContext(context.Background(), network, addr)
+	lst, err := n.checkListener(network, addr)
+	if err != nil {
+		return nil, err // already wrapped
+	}
+	return lst.dialContext(context.Background())
 }
 
 // DialContext establishes a connection to the specified address on n.
 // It reports [ErrConnRefused] if there is no active listener for the address.
 // It reports a timeout if ctx ends before a connection can be established.
 func (n *Network) DialContext(ctx context.Context, network, addr string) (net.Conn, error) {
+	lst, err := n.checkListener(network, addr)
+	if err != nil {
+		return nil, err // already wrapped
+	}
+	return lst.dialContext(ctx)
+}
+
+func (n *Network) checkListener(network, addr string) (Listener, error) {
 	n.μ.Lock()
 	key := mnetAddr{network: network, address: addr}
 	lst, ok := n.listen[key]
@@ -146,11 +160,11 @@ func (n *Network) DialContext(ctx context.Context, network, addr string) (net.Co
 	n.μ.Unlock()
 
 	if isClosed {
-		return nil, netErrorf(false, "[%s] dial %s %q: %w", n.name, network, addr, net.ErrClosed)
+		return Listener{}, netErrorf(false, "[%s] dial %s %q: %w", n.name, network, addr, net.ErrClosed)
 	} else if !ok {
-		return nil, netErrorf(false, "[%s] dial %s %q: %w", n.name, network, addr, ErrConnRefused)
+		return Listener{}, netErrorf(false, "[%s] dial %s %q: %w", n.name, network, addr, ErrConnRefused)
 	}
-	return lst.dialContext(ctx)
+	return lst, nil
 }
 
 // A Listener implements the [net.Listener] interface accepting connections
@@ -192,9 +206,9 @@ func (ln Listener) DialContext(ctx context.Context) (net.Conn, error) { return l
 func (ln Listener) dialContext(ctx context.Context) (_ net.Conn, err error) {
 	// Synthesize an "address" for the dialer based on its calling location.
 	dialer := mnetAddr{network: ln.addr.network, address: "dial:unknown"}
-	pc, _, _, _ := runtime.Caller(2)
+	pc, fpath, line, _ := runtime.Caller(2)
 	if f := runtime.FuncForPC(pc); f != nil {
-		dialer.address = "dial:" + f.Name()
+		dialer.address = fmt.Sprintf("dial:%s:%s:%d", funcPackageName(f.Name()), filepath.Base(fpath), line)
 	}
 
 	lhs, rhs := net.Pipe()
@@ -257,3 +271,14 @@ func (e netError) Error() string { return e.err.Error() }
 func (e netError) Timeout() bool { return e.isTimeout }
 func (e netError) Unwrap() error { return e.err }
 func (netError) Temporary() bool { return false }
+
+func funcPackageName(funcName string) string {
+	ls := max(strings.LastIndex(funcName, "/"), 0)
+	for {
+		i := strings.LastIndex(funcName, ".")
+		if i <= ls {
+			return funcName
+		}
+		funcName = funcName[:i]
+	}
+}
