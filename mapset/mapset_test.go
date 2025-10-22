@@ -173,6 +173,26 @@ func TestItems(t *testing.T) {
 			t.Errorf("Pop from empty: got %d, want 0", got)
 		}
 	})
+
+	t.Run("Pick", func(t *testing.T) {
+		var empty mapset.Set[int]
+		if got := empty.Pick(); got != 0 {
+			t.Errorf("Pick empty: got %d, want 0", got)
+		}
+		for _, s := range []mapset.Set[int]{
+			mapset.New(2),
+			mapset.New(5, 11, 17),
+			mapset.New(999, -5, 3, -19, 56),
+		} {
+			orig := s.Slice()
+			for range 25 {
+				if got := s.Pick(); !s.Has(got) {
+					t.Errorf("Pick: got %d, want want of %v", got, s)
+				}
+			}
+			check(t, s, orig...) // Pick didn't drop anything
+		}
+	})
 }
 
 func TestCompare(t *testing.T) {

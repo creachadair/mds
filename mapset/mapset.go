@@ -107,6 +107,16 @@ func (s Set[T]) Pop() T {
 	return zero
 }
 
+// Pick returns an arbitrary element of s, if s is non-empty.
+// If s is empty, it returns a zero value.
+func (s Set[T]) Pick() T {
+	for item := range s {
+		return item
+	}
+	var zero T
+	return zero
+}
+
 // Intersects reports whether s and t share any elements in common.
 func (s Set[T]) Intersects(t Set[T]) bool {
 	lo, hi := s, t
