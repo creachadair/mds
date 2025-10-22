@@ -60,23 +60,17 @@ func (c *Cache[K, V]) Put(key K, val V) bool {
 	// If there is an existing item for this key, remove it.
 	if old, ok := c.store.Check(key); ok {
 		c.store.Remove(key)
-		c.onEvict(key, old)
-		c.size -= c.sizeOf(old)
-		c.count--
+		c.dropKeyLocked(key, old)
 	}
 
 	// If necessary, evict items to make room.
-	newSize := c.size + valSize
-	for newSize > c.limit {
-		ek, ev := c.store.Evict()
-		c.onEvict(ek, ev)
-		c.count--
-		newSize -= c.sizeOf(ev)
+	for c.size+valSize > c.limit {
+		c.dropKeyLocked(c.store.Evict())
 	}
 
 	// Now there is room.
 	c.store.Store(key, val)
-	c.size = newSize
+	c.size += valSize
 	c.count++
 	return true
 }
@@ -89,9 +83,7 @@ func (c *Cache[K, _]) Remove(key K) bool {
 
 	if old, ok := c.store.Check(key); ok {
 		c.store.Remove(key)
-		c.onEvict(key, old)
-		c.size -= c.sizeOf(old)
-		c.count--
+		c.dropKeyLocked(key, old)
 		return true
 	}
 	return false
@@ -110,10 +102,7 @@ func (c *Cache[K, V]) Clear() {
 	defer c.μ.Unlock()
 
 	for c.count > 0 {
-		ek, ev := c.store.Evict()
-		c.onEvict(ek, ev)
-		c.size -= c.sizeOf(ev)
-		c.count--
+		c.dropKeyLocked(c.store.Evict())
 	}
 	if c.size != 0 || c.count != 0 {
 		panic(fmt.Sprintf("cache: after clear size=%d count=%d", c.size, c.count))
@@ -142,6 +131,14 @@ func New[K comparable, V any](config Config[K, V]) *Cache[K, V] {
 		sizeOf:  config.sizeFunc(),
 		onEvict: config.onEvictFunc(),
 	}
+}
+
+// dropKeyLocked reports the removal of key and updates the cache size.
+// Precondition: Caller holds c.μ.
+func (c *Cache[K, V]) dropKeyLocked(key K, value V) {
+	c.onEvict(key, value)
+	c.size -= c.sizeOf(value)
+	c.count--
 }
 
 // A Config carries the settings for a cache implementation.
