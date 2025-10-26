@@ -35,9 +35,9 @@ func New[T any](cmp func(a, b T) int) *Queue[T] { return &Queue[T]{cmp: cmp, mov
 //
 //	q := heapq.NewWithData(cfunc, make([]string, 0, n))
 //
-// The resulting queue takes ownership of the slice, and the caller should not
-// access the contents data after the call unless the queue will no longer be
-// used.
+// The resulting queue takes ownership of the slice, and the caller must not
+// access the contents data after the call until the queue is cleared.  Calling
+// [Queue.Clear] will dissociate the queue from data.
 func NewWithData[T any](cmp func(a, b T) int, data []T) *Queue[T] {
 	q := &Queue[T]{data: data, cmp: cmp, move: nmove[T]}
 	for i := len(q.data) / 2; i >= 0; i-- {
@@ -166,8 +166,19 @@ func (q *Queue[T]) Each(f func(T) bool) {
 	}
 }
 
-// Clear discards all the entries in q, leaving it empty.
-func (q *Queue[T]) Clear() { q.data = q.data[:0] }
+// Clear discards all the entries in q, leaving it empty. Clear releases all
+// heap storage held by q, and further use of the queue will allocate fresh
+// storage.
+//
+// If q was created by [NewWithData], calling Clear dissociates q from the
+// provided slice, and subsequent
+func (q *Queue[T]) Clear() {
+	// Drop the slice entirely rather than reslicing it so that we do not pin
+	// the array or any pointers it refers to from the GC. We could zero the
+	// array and reslice, but then the caller has no way to recover control of a
+	// delegated slice without overwriting its contents.
+	q.data = nil
+}
 
 // pop removes and returns the value at index i of the heap, after restoring
 // heap order. Precondition: i < len(q.data).
