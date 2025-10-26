@@ -21,7 +21,7 @@ func New[T comparable](items ...T) Set[T] {
 	return m.add(items)
 }
 
-// NewSize constructs a new empty set preallocated to have space for n items.
+// NewSize constructs a new empty [Set] preallocated to have space for n items.
 func NewSize[T comparable](n int) Set[T] { return make(Set[T], n) }
 
 // IsEmpty reports whether s is empty.
@@ -33,7 +33,7 @@ func (s Set[T]) Len() int { return len(s) }
 // Clear removes all elements from s and returns s.
 func (s Set[T]) Clear() Set[T] { clear(s); return s }
 
-// Clone returns a new set with the same contents as s.
+// Clone returns a new [Set] with the same contents as s.
 // The value returned is never nil.
 func (s Set[T]) Clone() Set[T] {
 	if s == nil {
