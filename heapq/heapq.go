@@ -17,11 +17,11 @@ type Queue[T any] struct {
 // function has been set.
 func nmove[T any](T, int) {}
 
-// New constructs an empty Queue with the given comparison function, where
+// New constructs an empty [Queue] with the given comparison function, where
 // cmp(a, b) must be <0 if a < b, =0 if a == b, and >0 if a > b.
 func New[T any](cmp func(a, b T) int) *Queue[T] { return &Queue[T]{cmp: cmp, move: nmove[T]} }
 
-// NewWithData constructs an empty Queue with the given comparison function
+// NewWithData constructs an empty [Queue] with the given comparison function
 // that uses the given slice as storage.  This allows the caller to initialize
 // a heap with existing data without copying, or to preallocate storage.  To
 // preallocate storage without any initial values, pass a slice with length 0
