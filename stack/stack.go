@@ -9,13 +9,13 @@ type Stack[T any] struct {
 	list []T
 }
 
-// New constructs a new empty stack.
+// New constructs a new empty [Stack].
 func New[T any]() *Stack[T] { return new(Stack[T]) }
 
 // Push adds an entry for v to the top of s.
 func (s *Stack[T]) Push(v T) { s.list = append(s.list, v) }
 
-// Add is a synonym for Push.
+// Add is a synonym for [Stack.Push].
 func (s *Stack[T]) Add(v T) { s.list = append(s.list, v) }
 
 // IsEmpty reports whether s is empty.
