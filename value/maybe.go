@@ -15,10 +15,10 @@ type Maybe[T any] struct {
 	present bool
 }
 
-// Just returns a Maybe holding the value v.
+// Just returns a [Maybe] holding the value v.
 func Just[T any](v T) Maybe[T] { return Maybe[T]{value: v, present: true} }
 
-// Absent returns a Maybe holding no value.
+// Absent returns a [Maybe] holding no value.
 // A zero Maybe is equivalent to Absent().
 func Absent[T any]() Maybe[T] { return Maybe[T]{} }
 
