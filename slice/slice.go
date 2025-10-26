@@ -3,6 +3,7 @@ package slice
 
 import (
 	"iter"
+	"slices"
 )
 
 // Partition rearranges the elements of vs in-place so that all the elements v
@@ -202,21 +203,10 @@ func gcd(a, b int) int {
 //
 // Deprecated: Use [slices.Chunk] instead.
 func Chunks[T any, Slice ~[]T](vs Slice, n int) iter.Seq[Slice] {
-	if n < 0 {
-		panic("max must be positive")
-	} else if n == 0 {
+	if n == 0 {
 		return func(func(Slice) bool) {}
 	}
-	return func(yield func(Slice) bool) {
-		i := 0
-		for i < len(vs) {
-			end := min(i+n, len(vs))
-			if !yield(vs[i:end:end]) {
-				return
-			}
-			i = end
-		}
-	}
+	return slices.Chunk(vs, n)
 }
 
 // Batches iterates a sequence of up to n contiguous subslices ("batches") of
