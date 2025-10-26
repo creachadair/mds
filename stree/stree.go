@@ -29,7 +29,7 @@ const (
 	fracLimit  = 2 * maxBalance
 )
 
-// New returns a new tree with the given balancing factor 0 ≤ β ≤ 1000. The
+// New returns a new [Tree] with the given balancing factor 0 ≤ β ≤ 1000. The
 // order of elements stored in the tree is provided by the comparison function,
 // where compare(a, b) must be <0 if a < b, =0 if a == b, and >0 if a > b.
 //
@@ -277,8 +277,8 @@ func (t *Tree[T]) Get(key T) (_ T, ok bool) {
 	return
 }
 
-// Find returns a cursor to the smallest key in the tree greater than or equal
-// to key. If no such key exists, Find returns nil.
+// Find returns a [Cursor] to the smallest key in the tree greater than or
+// equal to key. If no such key exists, Find returns nil.
 func (t *Tree[T]) Find(key T) *Cursor[T] {
 	var next T
 	var found bool
@@ -303,7 +303,7 @@ func (t *Tree[T]) InorderAfter(key T) iter.Seq[T] {
 	}
 }
 
-// Cursor constructs a cursor to the specified key, or nil if key is not
+// Cursor constructs a [Cursor] to the specified key, or nil if key is not
 // present in the tree.
 func (t *Tree[T]) Cursor(key T) *Cursor[T] {
 	path := t.root.pathTo(key, t.compare)
@@ -313,7 +313,7 @@ func (t *Tree[T]) Cursor(key T) *Cursor[T] {
 	return &Cursor[T]{path: path}
 }
 
-// Root returns a Cursor to the root of t, or nil if t is empty.
+// Root returns a [Cursor] to the root of t, or nil if t is empty.
 func (t *Tree[T]) Root() *Cursor[T] {
 	if t.root == nil {
 		return nil
@@ -347,9 +347,9 @@ func (t *Tree[T]) Max() T {
 	return cur.X
 }
 
-// KV is a convenience type for storing key-value pairs in a Tree, where the
+// KV is a convenience type for storing key-value pairs in a [Tree], where the
 // key type T is used for comparison while the value type U is ignored.  Use
-// the Compare method to adapt a comparison for T to a KV on T.
+// the [KV.Compare] method to adapt a comparison for T to a KV on T.
 //
 // For convenience of notation, you can create a type alias for an
 // instantiation of this type:

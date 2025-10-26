@@ -2,7 +2,7 @@ package stree
 
 import "slices"
 
-// A Cursor is an anchor to a location within a Tree that can be used to
+// A Cursor is an anchor to a location within a [Tree] that can be used to
 // navigate the structure of the tree. A cursor is Valid if it points to a
 // non-empty subtree of its tree.
 type Cursor[T any] struct {
