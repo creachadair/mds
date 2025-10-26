@@ -10,7 +10,7 @@ import (
 	"github.com/creachadair/mds/slice"
 )
 
-// FormatFunc is a function that renders diff chunks as text to an io.Writer.
+// FormatFunc is a function that renders diff chunks as text to an [io.Writer].
 //
 // A FormatFunc should accept a nil info pointer, and should skip or supply
 // default values for missing fields.

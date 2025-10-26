@@ -89,7 +89,7 @@ type Diff struct {
 	Edits []Edit
 }
 
-// New constructs a Diff from the specified string slices.
+// New constructs a [Diff] from the specified string slices.
 // A diff constructed by New has 0 lines of context.
 func New(lhs, rhs []string) *Diff {
 	es := slice.EditScript(lhs, rhs)
