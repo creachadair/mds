@@ -10,7 +10,7 @@ type List[T any] struct {
 	first entry[T] // sentinel; first.link points to the real first element
 }
 
-// NewList returns a new empty list.
+// NewList returns a new empty [List].
 func NewList[T any]() *List[T] { return new(List[T]) }
 
 // IsEmpty reports whether lst is empty.
@@ -50,7 +50,7 @@ func (lst *List[T]) Len() (n int) {
 
 // At returns a cursor to the element at index n ≥ 0 in the list.  If n is
 // greater than or equal to n.Len(), At returns a cursor to the end of the list
-// (equivalent to End).
+// (equivalent to [List.End]).
 //
 // At will panic if n < 0.
 func (lst *List[T]) At(n int) *Cursor[T] {
@@ -69,7 +69,7 @@ func (lst *List[T]) At(n int) *Cursor[T] {
 }
 
 // Last returns a cursor to the last element of the list. If lst is empty, it
-// returns a cursor to the end of the list (equivalent to End).
+// returns a cursor to the end of the list (equivalent to [List.End]).
 // This method takes time proportional to the length of the list.
 func (lst *List[T]) Last() *Cursor[T] {
 	cur := lst.cfirst()
@@ -101,7 +101,7 @@ func (lst *List[T]) Find(f func(T) bool) *Cursor[T] {
 
 func (lst *List[T]) cfirst() Cursor[T] { return Cursor[T]{pred: &lst.first} }
 
-// A Cursor represents a location in a list.  A nil *Cursor is not valid, and
+// A Cursor represents a location in a list.  A nil [*Cursor] is not valid, and
 // operations on it will panic. Through a valid cursor, the caller can add,
 // modify, or remove elements, and navigate forward through the list.
 //
