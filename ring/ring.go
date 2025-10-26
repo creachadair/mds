@@ -32,7 +32,7 @@ func (r *Ring[T]) String() string {
 	return fmt.Sprintf("Ring(%v, %v%v)", r.Value, r.ptr(r.prev), r.ptr(r.next))
 }
 
-// New constructs a new ring with n zero-valued elements.
+// New constructs a new [Ring] with n zero-valued elements.
 // If n ≤ 0, New returns nil.
 func New[T any](n int) *Ring[T] {
 	if n <= 0 {
@@ -50,7 +50,7 @@ func New[T any](n int) *Ring[T] {
 	return r
 }
 
-// Of constructs a new ring containing the given elements.
+// Of constructs a new [Ring] containing the given elements.
 func Of[T any](vs ...T) *Ring[T] {
 	r := New[T](len(vs))
 	cur := r
