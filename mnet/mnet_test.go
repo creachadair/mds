@@ -39,12 +39,12 @@ func checkNetError(t *testing.T, label string, got, want error, isTimeout bool) 
 
 func TestNetwork(t *testing.T) {
 	t.Run("CloseEmpty", func(t *testing.T) {
-		n := mnet.New("empty")
+		n := mnet.New(t.Name())
 		checkNetError(t, "Close empty", n.Close(), nil, false)
 	})
 
 	t.Run("ListenClosed", func(t *testing.T) {
-		n := mnet.New("closed")
+		n := mnet.New(t.Name())
 		n.Close()
 		lst, err := n.Listen("tcp", "whatever")
 		if !checkNetError(t, "Listen on closed", err, net.ErrClosed, false) {
@@ -53,7 +53,7 @@ func TestNetwork(t *testing.T) {
 	})
 
 	t.Run("DialClosed", func(t *testing.T) {
-		n := mnet.New("closed")
+		n := mnet.New(t.Name())
 		defer n.Close()
 
 		lst, err := n.Listen("tcp", "whatever")
@@ -77,7 +77,7 @@ func TestNetwork(t *testing.T) {
 
 	t.Run("CloseDialInFlight", func(t *testing.T) {
 		synctest.Test(t, func(t *testing.T) {
-			n := mnet.New("test")
+			n := mnet.New(t.Name())
 
 			if _, err := n.Listen("tcp", "whatever"); !checkNetError(t, "Listen", err, nil, false) {
 				t.Fatal("Listen failed")
@@ -96,7 +96,7 @@ func TestNetwork(t *testing.T) {
 
 	t.Run("CloseAcceptInFlight", func(t *testing.T) {
 		synctest.Test(t, func(t *testing.T) {
-			n := mnet.New("test")
+			n := mnet.New(t.Name())
 			defer n.Close()
 
 			lst, err := n.Listen("tcp", "whatever")
@@ -116,7 +116,7 @@ func TestNetwork(t *testing.T) {
 	})
 
 	t.Run("DialMissing", func(t *testing.T) {
-		n := mnet.New("empty")
+		n := mnet.New(t.Name())
 		defer n.Close()
 
 		conn, err := n.Dial("tcp", "nonesuch")
@@ -127,7 +127,7 @@ func TestNetwork(t *testing.T) {
 
 	t.Run("DialListener", func(t *testing.T) {
 		synctest.Test(t, func(t *testing.T) {
-			n := mnet.New("test")
+			n := mnet.New(t.Name())
 			defer n.Close()
 
 			lst := n.MustListen("tcp", "whatever")
@@ -152,7 +152,7 @@ func TestNetwork(t *testing.T) {
 	})
 
 	t.Run("MustListenPanic", func(t *testing.T) {
-		n := mnet.New("test")
+		n := mnet.New(t.Name())
 		defer n.Close()
 
 		n.MustListen("test", "xyzzy") // succeed
@@ -165,7 +165,7 @@ func TestNetwork(t *testing.T) {
 
 	t.Run("DialOK", func(t *testing.T) {
 		synctest.Test(t, func(t *testing.T) {
-			n := mnet.New("test")
+			n := mnet.New(t.Name())
 			defer n.Close()
 
 			const testNet, testAddr = "tcp", "example.net:12345"
@@ -203,7 +203,7 @@ func TestNetwork(t *testing.T) {
 
 	t.Run("DialTimeout", func(t *testing.T) {
 		synctest.Test(t, func(t *testing.T) {
-			n := mnet.New("test")
+			n := mnet.New(t.Name())
 			defer n.Close()
 
 			lst, err := n.Listen("tcp", "example")
@@ -224,7 +224,7 @@ func TestNetwork(t *testing.T) {
 
 	t.Run("DialYN", func(t *testing.T) {
 		synctest.Test(t, func(t *testing.T) {
-			n := mnet.New("test")
+			n := mnet.New(t.Name())
 			defer n.Close()
 
 			lst, err := n.Listen("tcp", "example")
@@ -265,7 +265,7 @@ func TestNetwork(t *testing.T) {
 
 	t.Run("Connect", func(t *testing.T) {
 		synctest.Test(t, func(t *testing.T) {
-			n := mnet.New("test")
+			n := mnet.New(t.Name())
 			defer n.Close()
 
 			lst, err := n.Listen("unix", "example")
@@ -309,6 +309,42 @@ func TestNetwork(t *testing.T) {
 			if req != testProbe {
 				t.Errorf("Request: got %q, want %q", req, testProbe)
 			}
+		})
+	})
+
+	t.Run("Dialer", func(t *testing.T) {
+		synctest.Test(t, func(t *testing.T) {
+			n := mnet.New(t.Name())
+			defer n.Close()
+
+			lst := n.MustListen("tcp", "server")
+			d := n.Dialer("tcp", "client")
+
+			go func() {
+				cli, err := lst.Accept()
+				if err != nil {
+					t.Errorf("Accept: %v", err)
+					return
+				}
+				defer cli.Close()
+
+				// The remote address should match what was given to the dialer.
+				addr := cli.RemoteAddr()
+				if gn, ga := addr.Network(), addr.String(); gn != "tcp" || ga != "client" {
+					t.Errorf("Accept: got addr (%q, %q); want (tcp, client)", gn, ga)
+				}
+			}()
+
+			srv, err := d.DialContext(t.Context(), "tcp", "server")
+			if err != nil {
+				t.Fatalf("Dial: %v", err)
+			}
+
+			// The remote address should match what was dialed.
+			if got := srv.RemoteAddr().String(); got != "server" {
+				t.Errorf("Dial: got addr %q, want server", got)
+			}
+			srv.Close()
 		})
 	})
 }

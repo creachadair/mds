@@ -74,6 +74,14 @@ func New(name string) *Network {
 // Name reports the name registered with construction of n.
 func (n *Network) Name() string { return n.name }
 
+// Dialer returns a new [Dialer] that dials connections on n from the specified
+// source network and address. The network and address strings are not
+// interpreted, but are visible via the [net.Conn.LocalAddr] and
+// [net.Conn.RemoteAddr] methods at the ends an established connection.
+func (n *Network) Dialer(network, addr string) Dialer {
+	return Dialer{addr: mnetAddr{network: network, address: addr}, n: n}
+}
+
 // Close terminates all active listeners associated with n.
 func (n *Network) Close() error {
 	n.μ.Lock()
@@ -210,7 +218,10 @@ func (ln Listener) dialContext(ctx context.Context) (_ net.Conn, err error) {
 	if f := runtime.FuncForPC(pc); f != nil {
 		dialer.address = fmt.Sprintf("dial:%s:%s:%d", funcPackageName(f.Name()), filepath.Base(fpath), line)
 	}
+	return ln.dialContextAs(ctx, dialer)
+}
 
+func (ln Listener) dialContextAs(ctx context.Context, localAddr mnetAddr) (_ net.Conn, err error) {
 	lhs, rhs := net.Pipe()
 	defer func() {
 		if err != nil {
@@ -219,13 +230,42 @@ func (ln Listener) dialContext(ctx context.Context) (_ net.Conn, err error) {
 		}
 	}()
 	select {
-	case ln.conns <- addrPipe{Conn: rhs, local: ln.addr, remote: dialer}:
-		return addrPipe{Conn: lhs, local: dialer, remote: ln.addr}, nil
+	case ln.conns <- addrPipe{Conn: rhs, local: ln.addr, remote: localAddr}:
+		return addrPipe{Conn: lhs, local: localAddr, remote: ln.addr}, nil
 	case <-ln.stopCtx.Done():
 		return nil, netErrorf(false, "[%s] dial %s %q: %w", ln.netName, ln.addr.network, ln.addr.address, ErrConnRefused)
 	case <-ctx.Done():
 		return nil, netErrorf(true, "[%s] dial %s %q: %w", ln.netName, ln.addr.network, ln.addr.address, ctx.Err())
 	}
+}
+
+// A Dialer dials connections that report coming from a specified address.
+// See [Network.Dialer] for details.
+type Dialer struct {
+	addr mnetAddr
+	n    *Network
+}
+
+// Dial establishes a connection to the specified address.
+// It reports [ErrConnRefused] if there is no active listener for the address.
+// It is shorthand for [Dialer.DialContext] with a background context.
+func (d Dialer) Dial(network, addr string) (net.Conn, error) {
+	lst, err := d.n.checkListener(network, addr)
+	if err != nil {
+		return nil, err // already wrapped
+	}
+	return lst.dialContextAs(context.Background(), d.addr)
+}
+
+// DialContext establishes a connection to the specified address.
+// It reports [ErrConnRefused] if there is no active listener for the address.
+// It reports a timeout if ctx ends before a connection can be established.
+func (d Dialer) DialContext(ctx context.Context, network, addr string) (net.Conn, error) {
+	lst, err := d.n.checkListener(network, addr)
+	if err != nil {
+		return nil, err // already wrapped
+	}
+	return lst.dialContextAs(ctx, d.addr)
 }
 
 // mnetAddr implements the [net.Addr] interface.
