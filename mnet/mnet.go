@@ -77,7 +77,7 @@ func (n *Network) Name() string { return n.name }
 // Dialer returns a new [Dialer] that dials connections on n from the specified
 // source network and address. The network and address strings are not
 // interpreted, but are visible via the [net.Conn.LocalAddr] and
-// [net.Conn.RemoteAddr] methods at the ends an established connection.
+// [net.Conn.RemoteAddr] methods at the ends of an established connection.
 func (n *Network) Dialer(network, addr string) Dialer {
 	return Dialer{addr: mnetAddr{network: network, address: addr}, n: n}
 }
