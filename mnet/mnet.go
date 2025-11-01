@@ -202,13 +202,16 @@ func (ln Listener) Accept() (net.Conn, error) {
 // Close implements part of [net.Listener]. It never reports an error.
 func (ln Listener) Close() error { ln.stop(); return nil }
 
-// Addr implements part of [net.Listener].
+// Addr implements part of [net.Listener]. It returns the exact network and
+// address passed to [Network.Listen].
 func (ln Listener) Addr() net.Addr { return ln.addr }
 
 // Dial dials the address hosted by ln.
+// It is shorthand for [Listener.DialContext] using a background context.
 func (ln Listener) Dial() (net.Conn, error) { return ln.dialContext(context.Background()) }
 
 // DialContext dials the address hosted by ln.
+// It reports a timeout if ctx ends before a connection could be established.
 func (ln Listener) DialContext(ctx context.Context) (net.Conn, error) { return ln.dialContext(ctx) }
 
 func (ln Listener) dialContext(ctx context.Context) (_ net.Conn, err error) {
