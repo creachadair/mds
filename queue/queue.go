@@ -9,8 +9,8 @@ import (
 
 // Queue is an array-based queue of values.  A zero Queue is ready for use.
 // Items can be added and removed at either end of the queue.  Use [Queue.Add]
-// and [Queue.Pop] for last-in, first-out semantics; use [Queue.Push] and
-// [Queue.PopLast] for first-in, first-out semantics.
+// and [Queue.Pop] for first-in, first-out semantics; use [Queue.Push] and
+// [Queue.PopLast] for last-in, first-out semantics.
 //
 // Add, Push, Pop, and PopLast operations take amortized O(1) time and storage.
 // All other operations on a Queue are constant time and space.
@@ -92,7 +92,7 @@ func (q *Queue[T]) Len() int { return q.n }
 func (q *Queue[T]) Clear() { q.vs, q.head, q.n = nil, 0, 0 }
 
 // Front returns the frontmost (oldest) element of q.  If q is empty, Front
-// returns a zero value. This is symmetric with Peek(0).
+// returns a zero value. This is equivalent to Peek(0).
 func (q *Queue[T]) Front() T { v, _ := q.Peek(0); return v }
 
 // Back returns the backmost (newest) element of q.  If q is empty, Back
@@ -101,7 +101,7 @@ func (q *Queue[T]) Back() T { v, _ := q.Peek(-1); return v }
 
 // Peek reports whether q has a value at offset n from the front of the queue,
 // and if so returns its value. Peek(0) returns the same value as [Queue.Front].
-// Negative offsets count forward from the end of the queue.
+// Negative offsets count forward from the back of the queue.
 func (q *Queue[T]) Peek(n int) (T, bool) {
 	if n < 0 {
 		n += q.n
