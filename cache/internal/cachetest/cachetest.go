@@ -23,6 +23,7 @@ const (
 	OpClear  Op = "clear"
 	OpLen    Op = "len"
 	OpSize   Op = "size"
+	OpPop    Op = "pop"
 )
 
 // An insn is a single instruction in a cache test program.  Each instruction
@@ -34,6 +35,7 @@ type insn struct {
 	Value string // for put, remove
 
 	resV  string // for get, the expected value
+	resK  string // for pop, the expected key
 	resOK bool   // for has, get, put, remove
 	resZ  int64  // for len, size
 	text  string // for pretty-printing the instruction
@@ -114,6 +116,11 @@ func (in insn) eval(c *cache.Cache[string, string]) error {
 		if got, want := c.Size(), in.resZ; got != want {
 			return fmt.Errorf("c.Size(): got %d, want %d", got, want)
 		}
+	case OpPop:
+		if gotK, gotV, ok := c.Pop(); gotK != in.resK || gotV != in.resV || ok != in.resOK {
+			return fmt.Errorf("c.Pop(): got (%q, %q, %v); want (%q, %q, %v)",
+				gotK, gotV, ok, in.resK, in.resV, in.resOK)
+		}
 	default:
 		panic(fmt.Sprintf("eval: unknown opcode %q", in.Op))
 	}
@@ -151,6 +158,8 @@ func parseInsn(s string) (insn, error) {
 	case OpClear:
 	case OpLen, OpSize:
 		narg, nres = 0, 1
+	case OpPop:
+		narg, nres = 0, 3
 	default:
 		return insn{}, fmt.Errorf("unknown opcode %q", args[0])
 	}
@@ -176,15 +185,27 @@ func parseInsn(s string) (insn, error) {
 			return insn{}, fmt.Errorf("op %q result: %w", out.Op, err)
 		}
 		out.resZ = v
+	case OpPop:
+		v, err := strconv.ParseBool(resp[2])
+		if err != nil {
+			return insn{}, fmt.Errorf("op %q result: %w", out.Op, err)
+		}
+		out.resK = unquoteEmpty(resp[0])
+		out.resV = unquoteEmpty(resp[1])
+		out.resOK = v
 	}
 	if out.Op == OpGet {
-		out.resV = resp[0]
-		if out.resV == "''" {
-			out.resV = "" // notation for empty
-		}
+		out.resV = unquoteEmpty(resp[0])
 	}
 	if out.Op == OpPut {
 		out.Value = args[2]
 	}
 	return out, nil
+}
+
+func unquoteEmpty(s string) string {
+	if s == "''" {
+		return ""
+	}
+	return s
 }

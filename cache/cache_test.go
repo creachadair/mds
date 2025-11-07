@@ -116,6 +116,26 @@ func TestLRU(t *testing.T) {
 		cachetest.Run(t, c, "clear", "len = 0", "size = 0")
 		wantVic(t, "k6", "k2", "k3")
 	})
+
+	t.Run("Pop", func(t *testing.T) {
+		victims = nil
+		c := cache.New(cache.LRU[string, string](10).
+			OnEvict(func(key, _ string) { victims = append(victims, key) }))
+
+		cachetest.Run(t, c,
+			"put k1 abcde = true",
+			"put k2 fghij = true",
+			"put k3 klmno = true",
+			"len = 3",
+			"get k1 = abcde true",
+			"pop = k2 fghij true",
+			"pop = k3 klmno true",
+			"pop = k1 abcde true",
+			"pop = '' '' false",
+			"len = 0",
+		)
+		wantVic(t, "k2", "k3", "k1")
+	})
 }
 
 func TestSieve(t *testing.T) {

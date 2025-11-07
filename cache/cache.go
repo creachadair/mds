@@ -109,6 +109,22 @@ func (c *Cache[K, V]) Clear() {
 	}
 }
 
+// Pop evicts the most eligible eviction candidate from c and reports whether
+// anything was removed. If Pop reports false, it means c was empty.
+func (c *Cache[K, V]) Pop() (K, V, bool) {
+	c.μ.Lock()
+	defer c.μ.Unlock()
+
+	if c.count == 0 {
+		var kzero K
+		var vzero V
+		return kzero, vzero, false
+	}
+	k, v := c.store.Evict()
+	c.dropKeyLocked(k, v)
+	return k, v, true
+}
+
 // Size reports the current size of the items in c.
 func (c *Cache[K, V]) Size() int64 {
 	c.μ.Lock()
