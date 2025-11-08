@@ -1,6 +1,7 @@
 package slice_test
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 	"strings"
@@ -121,4 +122,17 @@ func ExampleEditScript() {
 	// emit [blue]
 	// copy [at all]
 	// end [red mixed with green does not give blue at all]
+}
+
+func ExampleMap() {
+	ss := []string{"apple", "pear", "plum", "cherry"}
+	errs := slice.Map(ss, func(s string) error {
+		if len(s) > 4 {
+			return errors.New("too long")
+		}
+		return nil
+	})
+	fmt.Println(errs)
+	// Output:
+	// [too long <nil> <nil> too long]
 }
