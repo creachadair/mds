@@ -2,6 +2,7 @@ package slice_test
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/creachadair/mds/slice"
@@ -12,10 +13,23 @@ func isEven(v int) bool { return v%2 == 0 }
 
 func ExamplePartition() {
 	vs := []int{3, 1, 8, 4, 2, 6, 9, 10, 5, 7}
+
+	// After partitioning, odd is a prefix of vs, which has been rearranged to
+	// contain only the odd elements in their original order.
 	odd := slice.Partition(vs, isOdd)
+
+	// Reslice the input after the length of the partition if you
+	// want to address the un-kept elements explicitly.
+	// Note that their order is unspecified, however, so we sort
+	// them for stable example output.
+	rest := vs[len(odd):]
+	slices.Sort(rest)
+
 	fmt.Println(odd)
+	fmt.Println(rest)
 	// Output:
 	// [3 1 9 5 7]
+	// [2 4 6 8 10]
 }
 
 func ExampleMatchingKeys() {
