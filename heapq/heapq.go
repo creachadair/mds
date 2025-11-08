@@ -171,7 +171,8 @@ func (q *Queue[T]) Each(f func(T) bool) {
 // storage.
 //
 // If q was created by [NewWithData], calling Clear dissociates q from the
-// provided slice, and subsequent
+// provided slice, and subsequent additions to q will allocate a new backing
+// slice.
 func (q *Queue[T]) Clear() {
 	// Drop the slice entirely rather than reslicing it so that we do not pin
 	// the array or any pointers it refers to from the GC. We could zero the
