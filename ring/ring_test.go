@@ -25,6 +25,10 @@ func TestRing(t *testing.T) {
 		r.Join(ring.Of(1, 2, 3))
 		rc(t, r, 0, 1, 2, 3)
 
+		// It is OK to join an empty (nil) ring to r.
+		r.Join(nil)
+		rc(t, r, 0, 1, 2, 3)
+
 		// Joining r to itself should do nothing.
 		r.Join(r)
 		rc(t, r, 0, 1, 2, 3)
