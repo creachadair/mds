@@ -124,10 +124,12 @@ func TestQueueRandom(t *testing.T) {
 	// serves to confirm that the real implementation gets the right order.
 	var has []int
 	var stats struct {
-		MaxLen   int
-		NumAdd   int
-		NumPop   int
-		NumClear int
+		MaxLen     int
+		NumAdd     int
+		NumPush    int
+		NumPop     int
+		NumPopLast int
+		NumClear   int
 	}
 	get := func(z int) int {
 		if z < 0 || z >= len(has) {
@@ -139,12 +141,14 @@ func TestQueueRandom(t *testing.T) {
 	// Run a bunch of operations at random on the q, and verify that we get the
 	// right values out of its methods.
 	const (
-		doAdd   = 45
-		doPop   = doAdd + 45
-		doPeek  = doPop + 3
-		doFront = doPeek + 3
-		doLen   = doFront + 3
-		doClear = doLen + 1
+		doAdd     = 40
+		doPush    = doAdd + 5
+		doPop     = doPush + 40
+		doPopLast = doPop + 5
+		doPeek    = doPopLast + 3
+		doFront   = doPeek + 3
+		doLen     = doFront + 3
+		doClear   = doLen + 1
 
 		doTotal = doClear
 	)
@@ -161,6 +165,12 @@ func TestQueueRandom(t *testing.T) {
 			has = append(has, r)
 			debug("Add(%d)", r)
 			q.Add(r)
+		case op < doPush:
+			stats.NumPush++
+			r := rand.IntN(1000)
+			has = append([]int{r}, has...)
+			debug("Push(%d)", r)
+			q.Push(r)
 		case op < doPop:
 			stats.NumPop++
 			debug("Pop exp=%d", get(0))
@@ -175,6 +185,21 @@ func TestQueueRandom(t *testing.T) {
 			has = has[1:]
 			if !ok || got != want {
 				t.Errorf("Pop: got (%v, %v), want (%v, true)", got, ok, want)
+			}
+		case op < doPopLast:
+			stats.NumPopLast++
+			debug("PopLast exp=%d", get(len(has)-1))
+			got, ok := q.PopLast()
+			if len(has) == 0 {
+				if ok {
+					t.Errorf("PopLast: got (%v, %v), want (0, false)", got, ok)
+				}
+				continue
+			}
+			want := has[len(has)-1]
+			has = has[:len(has)-1]
+			if !ok || got != want {
+				t.Errorf("PopLast: got (%v, %v), want (%v, true)", got, ok, want)
 			}
 		case op < doLen:
 			debug("Len n=%d", len(has))
