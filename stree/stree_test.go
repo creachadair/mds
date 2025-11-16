@@ -458,28 +458,54 @@ func TestBasicProperties(t *testing.T) {
 	}
 }
 
-func TestGetNearest(t *testing.T) {
+func TestGet(t *testing.T) {
 	tree, _ := makeTree(*strictness, string("a d k m q t x"))
-	tests := []struct {
-		input string
-		want  string
-		ok    bool
-	}{
-		{"a", "a", true},
-		{"b", "d", true},
-		{"k", "k", true},
-		{"p", "q", true},
-		{"r", "t", true},
-		{"x", "x", true},
-		{"y", "", false},
-		{"z", "", false},
-	}
-	for _, tc := range tests {
-		got, ok := tree.GetNearest(tc.input)
-		if got != tc.want || ok != tc.ok {
-			t.Errorf("GetNearest(%q): got (%q, %v), want (%q, %v)", tc.input, got, ok, tc.want, tc.ok)
+	t.Run("GetNearest", func(t *testing.T) {
+		tests := []struct {
+			input string
+			want  string
+			ok    bool
+		}{
+			{"", "a", true},
+			{"a", "a", true},
+			{"b", "d", true},
+			{"k", "k", true},
+			{"p", "q", true},
+			{"r", "t", true},
+			{"x", "x", true},
+			{"y", "", false},
+			{"z", "", false},
 		}
-	}
+		for _, tc := range tests {
+			got, ok := tree.GetNearest(tc.input)
+			if got != tc.want || ok != tc.ok {
+				t.Errorf("GetNearest(%q): got (%q, %v), want (%q, %v)", tc.input, got, ok, tc.want, tc.ok)
+			}
+		}
+	})
+	t.Run("GetNext", func(t *testing.T) {
+		tests := []struct {
+			input string
+			want  string
+			ok    bool
+		}{
+			{"", "a", true},
+			{"a", "d", true},
+			{"b", "d", true},
+			{"d", "k", true},
+			{"k", "m", true},
+			{"p", "q", true},
+			{"x", "", false},
+			{"y", "", false},
+			{"z", "", false},
+		}
+		for _, tc := range tests {
+			got, ok := tree.GetNext(tc.input)
+			if got != tc.want || ok != tc.ok {
+				t.Errorf("GetNext(%q): got (%q, %v), want (%q, %v)", tc.input, got, ok, tc.want, tc.ok)
+			}
+		}
+	})
 }
 
 // If an output file is specified, dump a DOT graph of tree.

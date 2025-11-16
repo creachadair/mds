@@ -278,9 +278,22 @@ func (t *Tree[T]) Get(key T) (_ T, ok bool) {
 }
 
 // GetNearest reports whether there an element equal to or greater than key in
-// the tree, and if so returns the smallest such key.
+// the tree, and if so returns the smallest such element.
 func (t *Tree[T]) GetNearest(key T) (found T, ok bool) {
 	t.root.inorderAfter(key, t.compare, func(k T) bool {
+		found, ok = k, true
+		return false
+	})
+	return
+}
+
+// GetNext reports whether there is an element strictly greater to key in the
+// tree, and if so returns the smallest such element.
+func (t *Tree[T]) GetNext(key T) (found T, ok bool) {
+	t.root.inorderAfter(key, t.compare, func(k T) bool {
+		if t.compare(k, key) == 0 {
+			return true // not found, keep going
+		}
 		found, ok = k, true
 		return false
 	})
