@@ -458,6 +458,30 @@ func TestBasicProperties(t *testing.T) {
 	}
 }
 
+func TestGetNearest(t *testing.T) {
+	tree, _ := makeTree(*strictness, string("a d k m q t x"))
+	tests := []struct {
+		input string
+		want  string
+		ok    bool
+	}{
+		{"a", "a", true},
+		{"b", "d", true},
+		{"k", "k", true},
+		{"p", "q", true},
+		{"r", "t", true},
+		{"x", "x", true},
+		{"y", "", false},
+		{"z", "", false},
+	}
+	for _, tc := range tests {
+		got, ok := tree.GetNearest(tc.input)
+		if got != tc.want || ok != tc.ok {
+			t.Errorf("GetNearest(%q): got (%q, %v), want (%q, %v)", tc.input, got, ok, tc.want, tc.ok)
+		}
+	}
+}
+
 // If an output file is specified, dump a DOT graph of tree.
 func dumpTree[T any](t *testing.T, tree *stree.Tree[T]) {
 	if *dotFile == "" {
