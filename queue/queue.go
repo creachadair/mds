@@ -73,9 +73,7 @@ func (q *Queue[T]) Push(v T) {
 		q.head = 0
 	}
 
-	// N.B. This append does not put v in the correct location, we just need a
-	// value to trigger the reallocation.
-	w := append(q.vs, v)
+	w := slices.Grow(q.vs, max(1, 2*q.n))
 	q.vs = w[:cap(w)]
 	q.head = len(q.vs) - 1
 	q.vs[q.head] = v
