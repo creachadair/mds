@@ -6,7 +6,6 @@ import (
 	"io"
 	"net"
 	"strconv"
-	"strings"
 	"testing"
 	"testing/synctest"
 	"time"
@@ -405,15 +404,14 @@ func TestNetwork(t *testing.T) {
 }
 
 func checkHostPort(t *testing.T, addr, wantHost string) {
-	i := strings.LastIndex(addr, ":")
-	if i < 0 {
-		t.Fatalf("Wrong address format: %q", addr)
+	hs, ps, err := net.SplitHostPort(addr)
+	if err != nil {
+		t.Fatalf("Invalid address format: %v", err)
 	}
-	hs, ps := addr[:i], addr[i+1:]
 	if hs != wantHost {
 		t.Errorf("Got host %q, want %q", hs, wantHost)
 	}
-	if v, err := strconv.Atoi(ps); err != nil || v == 0 {
+	if v, err := strconv.Atoi(ps); err != nil || v <= 0 {
 		t.Errorf("Port %q: got (%v, %v), want (>0, nil)", ps, v, err)
 	}
 }
