@@ -56,15 +56,29 @@ func TestNetwork(t *testing.T) {
 	t.Run("ListenRandom", func(t *testing.T) {
 		synctest.Test(t, func(t *testing.T) {
 			n := mnet.New(t.Name())
-			lst, err := n.Listen("tcp", "foo:0")
+			defer n.Close()
+
+			lst1, err := n.Listen("tcp", "foo:0")
 			if err != nil {
-				t.Fatalf("Listen: unexpected error: %v", err)
+				t.Fatalf("Listen 1: unexpected error: %v", err)
 			}
-			checkHostPort(t, lst.Addr().String(), "foo")
+			p1 := checkHostPort(t, lst1.Addr().String(), "foo")
+			t.Logf("Listener 1 assigned port %d", p1)
+
+			lst2, err := n.Listen("tcp", "foo:0")
+			if err != nil {
+				t.Fatalf("Listen 2: unexpected error: %v", err)
+			}
+			p2 := checkHostPort(t, lst2.Addr().String(), "foo")
+			t.Logf("Listener 2 assigned port %d", p2)
+
+			if p1 == p2 {
+				t.Errorf("Duplicate port assignment %d for both listeners", p1)
+			}
 
 			// Verify that we can actually dial the assigned address.
 			go func() {
-				cli, err := lst.Accept()
+				cli, err := lst1.Accept()
 				if err != nil {
 					t.Errorf("Accept: unexpected error: %v", err)
 				}
@@ -72,9 +86,9 @@ func TestNetwork(t *testing.T) {
 				cli.Close()
 			}()
 
-			srv, err := n.Dial("tcp", lst.Addr().String())
+			srv, err := n.Dial("tcp", lst1.Addr().String())
 			if err != nil {
-				t.Fatalf("Dial %q: unexpected error: %v", lst.Addr(), err)
+				t.Fatalf("Dial %q: unexpected error: %v", lst1.Addr(), err)
 			}
 			t.Logf("Connected to %q OK", srv.RemoteAddr())
 			srv.Close()
@@ -403,7 +417,7 @@ func TestNetwork(t *testing.T) {
 	})
 }
 
-func checkHostPort(t *testing.T, addr, wantHost string) {
+func checkHostPort(t *testing.T, addr, wantHost string) uint16 {
 	hs, ps, err := net.SplitHostPort(addr)
 	if err != nil {
 		t.Fatalf("Invalid address format: %v", err)
@@ -411,7 +425,9 @@ func checkHostPort(t *testing.T, addr, wantHost string) {
 	if hs != wantHost {
 		t.Errorf("Got host %q, want %q", hs, wantHost)
 	}
-	if v, err := strconv.Atoi(ps); err != nil || v <= 0 {
+	v, err := strconv.ParseInt(ps, 10, 16)
+	if err != nil || v <= 0 {
 		t.Errorf("Port %q: got (%v, %v), want (>0, nil)", ps, v, err)
 	}
+	return uint16(v)
 }
