@@ -60,9 +60,10 @@ var ErrConnRefused = errors.New("connection refused")
 type Network struct {
 	name string // immutable after initialization
 
-	μ      sync.Mutex
-	closed bool
-	listen map[mnetAddr]Listener
+	μ        sync.Mutex
+	closed   bool
+	listen   map[mnetAddr]Listener
+	nextPort uint16
 }
 
 // New constructs a new virtual network. The specified name is used only for
@@ -97,6 +98,10 @@ func (n *Network) Close() error {
 
 // Listen returns a new [net.Listener] for the specified network and address.
 // It reports an error if a listener already exists for the given address.
+//
+// As a special case, if network begins with "tcp" and the address ends with a
+// zero port (":0"), Listen will choose an arbitrary unused port-number string.
+// The host portion of the address is not otherwise parsed or interpreted.
 func (n *Network) Listen(network, addr string) (net.Listener, error) {
 	n.μ.Lock()
 	defer n.μ.Unlock()
@@ -105,6 +110,24 @@ func (n *Network) Listen(network, addr string) (net.Listener, error) {
 	}
 
 	key := mnetAddr{network: network, address: addr}
+	if strings.HasPrefix(network, "tcp") {
+		base, ok := strings.CutSuffix(addr, ":0")
+		if ok {
+			for {
+				n.nextPort = max(n.nextPort, 1023) + 1
+				candidate := fmt.Sprintf("%s:%d", base, n.nextPort)
+				key = mnetAddr{
+					network: network,
+					address: candidate,
+				}
+				if _, ok := n.listen[key]; ok {
+					continue
+				}
+				break
+			}
+		}
+	}
+
 	if _, ok := n.listen[key]; ok {
 		return nil, netErrorf(false, "[%s] listen %s %q: address already in use", n.name, network, addr)
 	}
@@ -129,6 +152,11 @@ func (n *Network) Listen(network, addr string) (net.Listener, error) {
 
 // MustListen returns a new [Listener] for the specified network and address.
 // It panics if a listener already exists for the given address.
+//
+// As a special case, if network begins with "tcp" and the address ends with a
+// zero port (":0"), Listen will choose an arbitrary unused port-number string.
+// The host portion of the address is not otherwise parsed or interpreted.
+//
 // This is intended for use in tests.
 func (n *Network) MustListen(network, addr string) Listener {
 	lst, err := n.Listen(network, addr)

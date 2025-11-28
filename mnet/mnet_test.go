@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net"
+	"strconv"
 	"testing"
 	"testing/synctest"
 	"time"
@@ -49,6 +50,73 @@ func TestNetwork(t *testing.T) {
 		lst, err := n.Listen("tcp", "whatever")
 		if !checkNetError(t, "Listen on closed", err, net.ErrClosed, false) {
 			t.Logf("Got result: %+v", lst)
+		}
+	})
+
+	t.Run("ListenRandom", func(t *testing.T) {
+		synctest.Test(t, func(t *testing.T) {
+			n := mnet.New(t.Name())
+			defer n.Close()
+
+			lst1, err := n.Listen("tcp", "foo:0")
+			if err != nil {
+				t.Fatalf("Listen 1: unexpected error: %v", err)
+			}
+			p1 := checkHostPort(t, lst1.Addr().String(), "foo")
+			t.Logf("Listener 1 assigned port %d", p1)
+
+			lst2, err := n.Listen("tcp", "foo:0")
+			if err != nil {
+				t.Fatalf("Listen 2: unexpected error: %v", err)
+			}
+			p2 := checkHostPort(t, lst2.Addr().String(), "foo")
+			t.Logf("Listener 2 assigned port %d", p2)
+
+			if p1 == p2 {
+				t.Errorf("Duplicate port assignment %d for both listeners", p1)
+			}
+
+			// Verify that we can actually dial the assigned address.
+			go func() {
+				cli, err := lst1.Accept()
+				if err != nil {
+					t.Errorf("Accept: unexpected error: %v", err)
+				}
+				t.Logf("Connection to %q accepted from %q OK", cli.LocalAddr(), cli.RemoteAddr())
+				cli.Close()
+			}()
+
+			srv, err := n.Dial("tcp", lst1.Addr().String())
+			if err != nil {
+				t.Fatalf("Dial %q: unexpected error: %v", lst1.Addr(), err)
+			}
+			t.Logf("Connected to %q OK", srv.RemoteAddr())
+			srv.Close()
+
+			synctest.Wait() // allow logging to finish
+		})
+	})
+
+	t.Run("MustListenRandom", func(t *testing.T) {
+		n := mnet.New(t.Name())
+		lst := n.MustListen("tcp4", "127.0.0.1:0")
+		checkHostPort(t, lst.Addr().String(), "127.0.0.1")
+	})
+
+	t.Run("ListenRandomUnique", func(t *testing.T) {
+		n := mnet.New(t.Name())
+		n.MustListen("tcp", "foo:1024")
+		n.MustListen("tcp", "bar:1024")
+		n.MustListen("tcp", "foo:1026")
+		lst1 := n.MustListen("tcp", "foo:0")
+		checkHostPort(t, lst1.Addr().String(), "foo")
+		t.Logf("Address 1: %q", lst1.Addr())
+		lst2 := n.MustListen("tcp", "bar:0")
+		checkHostPort(t, lst2.Addr().String(), "bar")
+		t.Logf("Address 2: %q", lst2.Addr())
+
+		if bad, err := n.Listen("tcp", "foo:1026"); err == nil {
+			t.Errorf("Listen: got %v, want error", bad)
 		}
 	})
 
@@ -347,4 +415,19 @@ func TestNetwork(t *testing.T) {
 			srv.Close()
 		})
 	})
+}
+
+func checkHostPort(t *testing.T, addr, wantHost string) uint16 {
+	hs, ps, err := net.SplitHostPort(addr)
+	if err != nil {
+		t.Fatalf("Invalid address format: %v", err)
+	}
+	if hs != wantHost {
+		t.Errorf("Got host %q, want %q", hs, wantHost)
+	}
+	v, err := strconv.ParseInt(ps, 10, 16)
+	if err != nil || v <= 0 {
+		t.Errorf("Port %q: got (%v, %v), want (>0, nil)", ps, v, err)
+	}
+	return uint16(v)
 }
