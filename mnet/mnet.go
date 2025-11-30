@@ -63,7 +63,7 @@ type Network struct {
 	μ        sync.Mutex
 	closed   bool
 	listen   map[mnetAddr]Listener
-	nextPort uint16
+	nextPort uint16 // excess 1024
 }
 
 // New constructs a new virtual network. The specified name is used only for
@@ -114,11 +114,10 @@ func (n *Network) Listen(network, addr string) (net.Listener, error) {
 		base, ok := strings.CutSuffix(addr, ":0")
 		if ok {
 			for {
-				n.nextPort = max(n.nextPort, 1023) + 1
-				candidate := fmt.Sprintf("%s:%d", base, n.nextPort)
+				n.nextPort++
 				key = mnetAddr{
 					network: network,
-					address: candidate,
+					address: fmt.Sprintf("%s:%d", base, 1023+n.nextPort),
 				}
 				if _, ok := n.listen[key]; ok {
 					continue
