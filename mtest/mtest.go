@@ -3,13 +3,17 @@ package mtest
 
 import (
 	"bytes"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 
 	"github.com/creachadair/mds/mdiff"
+	"github.com/creachadair/mds/mnet"
 )
 
 // TB is the subset of the testing.TB interface used by this package.
 type TB interface {
+	Name() string
 	Cleanup(func())
 	Fatalf(string, ...any)
 	Helper()
@@ -53,4 +57,27 @@ func DiffLines(got, want string) string {
 	var buf bytes.Buffer
 	d.AddContext(3).Unify().Format(&buf, mdiff.Unified, nil)
 	return buf.String()
+}
+
+// NewHTTPServer constructs an [httptest.Server] and an [http.Client] connected
+// to it via an in-memory virtual network, using the specified handler.
+// The virtual connection is compatible with the [synctest] package.
+//
+// Note: The [httptest.Server.Client] method of the returned server should not
+// be used, as it is not aware of the virtual network. Similarly, the returned
+// client is unable to dial any network addresses other than the server's.
+func NewHTTPServer(t TB, h http.Handler) (*httptest.Server, *http.Client) {
+	n := mnet.New(t.Name())
+	lst, err := n.Listen("tcp", "server:12345")
+	if err != nil {
+		t.Fatalf("Listen failed; %v", err)
+	}
+	d := n.Dialer("tcp", "client:54321")
+	cli := &http.Client{Transport: &http.Transport{DialContext: d.DialContext}}
+	srv := httptest.NewUnstartedServer(h)
+	srv.Listener = lst
+	srv.Start()
+	t.Cleanup(srv.Close)
+
+	return srv, cli
 }

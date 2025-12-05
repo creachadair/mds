@@ -2,6 +2,8 @@ package mtest_test
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"testing"
 
 	"github.com/creachadair/mds/mtest"
@@ -13,6 +15,8 @@ type testStub struct {
 	failed bool
 	text   string
 }
+
+func (testStub) Name() string { return "Test" }
 
 func (t *testStub) Fatal(args ...any) {
 	t.failed = true
@@ -125,4 +129,32 @@ func TestDiffLines(t *testing.T) {
 			t.Errorf("Wrong diff:\ngot  %q\nwant %q", diff, want)
 		}
 	})
+}
+
+func TestNewHTTPServer(t *testing.T) {
+	m := http.NewServeMux()
+	m.HandleFunc("GET /test", func(w http.ResponseWriter, r *http.Request) {
+		t.Logf("Reqquest handler: caller is %q", r.RemoteAddr)
+		http.Error(w, "ok", http.StatusOK)
+	})
+	srv, cli := mtest.NewHTTPServer(t, m)
+	if got, want := srv.URL, "http://server:12345"; got != want {
+		t.Errorf("Server URL: got %q, want %q", got, want)
+	}
+
+	rsp, err := cli.Get(srv.URL + "/test")
+	if err != nil {
+		t.Fatalf("Get failed: %v", err)
+	}
+	body, err := io.ReadAll(rsp.Body)
+	rsp.Body.Close()
+	if err != nil {
+		t.Errorf("Read body: %v", err)
+	}
+	if rsp.StatusCode != http.StatusOK {
+		t.Errorf("Status code: got %d, want %d", rsp.StatusCode, http.StatusOK)
+	}
+	if got, want := string(body), "ok\n"; got != want {
+		t.Errorf("Response body: got %q, want %q", got, want)
+	}
 }
