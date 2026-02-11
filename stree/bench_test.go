@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand/v2"
-	"sort"
+	"slices"
 	"testing"
 
 	"github.com/creachadair/mds/stree"
@@ -74,9 +74,7 @@ func BenchmarkRemoveOrdered(b *testing.B) {
 	for _, β := range balances {
 		b.Run(fmt.Sprintf("β=%d", β), func(b *testing.B) {
 			tree, values := randomTree(b, β)
-			sort.Slice(values, func(i, j int) bool {
-				return values[i] < values[j]
-			})
+			slices.Sort(values)
 			b.ResetTimer()
 			for _, v := range values {
 				tree.Remove(v)
