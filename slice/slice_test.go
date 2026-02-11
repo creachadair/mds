@@ -354,7 +354,7 @@ func TestStripe(t *testing.T) {
 	}
 	makeInput := func(s string) [][]string {
 		var out [][]string
-		for _, line := range strings.Split(s, "|") {
+		for line := range strings.SplitSeq(s, "|") {
 			out = append(out, split(line))
 		}
 		return out
