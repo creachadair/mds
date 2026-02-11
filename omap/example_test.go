@@ -25,7 +25,7 @@ at the thought of his immolation
 func ExampleMap() {
 	// Construct a map on a naturally ordered key (string).
 	m := omap.New[string, int]()
-	for _, w := range strings.Fields(input) {
+	for w := range strings.FieldsSeq(input) {
 		m.Set(w, m.Get(w)+1)
 	}
 
