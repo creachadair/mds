@@ -18,7 +18,8 @@ func TestLRU(t *testing.T) {
 		}
 	}
 
-	c := cache.New(cache.LRU[string, string](25).
+	c := cache.New(cache.LRU[string, string]().
+		WithLimit(25).
 		WithSize(cache.Length).
 
 		// Record evictions so we can verify they happened in the expected order.
@@ -119,7 +120,8 @@ func TestLRU(t *testing.T) {
 
 	t.Run("Pop", func(t *testing.T) {
 		victims = nil
-		c := cache.New(cache.LRU[string, string](10).
+		c := cache.New(cache.LRU[string, string]().
+			WithLimit(10).
 			OnEvict(func(key, _ string) { victims = append(victims, key) }))
 
 		cachetest.Run(t, c,
@@ -148,7 +150,8 @@ func TestSieve(t *testing.T) {
 		}
 	}
 
-	c := cache.New(cache.Sieve[string, string](3).
+	c := cache.New(cache.Sieve[string, string]().
+		WithLimit(3).
 		// Record evictions so we can verify they happened in the expected order.
 		OnEvict(func(key, _ string) {
 			victims = append(victims, key)

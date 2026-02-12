@@ -7,7 +7,7 @@ import (
 )
 
 func Example() {
-	c := cache.New(cache.LRU[string, int](10))
+	c := cache.New(cache.LRU[string, int]().WithLimit(10))
 	for i := range 50 {
 		c.Put(fmt.Sprint(i+1), i+1)
 	}

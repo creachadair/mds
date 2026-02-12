@@ -28,9 +28,9 @@ func comparePrio[Key comparable, Value any](a, b prioKey[Key, Value]) int {
 	return cmp.Compare(a.lastAccess, b.lastAccess) // logical time order
 }
 
-// LRU constructs a [Config] with a cache store with the specified capacity
-// limit that manages entries with a least-recently used eviction policy.
-func LRU[Key comparable, Value any](limit int64) Config[Key, Value] {
+// LRU constructs a [Config] with a cache store that manages entries with a
+// least-recently used eviction policy.
+func LRU[Key comparable, Value any]() Config[Key, Value] {
 	lru := &lruStore[Key, Value]{
 		present: make(map[Key]int),
 		access:  heapq.New(comparePrio[Key, Value]),
@@ -38,7 +38,7 @@ func LRU[Key comparable, Value any](limit int64) Config[Key, Value] {
 	lru.access.SetUpdate(func(v prioKey[Key, Value], pos int) {
 		lru.present[v.key] = pos
 	})
-	return Config[Key, Value]{limit: limit, store: lru}
+	return Config[Key, Value]{store: lru}
 }
 
 // Check implements part of the [Store] interface.

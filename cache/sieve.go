@@ -22,17 +22,17 @@ type sieveStore[Key comparable, Value any] struct {
 	hand    handle[Key, Value]
 }
 
-// Sieve constructs a [Config] with a cache store with the specified capacity
-// limit that manages entries with the [SIEVE] eviction algorithm.
+// Sieve constructs a [Config] with a cache store that manages entries with the
+// [SIEVE] eviction algorithm.
 //
 // [SIEVE]: https://junchengyang.com/publication/nsdi24-SIEVE.pdf
-func Sieve[Key comparable, Value any](limit int64) Config[Key, Value] {
+func Sieve[Key comparable, Value any]() Config[Key, Value] {
 	s := &sieveStore[Key, Value]{
 		present: make(map[Key]handle[Key, Value]),
 		queue:   ring.New[entry[Key, Value]](1), // sentinel
 	}
 	s.hand = s.queue
-	return Config[Key, Value]{limit: limit, store: s}
+	return Config[Key, Value]{store: s}
 }
 
 // Check implements part of the [Store] interface.
