@@ -242,7 +242,7 @@ func UnifyChunks(cs []*Chunk) []*Chunk {
 		}
 
 		lap := last.LEnd - c.LStart
-		end, start := slice.PtrAt(last.Edits, -1), slice.PtrAt(c.Edits, 0)
+		end, start := &last.Edits[len(last.Edits)-1], &c.Edits[0]
 
 		// If the chunks strictly overlap, it means one at least chunk has a
 		// context edit that runs into the other's span (possibly both).
@@ -257,7 +257,7 @@ func UnifyChunks(cs []*Chunk) []*Chunk {
 			if end.Op == slice.OpEmit { // last has post-context
 				if lap >= len(end.X) { // remove the whole edit
 					last.Edits = last.Edits[:len(last.Edits)-1]
-					end = slice.PtrAt(last.Edits, -1)
+					end = &last.Edits[len(last.Edits)-1]
 				} else {
 					end.X = end.X[:len(end.X)-lap] // drop the overlap
 				}
@@ -267,7 +267,7 @@ func UnifyChunks(cs []*Chunk) []*Chunk {
 			} else if start.Op == slice.OpEmit { // start has pre-context
 				if lap >= len(start.X) { // remove the whole edit
 					c.Edits = c.Edits[1:]
-					start = slice.PtrAt(c.Edits, 0)
+					start = &c.Edits[0]
 				} else {
 					start.X = start.X[lap:] // drop the overlap
 				}

@@ -228,7 +228,7 @@ func readUnifiedChunk(r *diffReader) error {
 		if len(ch.Edits) == 0 || ch.Edits[len(ch.Edits)-1].Op != op {
 			ch.Edits = append(ch.Edits, Edit{Op: op})
 		}
-		e := slice.PtrAt(ch.Edits, -1)
+		e := &ch.Edits[len(ch.Edits)-1]
 		switch op {
 		case slice.OpDrop, slice.OpEmit:
 			e.X = append(e.X, text)
