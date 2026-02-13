@@ -2,6 +2,7 @@ package value_test
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/creachadair/mds/value"
 )
@@ -30,4 +31,15 @@ func ExampleMaybe() {
 	// input: [1 6 16 19 4]
 	// result: [Absent[int] 6 16 Absent[int] 4]
 	// count: 3
+}
+
+func ExampleCheck() {
+	v1 := value.Check(strconv.Atoi("bogus")).Or(-1).Get()
+	fmt.Println("v1", v1)
+
+	v2 := value.Check(strconv.Atoi("12345")).Or(-1).Get()
+	fmt.Println("v2", v2)
+	// Output:
+	// v1 -1
+	// v2 12345
 }
