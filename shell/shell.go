@@ -189,7 +189,7 @@ func (s *Scanner) Next() bool {
 		c, err := s.buf.ReadByte()
 		s.err = err
 		if err == io.EOF {
-			break
+			return s.st != stBreak
 		} else if err != nil {
 			return false
 		}
@@ -208,7 +208,6 @@ func (s *Scanner) Next() bool {
 			panic("unknown action")
 		}
 	}
-	return s.st != stBreak
 }
 
 // Text returns the text of the current token, or "" if there is none.
