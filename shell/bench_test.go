@@ -70,7 +70,7 @@ func BenchmarkSplit(b *testing.B) {
 	b.ResetTimer()
 	for _, n := range lens {
 		b.Run(fmt.Sprintf("len_%d", n), func(b *testing.B) {
-			for range b.N {
+			for b.Loop() {
 				s.Reset(strings.NewReader(input[:n]))
 				s.Each(ignore)
 			}
@@ -103,12 +103,12 @@ func BenchmarkQuote(b *testing.B) {
 	b.Logf("Input length: %d bytes, %d tokens", len(input), len(parts))
 
 	b.Run("Quote", func(b *testing.B) {
-		for range b.N {
+		for b.Loop() {
 			shell.Quote(input)
 		}
 	})
 	b.Run("Join", func(b *testing.B) {
-		for range b.N {
+		for b.Loop() {
 			shell.Join(parts)
 		}
 	})
