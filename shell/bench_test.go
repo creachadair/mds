@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"slices"
 	"strings"
 	"testing"
 
@@ -115,3 +116,24 @@ func BenchmarkQuote(b *testing.B) {
 }
 
 func ignore(string) bool { return true }
+
+func FuzzSplitJoin(f *testing.F) {
+	// Check the invariant promised in the documentation, viz., that joining
+	// together a set of strings and then splitting them apart results in the
+	// same strings.
+	//
+	// Since we cannot pass a []string to the fuzz engine, encode the input
+	// slice as a string using "|" separators, which are split apart inside the
+	// test into multiple strings.
+
+	for _, s := range []string{"", "''", "foo", "|foo|", "|foo |'bar baz'|", "foo|bar", "foo bar|baz"} {
+		f.Add(s)
+	}
+	f.Fuzz(func(t *testing.T, in string) {
+		parts := strings.Split(in, "|")
+		out, _ := shell.Split(shell.Join(parts))
+		if !slices.Equal(parts, out) {
+			t.Fatalf("Got %+q, want %+q", out, parts)
+		}
+	})
+}
