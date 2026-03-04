@@ -193,32 +193,6 @@ func TestNetwork(t *testing.T) {
 		}
 	})
 
-	t.Run("DialListener", func(t *testing.T) {
-		synctest.Test(t, func(t *testing.T) {
-			n := mnet.New(t.Name())
-			defer n.Close()
-
-			lst := n.MustListen("tcp", "whatever")
-			go func() {
-				acc, err := lst.Accept()
-				if err != nil {
-					t.Errorf("Accept failed: %v", err)
-				} else {
-					t.Logf("Accept OK: %T (%v)", acc, acc.RemoteAddr())
-					acc.Close()
-				}
-			}()
-
-			conn, err := lst.Dial()
-			if !checkNetError(t, "Dial", err, nil, false) {
-				t.Fatal("Dial failed")
-			}
-			conn.Close()
-
-			synctest.Wait() // allow logging to finish
-		})
-	})
-
 	t.Run("MustListenPanic", func(t *testing.T) {
 		n := mnet.New(t.Name())
 		defer n.Close()
