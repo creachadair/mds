@@ -78,6 +78,8 @@ func Partition[T any](vs []T, keep func(T) bool) []T {
 // Zero sets all the elements of vs to their zero value.
 //
 // Deprecated: Use the built-in clear function instead.
+//
+//go:fix inline
 func Zero[T any, Slice ~[]T](vs Slice) { clear(vs) }
 
 // MapKeys extracts a slice of the keys from a map.  The resulting slice is in
