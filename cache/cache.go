@@ -193,9 +193,14 @@ func (c Config[K, V]) WithStore(s Store[K, V]) Config[K, V] { c.store = s; retur
 
 // WithSize returns a copy of c with its size function set to sizeOf.
 //
-// If no size function is set, the default size of an entry is 1, meaning the
-// limit is based on the number of entries in the cache.
-func (c Config[K, V]) WithSize(sizeOf func(V) int64) Config[K, V] { c.sizeOf = sizeOf; return c }
+// Deprecated: Use [Config.WithSizeFunc] instead.
+func (c Config[K, V]) WithSize(sizeOf func(V) int64) Config[K, V] { return c.WithSizeFunc(sizeOf) }
+
+// WithSizeFunc returns a copy of c with its size function set to sizeOf.
+//
+// If no size function is set, or if sizeOf == nil,the default size of an entry
+// is 1, meaning the limit is based on the number of entries in the cache.
+func (c Config[K, V]) WithSizeFunc(sizeOf func(V) int64) Config[K, V] { c.sizeOf = sizeOf; return c }
 
 // OnEvict returns a copy of c with its eviction callback set to f.
 //

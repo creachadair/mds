@@ -20,7 +20,7 @@ func TestLRU(t *testing.T) {
 
 	c := cache.New(cache.LRU[string, string]().
 		WithLimit(25).
-		WithSize(cache.Length).
+		WithSizeFunc(cache.Length).
 
 		// Record evictions so we can verify they happened in the expected order.
 		OnEvict(func(key, _ string) {
