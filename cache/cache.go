@@ -228,8 +228,7 @@ func (c Config[K, V]) onEvictFunc() func(K, V) {
 // cache eviction policy.
 //
 // A Cache will serialize access to the methods of Store, so it is not
-// necessary for the implementation to do so separately, unless it is to be
-// shared among multiple cache instances.
+// necessary for the implementation to do so separately.
 type Store[Key comparable, Value any] interface {
 	// Access reports whether key is present, and if so returns its
 	// corresponding value and records an access of the value.
