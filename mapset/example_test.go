@@ -28,7 +28,6 @@ func Example() {
 	fmt.Println("t equals u:", t.Equals(u))
 	fmt.Println()
 
-	// The slice is unordered, so impose some discipline.
 	fmt.Println(strings.Join(elts, "\n"))
 	// Unordered output:
 	// t intersects u: true
