@@ -7,6 +7,7 @@ package mapset
 import (
 	"iter"
 	"maps"
+	"slices"
 )
 
 // A Set represents a set of distinct values. It is implemented via the
@@ -153,12 +154,7 @@ func (s Set[T]) HasAny(ts ...T) bool {
 	if len(s) == 0 {
 		return false
 	}
-	for _, t := range ts {
-		if s.Has(t) {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(ts, s.Has)
 }
 
 // IsSubset reports whether s is a subset of t.
