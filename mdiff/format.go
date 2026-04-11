@@ -58,9 +58,9 @@ func Unified(w io.Writer, ch []*Chunk, fi *FileInfo) error {
 			switch e.Op {
 			case slice.OpDrop:
 				writeLines(w, "-", e.X)
-			case slice.OpEmit:
-				writeLines(w, " ", e.X)
 			case slice.OpCopy:
+				writeLines(w, " ", e.X)
+			case slice.OpEmit:
 				writeLines(w, "+", e.Y)
 			case slice.OpReplace:
 				writeLines(w, "-", e.X)
@@ -100,7 +100,7 @@ func Context(w io.Writer, ch []*Chunk, fi *FileInfo) error {
 				switch e.Op {
 				case slice.OpDrop:
 					writeLines(w, "- ", e.X)
-				case slice.OpEmit:
+				case slice.OpCopy:
 					writeLines(w, "  ", e.X)
 				case slice.OpReplace:
 					writeLines(w, "! ", e.X)
@@ -108,12 +108,12 @@ func Context(w io.Writer, ch []*Chunk, fi *FileInfo) error {
 			}
 		}
 		fmt.Fprintf(w, "--- %s ----\n", dspan(c.RStart, c.REnd))
-		if hasRelevantEdits(c.Edits, slice.OpCopy) {
+		if hasRelevantEdits(c.Edits, slice.OpEmit) {
 			for _, e := range c.Edits {
 				switch e.Op {
-				case slice.OpCopy:
-					writeLines(w, "+ ", e.Y)
 				case slice.OpEmit:
+					writeLines(w, "+ ", e.Y)
+				case slice.OpCopy:
 					writeLines(w, "  ", e.X)
 				case slice.OpReplace:
 					writeLines(w, "! ", e.Y)
@@ -140,11 +140,11 @@ func Normal(w io.Writer, ch []*Chunk, _ *FileInfo) error {
 				writeLines(w, "< ", e.X)
 				lpos += len(e.X)
 
-			case slice.OpEmit:
+			case slice.OpCopy:
 				lpos += len(e.X)
 				rpos += len(e.X)
 
-			case slice.OpCopy:
+			case slice.OpEmit:
 				// Diff considers insertions to happen AFTER the previons line rather
 				// than on the current one.
 				fmt.Fprintf(w, "%da%s\n", lpos-1, dspan(rpos, rpos+len(e.Y)))

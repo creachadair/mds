@@ -230,9 +230,9 @@ func readUnifiedChunk(r *diffReader) error {
 		}
 		e := &ch.Edits[len(ch.Edits)-1]
 		switch op {
-		case slice.OpDrop, slice.OpEmit:
+		case slice.OpDrop, slice.OpCopy:
 			e.X = append(e.X, text)
-		case slice.OpCopy:
+		case slice.OpEmit:
 			e.Y = append(e.Y, text)
 		default:
 			panic("unexpected operator " + string(op))
@@ -251,11 +251,11 @@ nextLine:
 		}
 		switch line[0] {
 		case ' ': // context
-			add(slice.OpEmit, line[1:])
+			add(slice.OpCopy, line[1:])
 		case '-': // deletion from lhs
 			add(slice.OpDrop, line[1:])
 		case '+': // addition from rhs
-			add(slice.OpCopy, line[1:])
+			add(slice.OpEmit, line[1:])
 		case '@': // another diff chunk
 			r.unread(line)
 			break nextLine
@@ -321,7 +321,7 @@ func readNormal(r *diffReader) error {
 		}
 		switch cmd {
 		case "a":
-			e.Op = slice.OpCopy
+			e.Op = slice.OpEmit
 			llo++ // Adds happen after the marked line.
 		case "c":
 			e.Op = slice.OpReplace

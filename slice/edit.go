@@ -75,10 +75,10 @@ func LCSFunc[T any, Slice ~[]T](as, bs Slice, eq func(a, b T) bool) Slice {
 type EditOp byte
 
 const (
-	OpDrop    EditOp = '-' // Drop items from lhs
-	OpEmit    EditOp = '=' // Emit elements from lhs
-	OpCopy    EditOp = '+' // Copy items from rhs
-	OpReplace EditOp = '!' // Replace with items from rhs (== Drop+Copy)
+	OpDrop    EditOp = '-' // Drop (discard) items from lhs
+	OpCopy    EditOp = '=' // Copy (retain) existing elements from lhs
+	OpEmit    EditOp = '+' // Emit new items from rhs
+	OpReplace EditOp = '!' // Replace items from lhs with items from rhs (== Drop+Emit)
 )
 
 // Edit is an edit operation transforming specified as part of a diff.
@@ -88,24 +88,24 @@ type Edit[T any] struct {
 
 	// X specifies the elements of lhs affected by the edit.
 	// For OpDrop and OpReplace it is the elements to be dropped.
-	// For OpEmit its the elements to be emitted.
-	// For OpCopy it is empty.
+	// For OpCopy its the elements to be emitted.
+	// For OpEmit it is empty.
 	X []T
 
 	// Y specifies the elements of rhs affected by the edit.
-	// For OpDrop and OpEmit it is empty.
-	// For OpCopy and OpReplace it is the elements to be copied.
+	// For OpDrop and OpCopy it is empty.
+	// For OpEmit and OpReplace it is the elements to be emitted.
 	Y []T
 }
 
 func (e Edit[T]) String() string {
 	switch e.Op {
-	case OpCopy:
+	case OpEmit:
 		return fmt.Sprintf("%c%v", e.Op, e.Y)
 	case OpReplace:
 		x, y := fmt.Sprint(e.X), fmt.Sprint(e.Y)
 		return fmt.Sprintf("%c[%s:%s]", e.Op, x[1:len(x)-1], y[1:len(y)-1])
-	case OpDrop, OpEmit:
+	case OpDrop, OpCopy:
 		return fmt.Sprintf("%c%v", e.Op, e.X)
 	}
 	return fmt.Sprintf("!%c[INVALID]", e.Op)
@@ -126,9 +126,9 @@ func (e Edit[T]) String() string {
 //
 //   - OpDrop: No output; e.X records the items discarded.
 //
-//   - OpEmit: Emit the elements in e.X from lhs.
+//   - OpCopy: Emit the elements in e.X from lhs.
 //
-//   - OpCopy: Emit the elements in e.Y from rhs.
+//   - OpEmit: Emit the elements in e.Y from rhs.
 //
 //   - OpReplace: Emit the elements in e.Y from rhs. The items in e.X are the
 //     elements from lhs that were replaced. (== Drop + Copy)
@@ -178,7 +178,7 @@ func editScriptFunc[T any, Slice ~[]T](eq func(a, b T) bool, lhs, rhs Slice) []E
 		}
 		// Record copies (there may be none).
 		if rend > rpos {
-			out = append(out, Edit[T]{Op: OpCopy, Y: rhs[rpos:rend]})
+			out = append(out, Edit[T]{Op: OpEmit, Y: rhs[rpos:rend]})
 		}
 
 		lpos, rpos = lend, rend
@@ -189,7 +189,7 @@ func editScriptFunc[T any, Slice ~[]T](eq func(a, b T) bool, lhs, rhs Slice) []E
 		for i+m < len(lcs) && eq(lhs[lpos+m], rhs[rpos+m]) {
 			m++
 		}
-		out = append(out, Edit[T]{Op: OpEmit, X: lhs[lpos : lpos+m]})
+		out = append(out, Edit[T]{Op: OpCopy, X: lhs[lpos : lpos+m]})
 		i += m
 		lpos += m
 		rpos += m
@@ -206,12 +206,12 @@ func editScriptFunc[T any, Slice ~[]T](eq func(a, b T) bool, lhs, rhs Slice) []E
 	}
 	// Copy any leftover elements of rhs.
 	if len(rhs) > rpos {
-		out = append(out, Edit[T]{Op: OpCopy, Y: rhs[rpos:]})
+		out = append(out, Edit[T]{Op: OpEmit, Y: rhs[rpos:]})
 	}
 
 	// As a special case, if the whole edit is a single emit, drop it so that
 	// equal elements have an empty script.
-	if len(out) == 1 && out[0].Op == OpEmit {
+	if len(out) == 1 && out[0].Op == OpCopy {
 		return nil
 	}
 	return out

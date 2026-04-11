@@ -116,14 +116,14 @@ func New(lhs, rhs []string) *Diff {
 		case slice.OpDrop:
 			addl(len(e.X))
 
-		case slice.OpCopy:
+		case slice.OpEmit:
 			addr(len(e.Y))
 
 		case slice.OpReplace:
 			addl(len(e.X))
 			addr(len(e.Y))
 
-		case slice.OpEmit:
+		case slice.OpCopy:
 			// Don't count emitted lines against the chunk size,
 			// and don't append emits to the edit list.
 			lcur += len(e.X)
@@ -158,12 +158,12 @@ func (d *Diff) AddContext(n int) *Diff {
 	for _, c := range d.Chunks {
 		pre, post := d.findContext(c, n)
 		if len(pre) != 0 {
-			c.Edits = append([]Edit{{Op: slice.OpEmit, X: pre}}, c.Edits...)
+			c.Edits = append([]Edit{{Op: slice.OpCopy, X: pre}}, c.Edits...)
 			c.LStart -= len(pre)
 			c.RStart -= len(pre)
 		}
 		if len(post) != 0 {
-			c.Edits = append(c.Edits, Edit{Op: slice.OpEmit, X: post})
+			c.Edits = append(c.Edits, Edit{Op: slice.OpCopy, X: post})
 			c.LEnd += len(post)
 			c.REnd += len(post)
 		}
@@ -254,7 +254,7 @@ func UnifyChunks(cs []*Chunk) []*Chunk {
 		// constructed explicitly by AddContext and do not share state with the
 		// original script edits.
 		if lap > 0 {
-			if end.Op == slice.OpEmit { // last has post-context
+			if end.Op == slice.OpCopy { // last has post-context
 				if lap >= len(end.X) { // remove the whole edit
 					last.Edits = last.Edits[:len(last.Edits)-1]
 					end = &last.Edits[len(last.Edits)-1]
@@ -264,7 +264,7 @@ func UnifyChunks(cs []*Chunk) []*Chunk {
 				// Fix up the range.
 				last.LEnd -= lap
 				last.REnd -= lap
-			} else if start.Op == slice.OpEmit { // start has pre-context
+			} else if start.Op == slice.OpCopy { // start has pre-context
 				if lap >= len(start.X) { // remove the whole edit
 					c.Edits = c.Edits[1:]
 					start = &c.Edits[0]
@@ -284,7 +284,7 @@ func UnifyChunks(cs []*Chunk) []*Chunk {
 
 		// If both chunks have context edits at the boundary, combine them into a
 		// single edit at the end of last. Any overlap has already been fixed.
-		if end.Op == slice.OpEmit && start.Op == slice.OpEmit {
+		if end.Op == slice.OpCopy && start.Op == slice.OpCopy {
 			// Move the edited lines from the head of c, and adjust the ends.
 			end.X = append(end.X, start.X...)
 			last.LEnd += len(start.X)

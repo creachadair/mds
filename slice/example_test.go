@@ -98,10 +98,10 @@ func ExampleEditScript() {
 		switch e.Op {
 		case slice.OpDrop:
 			fmt.Println("drop", e.X)
-		case slice.OpEmit:
+		case slice.OpCopy:
 			fmt.Println("emit", e.X)
 			out = append(out, e.X...)
-		case slice.OpCopy:
+		case slice.OpEmit:
 			fmt.Println("copy", e.Y)
 			out = append(out, e.Y...)
 		case slice.OpReplace:

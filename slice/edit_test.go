@@ -170,9 +170,9 @@ func checkApply[T comparable, Slice ~[]T](t *testing.T, lhs, rhs Slice, edit []s
 		switch e.Op {
 		case slice.OpDrop:
 			// nothing to do
-		case slice.OpCopy, slice.OpReplace:
+		case slice.OpEmit, slice.OpReplace:
 			out = append(out, e.Y...)
-		case slice.OpEmit:
+		case slice.OpCopy:
 			out = append(out, e.X...)
 		default:
 			t.Fatalf("Unexpected edit operation: %v", e)
@@ -203,13 +203,13 @@ func pedit(t *testing.T, ss string) (out []slice.Edit[string]) {
 		var next slice.Edit[string]
 		switch m[1] {
 		case "+":
-			next.Op = slice.OpCopy
+			next.Op = slice.OpEmit
 			next.Y = fs
 		case "-":
 			next.Op = slice.OpDrop
 			next.X = fs
 		case "=":
-			next.Op = slice.OpEmit
+			next.Op = slice.OpCopy
 			next.X = fs
 		case "!":
 			next.Op = slice.OpReplace
