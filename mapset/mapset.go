@@ -186,7 +186,8 @@ func (s Set[T]) Equals(t Set[T]) bool {
 }
 
 // Append appends the elements of s to the specified slice in arbitrary order,
-// and returns the resulting slice. If cap(vs) ≥ len(s) this will not allocate.
+// and returns the resulting slice. If the remaining capacity of vs is at least
+// len(s), this will not allocate.
 func (s Set[T]) Append(vs []T) []T {
 	if len(s) == 0 {
 		return vs
