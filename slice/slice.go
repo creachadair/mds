@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package slice implements some useful functions for slices.
 package slice
 

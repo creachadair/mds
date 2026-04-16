@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package value defines adapters for value types.
 package value
 

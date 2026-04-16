@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package mtest is a support library for writing tests.
 package mtest
 

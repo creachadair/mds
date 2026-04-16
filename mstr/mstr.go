@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package mstr defines utility functions for strings.
 package mstr
 

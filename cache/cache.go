@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package cache implements a keyed cache for arbitrary values.
 package cache
 

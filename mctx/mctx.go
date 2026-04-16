@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package mctx provides support for attaching data to [context.Context] values.
 //
 // # Overview

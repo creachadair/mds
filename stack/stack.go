@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package stack implements an array-based LIFO stack.
 package stack
 

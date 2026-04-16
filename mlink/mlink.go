@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package mlink implements basic linked container data structures.
 //
 // The types defined here are not safe for concurrent use by multiple

@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package distinct implements the probabilistic distinct-elements counter
 // algorithm of Chakraborty, Vinodchandran, and Meel as described in the paper
 // "Distinct Elements in Streams" ([CVM]).

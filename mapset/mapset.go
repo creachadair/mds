@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package mapset implements a basic set type using a built-in map.
 //
 // The Set type is a thin wrapper on a built-in Go map, so a Set is not safe

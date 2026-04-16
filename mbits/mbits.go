@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package mbits provides functions for manipulating bits and bytes.
 package mbits
 

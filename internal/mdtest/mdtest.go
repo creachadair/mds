@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package mdtest includes some internal utilities for testing.
 package mdtest
 

@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package queue implements an array-based FIFO queue.
 package queue
 

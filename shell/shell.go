@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Copyright (c) 2015, Michael J. Fromberger
 
 // Package shell supports splitting and joining of shell command strings.

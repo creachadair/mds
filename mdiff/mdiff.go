@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package mdiff supports creating textual diffs.
 //
 // To create a diff between two slices of strings, call:

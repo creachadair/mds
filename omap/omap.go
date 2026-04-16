@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package omap implements a map-like collection on ordered keys.
 //
 // # Basic Operations

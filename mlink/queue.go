@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 package mlink
 
 // A Queue is a linked first-in, first out sequence of values.  A zero value is

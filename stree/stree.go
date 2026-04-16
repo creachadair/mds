@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package stree implements the Scapegoat Tree, an approximately-balanced
 // binary search tree.
 //

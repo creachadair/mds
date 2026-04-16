@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package cachetest implements a test harness for cache implementations.
 package cachetest
 

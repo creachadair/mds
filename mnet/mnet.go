@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package mnet is an in-memory implementation of a subset of the [net] package.
 //
 // # Usage

@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package heapq implements a generic heap-structured priority queue.
 package heapq
 

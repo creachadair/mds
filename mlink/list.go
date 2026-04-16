@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 package mlink
 
 // A List is a singly-linked ordered list. A zero value is ready for use.

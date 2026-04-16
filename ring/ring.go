@@ -1,3 +1,5 @@
+// Copyright (C) Michael J. Fromberger. All Rights Reserved.
+
 // Package ring implements a doubly-linked circular chain of data items,
 // called a "ring".
 package ring
