@@ -10,6 +10,29 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+func TestNewUnique(t *testing.T) {
+	// All the keys in this slice must compare unequal to each other,
+	// even if they were constructed with the same argument.
+	var zero mctx.Key[bool]
+	keys := []mctx.Key[bool]{
+		zero,
+		mctx.New[bool]("apple"),
+		mctx.New[bool]("apple"),
+		mctx.New[bool]("pear"),
+	}
+
+	for i, a := range keys {
+		for j, b := range keys {
+			if j == i {
+				continue
+			}
+			if a == b {
+				t.Errorf("Key %d (%v) == key %d (%v)", i, a, j, b)
+			}
+		}
+	}
+}
+
 func TestKeyRoundTrip(t *testing.T) {
 	type V struct {
 		A string
@@ -17,8 +40,8 @@ func TestKeyRoundTrip(t *testing.T) {
 	}
 
 	var k1 mctx.Key[V]
-	var k2 mctx.Key[V] = "apple"
-	var k3 mctx.Key[V] = "pear"
+	var k2 = mctx.New[V]("apple")
+	var k3 = mctx.New[V]("pear")
 
 	tests := []struct {
 		name  string
@@ -52,7 +75,7 @@ func TestKeyNesting(t *testing.T) {
 	type V struct{ S string }
 
 	var vkey mctx.Key[V]
-	var wkey mctx.Key[V] = "alt"
+	var wkey = mctx.New[V]("alt")
 
 	base := t.Context()
 	c1 := vkey.Attach(base, V{S: "apple"})

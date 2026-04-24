@@ -10,7 +10,7 @@
 //
 // To attach values to a context, create a [mctx.Key] for the given value type:
 //
-//	var infoKey mctx.Key[Info]
+//	var infoKey = mctx.New[Info]("request-info")
 //
 // To attach a value to a context, use [Key.Attach]:
 //
@@ -47,9 +47,14 @@ import (
 
 // A Key is a context key used to idetify values attached to a [context.Context].
 //
-// A zero Key is valid. Multiple keys for a given type may be distinguished by
-// constructing non-zero values of the Key type.
-type Key[T any] string
+// A zero Key is valid. Note, however, that a zero-valued [Key] whose value
+// type is built-in or exported may collide across packages. For most purposes,
+// prefer to use [New] to construct non-zero keys.
+type Key[T any] struct{ label *string }
+
+// New constructs a new [Key] for the given type with the specified label.
+// Each call to New produces a distinct key.
+func New[T any](label string) Key[T] { return Key[T]{label: &label} }
 
 // Attach returns a context derived from ctx with value attached at the given key.
 func (k Key[T]) Attach(ctx context.Context, value T) context.Context {
@@ -68,5 +73,5 @@ func (k Key[T]) Lookup(ctx context.Context) value.Maybe[T] {
 // String returns a human-readable representation of k.
 func (k Key[T]) String() string {
 	var zero T
-	return fmt.Sprintf("Key[%T](%q)", zero, string(k))
+	return fmt.Sprintf("Key[%T](%q)", zero, value.At(k.label))
 }
