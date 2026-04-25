@@ -12,6 +12,9 @@
 //
 //	var infoKey = mctx.New[Info]("request-info")
 //
+// The string label is optional for diagnostics, and may be empty.  Each call
+// to [New] produces a distinct [Key], even for identical labels.
+//
 // To attach a value to a context, use [Key.Attach]:
 //
 //	infoCtx := infoKey.Attach(ctx, Info{ ... })
@@ -53,7 +56,8 @@ import (
 type Key[T any] struct{ label *string }
 
 // New constructs a new [Key] for the given type with the specified label.
-// Each call to New produces a distinct key.
+// Each call to New produces a distinct key, even for equal labels.
+// An empty label is valid.
 func New[T any](label string) Key[T] { return Key[T]{label: &label} }
 
 // Attach returns a context derived from ctx with value attached at the given key.
