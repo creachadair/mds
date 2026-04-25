@@ -65,8 +65,8 @@ func (k Key[T]) Attach(ctx context.Context, value T) context.Context {
 	return context.WithValue(ctx, k, value)
 }
 
-// Lookup reports whether ctx has a value for the given key, and if so returns
-// that value. If the key is not present, it reports a zero value.
+// Lookup returns the value associated with k in ctx, if one is present.
+// If not, the result is [value.Absent].
 func (k Key[T]) Lookup(ctx context.Context) value.Maybe[T] {
 	if v := ctx.Value(k); v != nil {
 		return value.Just(v.(T))
