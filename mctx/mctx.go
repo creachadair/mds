@@ -48,7 +48,7 @@ import (
 	"github.com/creachadair/mds/value"
 )
 
-// A Key is a context key used to idetify values attached to a [context.Context].
+// A Key is a context key used to identify values attached to a [context.Context].
 //
 // A zero Key is valid. Note, however, that a zero-valued [Key] whose value
 // type is built-in or exported may collide across packages. For most purposes,
