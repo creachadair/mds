@@ -31,7 +31,7 @@
 // Once established, connections are the caller's responsibility and do not
 // depend on the [Network] or [Listener] from which they were derived.  The
 // underlying connection is provided by [net.Pipe] which is synchronous and
-// nonblocking.
+// blocking.
 //
 // When a [Network] is no longer needed, you may call its [Network.Close]
 // method to close all its associated listeners and unblock any Dial or Accept
