@@ -27,7 +27,21 @@ func New[T any]() *Queue[T] { return new(Queue[T]) }
 
 // NewSize constructs a new empty [Queue] with storage pre-allocated for n
 // items.  The queue will automatically grow beyond the initial size as needed.
-func NewSize[T any](n int) *Queue[T] { return &Queue[T]{vs: make([]T, n)} }
+func NewSize[T any](n int) *Queue[T] { return New[T]().Grow(n) }
+
+// Grow increases the allocated capacity of q, if necessary, to guarantee space
+// for another n elements. The existing contents of q are not changed.
+// It will panic if n is negative or too large to be allocated.
+// Grow returns q to allow chaining.
+func (q *Queue[T]) Grow(n int) *Queue[T] {
+	if q.head > 0 {
+		slice.Rotate(q.vs, -q.head)
+		q.head = 0
+	}
+	w := slices.Grow(q.vs, n)
+	q.vs = w[:cap(w)]
+	return q
+}
 
 // Add adds v to the end (tail) of q.
 func (q *Queue[T]) Add(v T) {

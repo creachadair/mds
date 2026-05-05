@@ -132,6 +132,7 @@ func TestQueueRandom(t *testing.T) {
 		NumPop     int
 		NumPopLast int
 		NumClear   int
+		NumGrow    int
 	}
 	get := func(z int) int {
 		if z < 0 || z >= len(has) {
@@ -149,10 +150,11 @@ func TestQueueRandom(t *testing.T) {
 		doPopLast = doPop + 5
 		doPeek    = doPopLast + 3
 		doFront   = doPeek + 3
-		doLen     = doFront + 3
+		doLen     = doFront + 2
 		doClear   = doLen + 1
+		doGrow    = doClear + 1
 
-		doTotal = doClear
+		doTotal = doGrow
 	)
 
 	for range 5000 {
@@ -226,6 +228,11 @@ func TestQueueRandom(t *testing.T) {
 			debug("Clear n=%d", len(has))
 			has = has[:0]
 			q.Clear()
+		case op < doGrow:
+			stats.NumGrow++
+			r := rand.IntN(30)
+			debug("Grow n=%d", r)
+			q.Grow(r)
 		default:
 			panic("unexpected")
 		}
