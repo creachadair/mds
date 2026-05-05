@@ -3,6 +3,8 @@
 // Package heapq implements a generic heap-structured priority queue.
 package heapq
 
+import "slices"
+
 // A Queue is a heap-structured priority queue. The contents of a Queue are
 // partially ordered, and the minimum element is accessible in constant time.
 // Adding or removing an element has worst-case time complexity O(lg n).
@@ -145,6 +147,15 @@ func (q *Queue[T]) Set(vs []T) *Queue[T] {
 		q.move(q.data[i], i)
 		q.pushDown(i)
 	}
+	return q
+}
+
+// Grow increases the allocated capacity of q, if necessary, to guarantee space
+// for another n elements. The existing contents of q are not changed.
+// It will panic if n is negative or too large to be allocated.
+// Grow returns q to allow chaining.
+func (q *Queue[T]) Grow(n int) *Queue[T] {
+	q.data = slices.Grow(q.data, n)
 	return q
 }
 
