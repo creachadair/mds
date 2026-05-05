@@ -16,9 +16,9 @@ func TestNewUnique(t *testing.T) {
 	var zero mctx.Key[bool]
 	keys := []mctx.Key[bool]{
 		zero,
-		mctx.New[bool]("apple"),
-		mctx.New[bool]("apple"),
-		mctx.New[bool]("pear"),
+		mctx.NewKey[bool]("apple"),
+		mctx.NewKey[bool]("apple"),
+		mctx.NewKey[bool]("pear"),
 	}
 
 	for i, a := range keys {
@@ -40,8 +40,8 @@ func TestKeyRoundTrip(t *testing.T) {
 	}
 
 	var k1 mctx.Key[V]
-	var k2 = mctx.New[V]("apple")
-	var k3 = mctx.New[V]("pear")
+	var k2 = mctx.NewKey[V]("apple")
+	var k3 = mctx.NewKey[V]("pear")
 
 	tests := []struct {
 		name  string
@@ -75,7 +75,7 @@ func TestKeyNesting(t *testing.T) {
 	type V struct{ S string }
 
 	var vkey mctx.Key[V]
-	var wkey = mctx.New[V]("alt")
+	var wkey = mctx.NewKey[V]("alt")
 
 	base := t.Context()
 	c1 := vkey.Attach(base, V{S: "apple"})
