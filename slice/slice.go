@@ -301,3 +301,14 @@ func Map[T, U any, Slice ~[]T](vs Slice, f func(T) U) []U {
 	}
 	return out
 }
+
+// CountFunc reports the number of elements of vs for which f reports true.
+func CountFunc[T any, Slice ~[]T](vs Slice, f func(T) bool) int {
+	var n int
+	for _, v := range vs {
+		if f(v) {
+			n++
+		}
+	}
+	return n
+}

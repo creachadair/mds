@@ -502,6 +502,33 @@ func TestMap(t *testing.T) {
 	}
 }
 
+func TestCountFunc(t *testing.T) {
+	tests := []struct {
+		input    []int
+		lessThan int
+		want     int
+	}{
+		{nil, 1, 0},
+		{[]int{}, 1, 0},
+		{[]int{2, 4, 6}, 1, 0},
+		{[]int{2, 4, 6}, 99, 3},
+		{[]int{1, 2, 3, 4, 5}, 1, 0},
+		{[]int{1, 2, 3, 4, 5}, 3, 2},
+		{[]int{1, 2, 3, 4, 5}, 5, 4},
+		{[]int{1, 2, 3, 4, 5}, 99, 5},
+		{[]int{-1, 0, 1, 2}, 0, 1},
+		{[]int{-1, 0, 1, 2}, -1, 0},
+	}
+	for _, tc := range tests {
+		got := slice.CountFunc(tc.input, func(v int) bool {
+			return v < tc.lessThan
+		})
+		if got != tc.want {
+			t.Errorf("CountFunc %v < %v: got %d, want %d", tc.input, tc.lessThan, got, tc.want)
+		}
+	}
+}
+
 func (tc *testCase[T]) partition(t *testing.T) {
 	t.Helper()
 
