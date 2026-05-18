@@ -92,6 +92,9 @@ func (s *sieveStore[Key, Value]) Evict() (Key, Value) {
 	}
 	if s.hand == s.queue {
 		s.hand = s.hand.Prev()
+		if s.hand == s.queue {
+			panic("sieve evict: no entries left")
+		}
 	}
 	out := s.hand
 	s.hand = s.hand.Prev()
