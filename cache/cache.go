@@ -164,7 +164,7 @@ func (c *Cache[K, V]) dropKeyLocked(key K, value V) {
 //
 //   - Use [Config.WithLimit] to set the capacity.
 //   - Use [Config.WithStore] to set the storage implementation.
-//   - Use [Config.WithSize] to set the size function.
+//   - Use [Config.WithSizeFunc] to set the size function.
 //   - Use [Config.OnEvict] to set the eviction callback.
 //
 // A zero Config is invalid; at least the store field must be set.
