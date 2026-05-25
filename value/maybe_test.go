@@ -47,6 +47,10 @@ func TestMaybe(t *testing.T) {
 			{v, "", "pear"},
 			{absent, "plum", "plum"},
 			{v, "plum", "pear"},
+
+			// Once Or has taken effect over an absent input, a subsequent Or must
+			// not replace the value it provided.
+			{absent.Or("cherry"), "plum", "cherry"},
 		}
 		for _, tc := range tests {
 			if got := tc.lhs.Or(tc.rhs); got != value.Just(tc.want) {
