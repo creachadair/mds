@@ -52,6 +52,13 @@ func TestRing(t *testing.T) {
 		rc(t, q, 2, 5, 7)
 	})
 
+	t.Run("PopRemainder", func(t *testing.T) {
+		r := ring.Of(1, 2, 3, 4, 5)
+		s := r.Next().Pop()
+		rc(t, s, 2)
+		rc(t, r, 1, 3, 4, 5)
+	})
+
 	t.Run("Circularity", func(t *testing.T) {
 		r := ring.Of(1, 3, 5, 7, 9)
 		rc(t, r, 1, 3, 5, 7, 9)

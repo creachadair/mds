@@ -98,6 +98,7 @@ func (r *Ring[T]) Join(s *Ring[T]) *Ring[T] {
 
 // Pop detaches r from its ring, leaving it linked only to itself.
 // It returns r to permit method chaining.
+// The remainder of the ring, if any, is linked to itself.
 func (r *Ring[T]) Pop() *Ring[T] {
 	if r != nil && r.prev != r {
 		rprev, rnext := r.prev, r.next
