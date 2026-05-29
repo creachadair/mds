@@ -170,7 +170,7 @@ func (q *Queue[T]) Reorder(cmp func(a, b T) int) {
 }
 
 // Each is a range function that calls f with each value in q in heap order.
-// If f returns false, Each returns immediately.
+// Apart from the first value, the specific order of elements visited is unspecified.
 func (q *Queue[T]) Each(f func(T) bool) {
 	for _, v := range q.data {
 		if !f(v) {
