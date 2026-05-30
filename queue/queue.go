@@ -217,7 +217,7 @@ func (q *Queue[T]) Append(ts []T) []T {
   - - - - - - - - -
   ^     H
 
-  If the queue is empty after removing an item (n = 0, we can reset to the
+  If the queue is empty after removing an item (n = 0), we can reset to the
   initial condition by setting H = 0, since it no longer matters where H is
   when there are no values.
 
