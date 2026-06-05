@@ -38,7 +38,14 @@ const shouldQuote = `*?[#~=%`
 // These are the separator characters in unquoted text.
 const spaces = " \t\n"
 
-const allQuote = mustQuote + shouldQuote + spaces
+var allQuote [256]bool
+
+func init() {
+	const all = mustQuote + shouldQuote + spaces
+	for i := range len(all) {
+		allQuote[all[i]] = true
+	}
+}
 
 type state int
 
@@ -284,7 +291,7 @@ func quotable(s string) (hasQ, hasOther bool) {
 	for i := 0; i < len(s) && v < all; i++ {
 		if s[i] == '\'' {
 			v |= quote
-		} else if strings.IndexByte(allQuote, s[i]) >= 0 {
+		} else if allQuote[s[i]] {
 			v |= other
 		}
 	}
