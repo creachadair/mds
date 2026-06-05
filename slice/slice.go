@@ -288,6 +288,16 @@ func Select[T any, Slice ~[]T](vs Slice, f func(T) bool) iter.Seq[T] {
 	}
 }
 
+// Find reports whether there is any v in vs for which f(v) returns true, and
+// if so returns the first one.
+func Find[T any, Slice ~[]T](vs Slice, f func(T) bool) (T, bool) {
+	if i := slices.IndexFunc(vs, f); i >= 0 {
+		return vs[i], true
+	}
+	var zero T
+	return zero, false
+}
+
 // Map maps the elements of the input slice through f.  If vs == nil, it
 // returns nil; otherwise it returns a non-nil slice of the same length as vs,
 // whose ith value is f(vs[i]).

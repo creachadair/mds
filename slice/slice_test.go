@@ -480,6 +480,30 @@ func TestSelect(t *testing.T) {
 	}
 }
 
+func TestFind(t *testing.T) {
+	match := func(s string) bool { return strings.HasPrefix(s, "+") }
+	ss := func(ss ...string) []string { return ss }
+	tests := []struct {
+		input []string
+		want  string
+		ok    bool
+	}{
+		{nil, "", false},
+		{[]string{}, "", false},
+		{ss("a", "b", "c"), "", false},
+		{ss("+a", "b"), "+a", true},
+		{ss("a", "+b", "c"), "+b", true},
+		{ss("a", "+b", "+c", "d"), "+b", true},
+		{ss("a", "b", "+c"), "+c", true},
+	}
+	for _, tc := range tests {
+		got, ok := slice.Find(tc.input, match)
+		if got != tc.want || ok != tc.ok {
+			t.Errorf("Find %q: got %q, %v; want %q, %v", tc.input, got, ok, tc.want, tc.ok)
+		}
+	}
+}
+
 func TestMap(t *testing.T) {
 	strlen := func(s string) int { return len(s) }
 	atoi := func(s string) int { v, _ := strconv.Atoi(s); return v }
