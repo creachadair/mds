@@ -218,49 +218,6 @@ func TestAt(t *testing.T) {
 	}
 }
 
-func TestPtrAt(t *testing.T) {
-	tests := []struct {
-		input string
-		k     int
-		want  string
-	}{
-		{"X", 0, "X"},
-		{"X", -1, "X"},
-		{"A B", 0, "A"},
-		{"A B", 1, "B"},
-		{"A B", -1, "B"},
-		{"A B", -2, "A"},
-		{"A B C D E", 0, "A"},
-		{"A B C D E", 1, "B"},
-		{"A B C D E", 2, "C"},
-		{"A B C D E", 3, "D"},
-		{"A B C D E", 4, "E"},
-		{"A B C D E", -1, "E"},
-		{"A B C D E", -2, "D"},
-		{"A B C D E", -3, "C"},
-		{"A B C D E", -4, "B"},
-		{"A B C D E", -5, "A"},
-	}
-	for _, tc := range tests {
-		input := strings.Fields(tc.input)
-
-		got := slice.PtrAt(input, tc.k)
-		idx := tc.k
-		if idx < 0 {
-			idx += len(input)
-		}
-		if want := &input[idx]; got != want {
-			t.Errorf("PtrAt %q %d: got ptr %p, want %p", input, tc.k, got, want)
-		}
-		if *got != tc.want {
-			t.Errorf("PtrAt %q %d: got value %q, want %q", input, tc.k, *got, tc.want)
-		}
-	}
-	if got := slice.PtrAt([]string{"a"}, 10); got != nil {
-		t.Errorf("PtrAt(*, 10): got %v, want nil", got)
-	}
-}
-
 func TestChunks(t *testing.T) {
 	tests := []struct {
 		input string

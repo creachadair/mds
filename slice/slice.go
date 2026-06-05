@@ -114,18 +114,6 @@ func At[T any, Slice ~[]T](ss Slice, i int) T {
 	return ss[b]
 }
 
-// PtrAt returns a pointer to the element of ss at offset i.  Negative offsets
-// count backward from the end of the slice.  If i is out of range, PtrAt
-// returns nil.
-//
-// Deprecated: Use the address-of operator directly.
-func PtrAt[T any, Slice ~[]T](ss Slice, i int) *T {
-	if pos, ok := indexCheck(i, len(ss)); ok {
-		return &ss[pos]
-	}
-	return nil
-}
-
 // MatchingKeys returns an iterator over the keys k of m for which f(m[k]) is
 // true.  The results are delivered in arbitrary order.
 func MatchingKeys[T comparable, U any](m map[T]U, f func(U) bool) iter.Seq[T] {
