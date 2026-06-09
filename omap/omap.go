@@ -44,27 +44,25 @@
 // If you do insert any keys into a map during iteration, use [Iter.Seek] after doing so to
 // re-synchronize the iterator:
 //
-//   m := omap.New[string, int]()
-//   // ...
-//   it := m.Seek("apple")
-//   // ...
-//   m.Insert("pear", 25)
-//   it.Seek("apple") // re-synchronize after insertion
+//	m := omap.New[string, int]()
+//	// ...
+//	it := m.Seek("apple")
+//	// ...
+//	m.Insert("pear", 25)
+//	it.Seek("apple") // re-synchronize after insertion
 //
 // As a special case [Iter.Delete] method will handle this for deleting the
 // current element being iterated:
 //
-//    for it := m.First(); it.IsValid() {
-//       if shouldDelete(it.Key()) {
-//         it.Delete() // this is safe
-//       } else {
-//         it.Next()
-//       }
-//    }
+//	for it := m.First(); it.IsValid() {
+//	   if shouldDelete(it.Key()) {
+//	     it.Delete() // this is safe
+//	   } else {
+//	     it.Next()
+//	   }
+//	}
 //
-// However, if you insert
-// It is safe to delete the current key using [Iter.Delete], but i
-
+// It is safe to delete the current key using [Iter.Delete], but if
 // you modify a map while iterating it, you will need to re-synchronize any
 // iterators after the edits, e.g.,
 //
