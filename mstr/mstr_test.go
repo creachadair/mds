@@ -93,65 +93,68 @@ func TestSplit(t *testing.T) {
 
 func TestCompareNatural(t *testing.T) {
 	tests := []struct {
-		a, b string
-		want int
+		a, b                string
+		wantNat, wantStrict int
 	}{
-		{"", "", 0},
+		{"", "", 0, 0},
 
 		// Non-empty vs. empty with non-digits and digits.
-		{"x", "", 1},
-		{"", "x", -1},
-		{"0", "", 1},
-		{"", "0", -1},
+		{"x", "", 1, 1},
+		{"", "x", -1, -1},
+		{"0", "", 1, 1},
+		{"", "0", -1, -1},
 
 		// Leading zeroes do not change the value.
-		{"1", "1", 0},
-		{"01", "1", 0},
-		{"1", "01", 0},
+		{"1", "1", 0, 0},
+		{"01", "1", 0, 1},
+		{"1", "01", 0, -1},
 
 		// Mixed values.
-		{"a1", "a1", 0},
-		{"a2", "a1", 1},
-		{"a1", "a2", -1},
-		{"6c", "06c", 0},
-		{"06c", "6c", 0},
-		{"5c", "06c", -1},
-		{"07c", "6c", 1},
+		{"a1", "a1", 0, 0},
+		{"a2", "a1", 1, 1},
+		{"a1", "a2", -1, -1},
+		{"6c", "06c", 0, -1},
+		{"06c", "6c", 0, 1},
+		{"5c", "06c", -1, -1},
+		{"07c", "6c", 1, 1},
 
 		// Multi-digit numeric runs.
-		{"a2b", "a25b", -1},
-		{"a12b", "a2", 1},
-		{"a25b", "a21b", 1},
-		{"a025b", "a25b", 0},
+		{"a2b", "a25b", -1, -1},
+		{"a12b", "a2", 1, 1},
+		{"a25b", "a21b", 1, 1},
+		{"a025b", "a25b", 0, 1},
 
 		// Non-matching types compare lexicographically.
 		// Note it is not possible for these to be equal.
-		{"123", "a", -1},     // because 'a' > '1'
-		{"123", ".", 1},      // because '.' < '1'
-		{"12c9", "12cv", -1}, // because 'v' > '9'
+		{"123", "a", -1, -1},     // because 'a' > '1'
+		{"123", ".", 1, 1},       // because '.' < '1'
+		{"12c9", "12cv", -1, -1}, // because 'v' > '9'
 
 		// Normal lexicographic comparison, without digits.
-		{"a-b-c", "a-b-c", 0},
-		{"a-b-c", "a-b-d", -1},
-		{"a-b-c-d", "a-b-d", -1},
-		{"a-q", "a-b-c", 1},
-		{"a-q-c", "a-b-c", 1},
+		{"a-b-c", "a-b-c", 0, 0},
+		{"a-b-c", "a-b-d", -1, -1},
+		{"a-b-c-d", "a-b-d", -1, -1},
+		{"a-q", "a-b-c", 1, 1},
+		{"a-q-c", "a-b-c", 1, 1},
 
 		// Complicated cases ("v" indicates the point of divergence).
 		//         v                v
-		{"test1-143a19", "test01-143b13", -1},
+		{"test1-143a19", "test01-143b13", -1, -1},
 		//    v                v
-		{"test5-143a21", "test04-999", 1},
+		{"test5-143a21", "test04-999", 1, 1},
 		//      v               v           'w' > '9'
-		{"test5-word-5", "test5-999-5", 1},
+		{"test5-word-5", "test5-999-5", 1, 1},
 	}
 	for _, tc := range tests {
-		if got := mstr.CompareNatural(tc.a, tc.b); got != tc.want {
-			t.Errorf("Compare(%q, %q): got %v, want %v", tc.a, tc.b, got, tc.want)
+		if got := mstr.CompareNatural(tc.a, tc.b); got != tc.wantNat {
+			t.Errorf("CompareNatural(%q, %q): got %v, want %v", tc.a, tc.b, got, tc.wantNat)
+		}
+		if got := mstr.CompareNaturalStrict(tc.a, tc.b); got != tc.wantStrict {
+			t.Errorf("CompareNaturalStrict(%q, %q): got %v, want %v", tc.a, tc.b, got, tc.wantStrict)
 		}
 	}
 
-	t.Run("NoAlloc", func(t *testing.T) {
+	t.Run("NoAlloc/Natural", func(t *testing.T) {
 		const numRuns = 5000
 
 		// We want the test probe to have a difference, but make it go all the way to the end before discovering it.
@@ -161,6 +164,23 @@ func TestCompareNatural(t *testing.T) {
 
 		na := testing.AllocsPerRun(numRuns, func() {
 			if c := mstr.CompareNatural(lhs, rhs); c >= 0 {
+				t.Fatalf("wrong comparison result: %d", c)
+			}
+		})
+		if na != 0 {
+			t.Fatalf("Saw %f allocations, want 0", na)
+		}
+	})
+	t.Run("NoAlloc/Strict", func(t *testing.T) {
+		const numRuns = 5000
+
+		// We want the test probe to have a difference, but make it go all the way to the end before discovering it.
+		// In between there are some numeric spans with leading zeroes that we expect to compare equal.
+		const lhs = "a 2 b 034 c 567 d 89-1 e f 23456.78 ghijk 9abc225 10 11 121 lmnopq 999 end"
+		const rhs = "a 02 b 34 c 567 d 89-01 e f 23456.78 ghijk 9abc225 010 11 121 lmnopq 999 end EXTRA"
+
+		na := testing.AllocsPerRun(numRuns, func() {
+			if c := mstr.CompareNaturalStrict(lhs, rhs); c >= 0 {
 				t.Fatalf("wrong comparison result: %d", c)
 			}
 		})

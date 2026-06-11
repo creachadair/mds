@@ -63,6 +63,10 @@ func Split(s, sep string) []string {
 //
 // CompareNatural returns -1 if a < b, 0 if a == b, and +1 if a > b.
 // It does not allocate memory.
+//
+// Note that CompareNatural is non-strict, as certain lexically distinct
+// strings may compare equal; for example "a01b" and "a1b". If a strict order
+// is necessary, use [CompareNaturalStrict].
 func CompareNatural(a, b string) int {
 	for a != "" && b != "" {
 		va, ra, aok := parseInt(a)
@@ -92,6 +96,17 @@ func CompareNatural(a, b string) int {
 		a, b = ra, rb
 	}
 	return cmp.Compare(a, b)
+}
+
+// CompareNaturalStrict behaves as [CompareNatural], but lexically distinct
+// strings that are equal under the natural comparison (for example, "a01b" and
+// "a1b") are ordered by length. Use this function if you require a stable order.
+func CompareNaturalStrict(a, b string) int {
+	c := CompareNatural(a, b)
+	if c == 0 {
+		return cmp.Compare(len(a), len(b)) // shorter first
+	}
+	return c
 }
 
 // parseInt reports whether s begins with a run of one or more decimal digits,
