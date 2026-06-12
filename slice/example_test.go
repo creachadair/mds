@@ -55,17 +55,33 @@ func ExampleRotate() {
 	// [5 3 0 9 8 6 7]
 }
 
-func ExampleChunks() {
+func ExampleCountFunc() {
 	vs := strings.Fields("my heart is a fish hiding in the water grass")
 
-	for c := range slice.Chunks(vs, 3) {
-		fmt.Println(c)
-	}
+	n := slice.CountFunc(vs, func(s string) bool { return len(s) > 4 })
+	fmt.Println(n)
 	// Output:
-	// [my heart is]
-	// [a fish hiding]
-	// [in the water]
-	// [grass]
+	// 4
+}
+
+func ExampleFind() {
+	type pair struct {
+		Word  string
+		Value int
+	}
+	vs := []pair{
+		{"this", 4}, {"is", 2}, {"a", 1}, {"land", 4}, {"of", 2}, {"confusion", 9},
+	}
+
+	fmt.Println(slice.Find(vs, func(p pair) bool {
+		return p.Value == 13
+	}))
+	fmt.Println(slice.Find(vs, func(p pair) bool {
+		return p.Value > 7
+	}))
+	// Output:
+	// { 0} false
+	// {confusion 9} true
 }
 
 func ExampleBatches() {
