@@ -303,3 +303,19 @@ func CountFunc[T any, Slice ~[]T](vs Slice, f func(T) bool) int {
 	}
 	return n
 }
+
+// ToMap constructs a map from the elements of vs, where the key and value for
+// each entry is assigned by f. The resulting map is non-nil even if len(vs) == 0.
+//
+// If f returns the same key for multiple entries in vs, the value in the
+// resulting map will be from the first such entry in vs.
+func ToMap[T any, K comparable, V any, Slice ~[]T](vs Slice, f func(T) (K, V)) map[K]V {
+	out := make(map[K]V)
+	for _, v := range vs {
+		key, value := f(v)
+		if _, ok := out[key]; !ok {
+			out[key] = value
+		}
+	}
+	return out
+}

@@ -497,6 +497,75 @@ func TestCountFunc(t *testing.T) {
 	}
 }
 
+func TestToMap(t *testing.T) {
+	type item struct {
+		name  string
+		value int
+	}
+	input := []item{{"apple", 2}, {"pear", 3}, {"plum", 5}, {"cherry", 7}, {"quince", 3}}
+
+	t.Run("Empty", func(t *testing.T) {
+		got := slice.ToMap(input[:0], func(item) (int, int) { return 0, 0 })
+		if got == nil {
+			t.Error("Result is nil, should be empty")
+		} else if len(got) != 0 {
+			t.Errorf("Got %+v, want empty", got)
+		}
+	})
+
+	t.Run("First", func(t *testing.T) {
+		got := slice.ToMap(input, func(v item) (string, string) {
+			return "ok", v.name
+		})
+		if diff := cmp.Diff(got, map[string]string{"ok": "apple"}); diff != "" {
+			t.Errorf("Result (-got, +want):\n%s", diff)
+		}
+	})
+
+	t.Run("Forward", func(t *testing.T) {
+		got := slice.ToMap(input, func(v item) (string, int) {
+			return v.name, v.value
+		})
+		if diff := cmp.Diff(got, map[string]int{
+			"apple":  2,
+			"pear":   3,
+			"plum":   5,
+			"cherry": 7,
+			"quince": 3,
+		}); diff != "" {
+			t.Errorf("Result (-got, +want):\n%s", diff)
+		}
+	})
+
+	t.Run("Reverse", func(t *testing.T) {
+		got := slice.ToMap(input, func(v item) (int, string) {
+			return v.value, v.name
+		})
+		if diff := cmp.Diff(got, map[int]string{
+			2: "apple",
+			3: "pear", // the first occurrence
+			5: "plum",
+			7: "cherry",
+		}); diff != "" {
+			t.Errorf("Result (-got, +want):\n%s", diff)
+		}
+	})
+
+	t.Run("Other", func(t *testing.T) {
+		got := slice.ToMap(input, func(v item) (int, bool) {
+			return v.value, len(v.name) > 4
+		})
+		if diff := cmp.Diff(got, map[int]bool{
+			2: true,
+			3: false, // from pear, not quince
+			5: false,
+			7: true,
+		}); diff != "" {
+			t.Errorf("Result (-got, +want):\n%s", diff)
+		}
+	})
+}
+
 func (tc *testCase[T]) partition(t *testing.T) {
 	t.Helper()
 
