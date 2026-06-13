@@ -133,7 +133,7 @@ func (e Edit[T]) String() string {
 //   - OpEmit: Emit the elements in e.Y from rhs.
 //
 //   - OpReplace: Emit the elements in e.Y from rhs. The items in e.X are the
-//     elements from lhs that were replaced. (== Drop + Copy)
+//     elements from lhs that were replaced. (== Drop + Emit)
 //
 // If the edit script is empty, the output is equal to the input.
 func EditScript[T comparable, Slice ~[]T](lhs, rhs Slice) []Edit[T] {
