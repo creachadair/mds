@@ -5,6 +5,7 @@ package slice
 
 import (
 	"iter"
+	"maps"
 	"slices"
 )
 
@@ -84,10 +85,7 @@ func MapKeys[T comparable, U any](m map[T]U) []T {
 		return nil
 	}
 	keys := make([]T, 0, len(m))
-	for key := range m {
-		keys = append(keys, key)
-	}
-	return keys
+	return slices.AppendSeq(keys, maps.Keys(m))
 }
 
 func sliceCheck(i, n int) (int, bool) {
@@ -257,12 +255,11 @@ func Select[T any, Slice ~[]T](vs Slice, f func(T) bool) iter.Seq[T] {
 
 // Find reports whether there is any v in vs for which f(v) returns true, and
 // if so returns the first one.
-func Find[T any, Slice ~[]T](vs Slice, f func(T) bool) (T, bool) {
+func Find[T any, Slice ~[]T](vs Slice, f func(T) bool) (_ T, ok bool) {
 	if i := slices.IndexFunc(vs, f); i >= 0 {
 		return vs[i], true
 	}
-	var zero T
-	return zero, false
+	return
 }
 
 // Map maps the elements of the input slice through f.  If vs == nil, it
@@ -282,10 +279,8 @@ func Map[T, U any, Slice ~[]T](vs Slice, f func(T) U) []U {
 // CountFunc reports the number of elements of vs for which f reports true.
 func CountFunc[T any, Slice ~[]T](vs Slice, f func(T) bool) int {
 	var n int
-	for _, v := range vs {
-		if f(v) {
-			n++
-		}
+	for range Select(vs, f) {
+		n++
 	}
 	return n
 }
