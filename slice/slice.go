@@ -33,7 +33,7 @@ import (
 //
 // The capacity of the slice returned is clipped to its length, so that
 // appending to it will not modify the elements of vs after those kept.
-func Partition[T any](vs []T, keep func(T) bool) []T {
+func Partition[T any, Slice ~[]T](vs Slice, keep func(T) bool) Slice {
 	if len(vs) == 0 {
 		return vs
 	}
