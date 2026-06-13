@@ -11,8 +11,7 @@ import (
 	"github.com/creachadair/mds/slice"
 )
 
-func isOdd(v int) bool  { return v%2 == 1 }
-func isEven(v int) bool { return v%2 == 0 }
+func isOdd(v int) bool { return v%2 == 1 }
 
 func ExamplePartition() {
 	vs := []int{3, 1, 8, 4, 2, 6, 9, 10, 5, 7}
@@ -33,17 +32,6 @@ func ExamplePartition() {
 	// Output:
 	// [3 1 9 5 7]
 	// [2 4 6 8 10]
-}
-
-func ExampleMatchingKeys() {
-	vs := map[string]int{"red": 3, "yellow": 6, "blue": 4, "green": 5}
-
-	for key := range slice.MatchingKeys(vs, isEven) {
-		fmt.Println(key, vs[key])
-	}
-	// Unordered output:
-	// blue 4
-	// yellow 6
 }
 
 func ExampleRotate() {

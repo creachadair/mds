@@ -114,20 +114,6 @@ func At[T any, Slice ~[]T](ss Slice, i int) T {
 	return ss[b]
 }
 
-// MatchingKeys returns an iterator over the keys k of m for which f(m[k]) is
-// true.  The results are delivered in arbitrary order.
-func MatchingKeys[T comparable, U any](m map[T]U, f func(U) bool) iter.Seq[T] {
-	return func(yield func(T) bool) {
-		for k, v := range m {
-			if f(v) {
-				if !yield(k) {
-					return
-				}
-			}
-		}
-	}
-}
-
 // Rotate permutes the elements of ss in-place by k positions.
 // If k > 0, elements are rotated rightward.
 // If k < 0, elements are rotated leftward.
