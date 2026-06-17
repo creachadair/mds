@@ -50,7 +50,8 @@ func (s Set[T]) Clone() Set[T] {
 // Has reports whether t is present in the set.
 func (s Set[T]) Has(t T) bool { _, ok := s[t]; return ok }
 
-// Add adds the specified items to the set and returns s.
+// Add adds the specified items to the set and returns the updated set.
+// If *s == nil, a new set is created containing the items.
 func (s *Set[T]) Add(items ...T) Set[T] {
 	if *s == nil {
 		*s = make(Set[T], len(items))
@@ -66,6 +67,7 @@ func (s Set[T]) add(items []T) Set[T] {
 }
 
 // AddAll adds all the elements of set t to s and returns s.
+// If *s == nil, a new set is created containing the items in t.
 func (s *Set[T]) AddAll(t Set[T]) Set[T] {
 	if *s == nil {
 		*s = t.Clone()
