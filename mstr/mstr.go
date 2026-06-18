@@ -100,7 +100,7 @@ func CompareNatural(a, b string) int {
 
 // CompareNaturalStrict behaves as [CompareNatural], but lexically distinct
 // strings that are equal under the natural comparison (for example, "a01b" and
-// "a1b") are ordered by length. Use this function if you require a stable order.
+// "a1b") are ordered non-decreasing by length.
 func CompareNaturalStrict(a, b string) int {
 	c := CompareNatural(a, b)
 	if c == 0 {
