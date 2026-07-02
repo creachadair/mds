@@ -3,6 +3,7 @@
 package mstr_test
 
 import (
+	"cmp"
 	"path"
 	"regexp"
 	"strings"
@@ -239,6 +240,46 @@ func TestMatch(t *testing.T) {
 			t.Fatalf("Saw %f allocations, want 0", na)
 		}
 	})
+}
+
+func TestEqual(t *testing.T) {
+	tests := []struct {
+		s, t    string
+		eq, eqf bool
+	}{
+		{"", "", true, true},
+		{"", "x", false, false},
+		{"", "X", false, false},
+		{"x", "", false, false},
+		{"X", "", false, false},
+		{"y", "y", true, true},
+		{"z", "y", false, false},
+		{"ABC", "abc", false, true},
+		{"def", "DEF", false, true},
+		{"GHI", "ghi", false, true},
+		{"JKL", "JKL", true, true},
+	}
+	for _, tc := range tests {
+		equal := mstr.Equal(tc.s)
+		equalFold := mstr.EqualFold(tc.s)
+		label := cmp.Or(tc.s, "ε") + "_" + cmp.Or(tc.t, "ε")
+		t.Run("Equal/"+label, func(t *testing.T) {
+			got := equal(tc.t)
+			if got != tc.eq {
+				t.Errorf("Equal(%q, %q): got %v, want %v", tc.s, tc.t, got, tc.eq)
+			}
+
+			// Consistency check: All lexically equal strings are fold-equal too.
+			if got && !equalFold(tc.t) {
+				t.Errorf("Equal(%q, %q) is true but EqualFold is not", tc.s, tc.t)
+			}
+		})
+		t.Run("EqualFold/"+label, func(t *testing.T) {
+			if got := equalFold(tc.t); got != tc.eqf {
+				t.Errorf("EqualFold(%q, %q): got %v, want %v", tc.s, tc.t, got, tc.eqf)
+			}
+		})
+	}
 }
 
 func BenchmarkMatch(b *testing.B) {

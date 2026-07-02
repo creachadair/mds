@@ -176,3 +176,13 @@ func matchSuffix(s, pattern string) bool {
 	}
 	return true
 }
+
+// Equal returns a function that reports whether its argument is equal to s.
+// See also [EqualFold].
+func Equal(s string) func(string) bool { return func(t string) bool { return t == s } }
+
+// EqualFold returns a function that reports whether its argument is equal to s
+// up to case folding. See also [Equal].
+func EqualFold(s string) func(string) bool {
+	return func(t string) bool { return strings.EqualFold(t, s) }
+}
