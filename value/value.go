@@ -38,3 +38,6 @@ func AtMaybe[T any](p *T) Maybe[T] {
 	}
 	return Just(*p)
 }
+
+// Equal returns a function that reports whether its argument is equal to v.
+func Equal[T comparable](v T) func(T) bool { return func(w T) bool { return v == w } }

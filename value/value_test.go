@@ -70,3 +70,28 @@ func TestCond(t *testing.T) {
 		}
 	}
 }
+
+func TestEqual(t *testing.T) {
+	checkEqual(t, 0, 0, true)
+	checkEqual(t, 0, 1, false)
+	checkEqual(t, byte(15), byte(15), true)
+	checkEqual(t, byte(11), byte(0), false)
+	checkEqual(t, "", "", true)
+	checkEqual(t, "yes", "yes", true)
+	checkEqual(t, "yes", "no", false)
+	checkEqual(t, '\x00', '\x00', true)
+	checkEqual(t, '\x01', '\x00', false)
+
+	type thing struct{ S string }
+	checkEqual(t, thing{"foo"}, thing{"foo"}, true)
+	checkEqual(t, thing{}, thing{"bar"}, false)
+	checkEqual(t, thing{"baz"}, thing{"quux"}, false)
+}
+
+func checkEqual[T comparable](t *testing.T, v, w T, want bool) {
+	t.Helper()
+	equal := value.Equal(v)
+	if got := equal(w); got != want {
+		t.Errorf("Equal %T %v %v: got %v, want %v", v, v, w, got, want)
+	}
+}

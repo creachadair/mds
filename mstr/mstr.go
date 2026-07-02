@@ -6,6 +6,8 @@ package mstr
 import (
 	"cmp"
 	"strings"
+
+	"github.com/creachadair/mds/value"
 )
 
 // Trunc returns a prefix of s having length no greater than n bytes.  If s
@@ -179,7 +181,7 @@ func matchSuffix(s, pattern string) bool {
 
 // Equal returns a function that reports whether its argument is equal to s.
 // See also [EqualFold].
-func Equal(s string) func(string) bool { return func(t string) bool { return t == s } }
+func Equal(s string) func(string) bool { return value.Equal(s) }
 
 // EqualFold returns a function that reports whether its argument is equal to s
 // up to case folding. See also [Equal].
