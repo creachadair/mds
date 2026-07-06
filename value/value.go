@@ -24,7 +24,7 @@ func AtDefault[T any](p *T, dflt T) T {
 }
 
 // Cond returns x if b is true, otherwise it returns y.
-func Cond[T any](b bool, x, y T) T {
+func Cond[Bool ~bool, T any](b Bool, x, y T) T {
 	if b {
 		return x
 	}

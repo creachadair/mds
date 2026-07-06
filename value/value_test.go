@@ -52,6 +52,7 @@ func TestAtDefault(t *testing.T) {
 }
 
 func TestCond(t *testing.T) {
+	type altBool bool
 	tests := []struct {
 		flag bool
 		x, y string
@@ -66,7 +67,10 @@ func TestCond(t *testing.T) {
 	}
 	for _, tc := range tests {
 		if got := value.Cond(tc.flag, tc.x, tc.y); got != tc.want {
-			t.Errorf("Cond(%v, %v, %v): got %v, want %v", tc.flag, tc.x, tc.y, got, tc.want)
+			t.Errorf("Cond bool(%v, %v, %v): got %v, want %v", tc.flag, tc.x, tc.y, got, tc.want)
+		}
+		if got := value.Cond(altBool(tc.flag), tc.x, tc.y); got != tc.want {
+			t.Errorf("Cond boolish(%v, %v, %v): got %v, want %v", tc.flag, tc.x, tc.y, got, tc.want)
 		}
 	}
 }
