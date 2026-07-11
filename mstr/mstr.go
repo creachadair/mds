@@ -192,6 +192,10 @@ func EqualFold(s string) func(string) bool {
 // Similarity reports a similarity score between A and B.
 // The result is in the closed interval [0..1], where 0 means A and B
 // have nothing in common, and 1 means A == B.
+//
+// This is intended for use with strings representing "words" or "terms" rather
+// than long documents. While it will work for strings of arbitrary length, it
+// is not an efficient way to compute document similarity.
 func Similarity(A, B string) float64 { return jaroWinkler(A, B, true) }
 
 // jaroWinkler computes a Jaro or Jaro-Winkler similarity score for A and B.
@@ -297,13 +301,14 @@ func jaroWinkler(A, B string, winkle bool) float64 {
 		}
 		j++ // this position is consumed
 	}
+	t /= 2
 
 	// Jaro:
-	//         1    /  m     m    m - (t/2) \
-	//   sJ = --- · | --- + --- + --------- |
-	//         3    \ |A|   |B|       m     /
+	//         1    /  m     m    m - t  \
+	//   sJ = --- · | --- + --- + ------ |
+	//         3    \ |A|   |B|     m    /
 	//
-	sim := (m/float64(len(A)) + m/float64(len(B)) + (m-(t/2))/m) / 3
+	sim := (m/float64(len(A)) + m/float64(len(B)) + (m-t)/m) / 3
 	if !winkle {
 		return sim
 	}

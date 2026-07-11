@@ -367,3 +367,23 @@ func BenchmarkMatch(b *testing.B) {
 		}
 	})
 }
+
+func BenchmarkSimilarity(b *testing.B) {
+	const A = "The thousand injuries of Fortunato I had borne as I best could but when he ventured upon insult I vowed revenge"
+	const Bsim = "The ten thousand injuries of Importunato I took as I best would but when he chose violence I vowed revenge"
+	const Bdiff = "xxxxxx xxx yy yyyyy yyyyy zz zzzz wwwwwwwww www wwww www wwww vvv vvvv yyyyyyy yy qqqq qqqqqqqqq q xxx xx"
+
+	b.Logf("A vs. Bsim: %v", mstr.Similarity(A, Bsim))
+	b.Logf("A vs. Bdiff: %v", mstr.Similarity(A, Bdiff))
+
+	b.Run("Similar", func(b *testing.B) {
+		for b.Loop() {
+			mstr.Similarity(A, Bsim)
+		}
+	})
+	b.Run("Dissimilar", func(b *testing.B) {
+		for b.Loop() {
+			mstr.Similarity(A, Bdiff)
+		}
+	})
+}
