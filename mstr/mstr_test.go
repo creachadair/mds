@@ -4,6 +4,7 @@ package mstr_test
 
 import (
 	"cmp"
+	"math"
 	"path"
 	"regexp"
 	"strings"
@@ -279,6 +280,58 @@ func TestEqual(t *testing.T) {
 				t.Errorf("EqualFold(%q, %q): got %v, want %v", tc.s, tc.t, got, tc.eqf)
 			}
 		})
+	}
+}
+
+func TestSimilarity(t *testing.T) {
+	const ε = 0.009
+	eqf := func(got, want float64) bool {
+		return math.Abs(got-want) <= ε
+	}
+	tests := []struct {
+		A, B  string
+		want  float64
+		exact bool
+	}{
+		// Exact values for boundary cases.
+		{"", "", 1, true},
+		{"x", "", 0, true},
+		{"", "x", 0, true},
+		{"foo", "foo", 1, true},
+		{"abc", "def", 0, true}, // no matches
+
+		{"fo", "of", 0.83, false},             // 2 matches, 1 transp
+		{"abc", "cba", 0.55, false},           // 1 match (b), 0 transp (a and c are too far apart)
+		{"qarcsb", "abc", 0.66, false},        // 2 matches (a, c), 0 transp
+		{"qcrasb", "abc", 0.5, false},         // 2 matches (a, c), 1 transp
+		{"aqrcsb", "abc", 0.75, false},        // 2 matches (a, c), 0 transp; prefix 1
+		{"acqb", "abc", 0.85, false},          // 3 matches (a, b, c), 1 transp; prefix 1
+		{"garbage", "cabbage", 0.81, false},   // 5 matches, 0 transp
+		{"babbage", "cabbage", 0.85, false},   // 6 matches, 1 transp
+		{"carbage", "cabbage", 0.92, false},   // 6 matches, 0 transp; prefix 2
+		{"cabbage", "southwest", 0.41, false}, // 1 match (e), 0 transp
+		{"alien", "predator", 0.38, false},    // 2 matches (a, e), 1 transp
+		{"pike", "puzzlement", 0.65, false},   // 2 matches (p, e), 0 transp; prefix 1
+		{"puke", "puzzlement", 0.81, false},   // 3 matches (p, u, e), 0 trans; prefix 2
+		{"flaky", "flukes", 0.8, false},       // 3 matches (f, l, k), 0 trans; prefix 2
+		{"mispsell", "imsspell", 0.91, false}, // 8 matches, 2 transp
+		{"mispsell", "misspell", 0.97, false}, // 8 matches, 1 transp; prefix 3
+	}
+	for _, tc := range tests {
+		got := mstr.Similarity(tc.A, tc.B)
+		t.Logf("Similarity(%q, %q) = %.3f", tc.A, tc.B, got)
+		if tc.exact && got != tc.want {
+			t.Errorf("want %v", tc.want)
+		} else if !tc.exact && !eqf(got, tc.want) {
+			t.Errorf("want approximately %v", tc.want)
+		}
+
+		// Similarity should always commute. We compare exactly here, because we
+		// really want the same value, regardless whether it was correct.
+		comm := mstr.Similarity(tc.B, tc.A) // N.B. order reversed
+		if comm != got {
+			t.Errorf("Similarity(%q, %q) = %v, want %v", tc.B, tc.A, comm, got)
+		}
 	}
 }
 

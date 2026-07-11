@@ -188,3 +188,144 @@ func Equal(s string) func(string) bool { return value.Equal(s) }
 func EqualFold(s string) func(string) bool {
 	return func(t string) bool { return strings.EqualFold(t, s) }
 }
+
+// Similarity reports a similarity score between A and B.
+// The result is in the closed interval [0..1], where 0 means A and B
+// have nothing in common, and 1 means A == B.
+func Similarity(A, B string) float64 { return jaroWinkler(A, B, true) }
+
+// jaroWinkler computes a Jaro or Jaro-Winkler similarity score for A and B.
+// The result is in the closed interval [0..1], where 1 indicates A == B.
+// If winkle == false, it returns the plain Jaro score.
+// Otherwise it returns the weighted Jaro-Winkler value.
+//
+// In contrast with the paper, which uses P = 4 and ρ = 0.1 for prefix
+// weighting, this implementation computes the longest matching prefix up to
+// the length of the shorter input.
+//
+// See: https://files.eric.ed.gov/fulltext/ED325505.pdf
+func jaroWinkler(A, B string, winkle bool) float64 {
+	if A == B {
+		return 1
+	} else if A == "" || B == "" {
+		return 0
+	}
+	// Reaching here, both A and B are non-empty.
+
+	if len(B) > len(A) {
+		A, B = B, A // ensure A is the longer, if they differ
+	}
+
+	buf := make([]bool, len(A)+len(B))
+	// ma[i] is whether A[i] has a δ match
+	// mb[j] is whether B[j] has a δ match
+	ma, mb := buf[:len(A)], buf[len(A):]
+
+	// Count δ-matches.
+	//
+	// A "match" is a pair (i, j) with i-δ ≤ j < i+δ+1 and A[i] == B[j],
+	// where for any 0 ≤ j´ < j having B[j´] == B[j] there exists an 0 ≤ i´ < i
+	// with A[i´] == B[j´]. Informally, this means a match is a leftmost pair of
+	// equal bytes within δ positions of each other in their respective strings,
+	// that are not claimed by a previous (further left) match.
+
+	δ := len(A) / 2
+	var m float64
+	for i := range A {
+		for j := max(0, i-δ); j < min(i+δ+1, len(B)); j++ {
+			if !mb[j] && A[i] == B[j] {
+				// Reaching here, A[i] has a δ-match at B[j].
+				ma[i] = true
+				mb[j] = true
+				m++
+				break
+			}
+		}
+	}
+	if m == 0 {
+		return 0 // no matches
+	}
+
+	// Count transpositions, i.e., bounded matches that are out of order.
+	// We know at this point there is at least one match.
+	//
+	// Scan matching positions of A from left to right. For each such i,
+	// consider the next unclaimed matching position j in B.  If A[i] ≠ B[j], it
+	// means that A and B disagree on the order of that byte, i.e., there is a
+	// transposition. Count how many times this occurs.
+	//
+	// For example, given A = "acqb" and B = "abc" with δ = 2, there are three
+	// matches
+	//
+	//    (0, 0):"a"  (1, 2):"c"  (3, 1):"b"
+	//
+	// At i = 0 in A, the next matching position in B is j = 0.
+	// Since A[0] == B[0] == "a", there is no transposition.
+	//
+	// At i = 1 in A, the next matching position in B is j = 1.
+	// Since A[1] == "c" and B[1] == "b", there is a transposition.
+	//
+	// At i = 2 in A, there is no match.
+	//
+	// At i = 3 in A, the next matching position in B is j = 2.
+	// Since A[3] == "b" and B[2] == "c", there is a transposition.
+	//
+	// So here we have 3 matches (a, b, c) and 1 transposition (bc / cb).
+	// But note that we double-counted the transposition, since we checked
+	// both "c-b" (in A) and "bc" (in B). So we will divide the number of
+	// observed disparities by 2 to get the "real" number.
+	//
+	// Although we have two nested loops here, each position is considered only
+	// once.
+	var t float64
+	j := 0
+	for i := range A {
+		if !ma[i] {
+			continue // no match at this position in A
+		}
+
+		// Find the next unclaimed match in B.
+		for j < len(B) && !mb[j] {
+			j++
+		}
+		if j >= len(B) {
+			break // no further matches in B
+		}
+
+		if A[i] != B[j] {
+			t++
+		}
+		j++ // this position is consumed
+	}
+
+	// Jaro:
+	//         1    /  m     m    m - (t/2) \
+	//   sJ = --- · | --- + --- + --------- |
+	//         3    \ |A|   |B|       m     /
+	//
+	sim := (m/float64(len(A)) + m/float64(len(B)) + (m-(t/2))/m) / 3
+	if !winkle {
+		return sim
+	}
+
+	// Winkler:
+	//
+	//   sW = sJ + λ·ρ·(1 - sJ)
+	//
+	// Where λ is the length of a common prefix of A and B and ρ is a
+	// normalization factor.
+	//
+	// This increases the similarity score for inputs with a common prefix.
+	// Typically one picks constants P > 0 and ρ ≤ 1/P and considers prefixes of
+	// up to length P. Here, however, we'll just use the whole of B, the shorter
+	// string.
+	var lp float64
+	for i := range B {
+		if A[i] != B[i] {
+			break
+		}
+		lp++
+	}
+	win := lp / float64(len(B)+1) * (1 - sim)
+	return sim + win
+}
