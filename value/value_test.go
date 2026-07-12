@@ -73,6 +73,19 @@ func TestCond(t *testing.T) {
 			t.Errorf("Cond boolish(%v, %v, %v): got %v, want %v", tc.flag, tc.x, tc.y, got, tc.want)
 		}
 	}
+
+	t.Run("WithType", func(t *testing.T) {
+		// The caller should be able to specify a value type without specifying a
+		// switch type, if it can be inferred.
+		v1 := value.Cond[byte](false, 1, 2)
+		if v1 != 2 {
+			t.Errorf("Cond bool: got %v, want 2", v1)
+		}
+		v2 := value.Cond[byte](altBool(true), 3, 4)
+		if v2 != 3 {
+			t.Errorf("Cond boolish: got %v, want 3", v2)
+		}
+	})
 }
 
 func TestEqual(t *testing.T) {
