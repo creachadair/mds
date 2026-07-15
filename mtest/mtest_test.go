@@ -160,3 +160,14 @@ func TestNewHTTPServer(t *testing.T) {
 		t.Errorf("Response body: got %q, want %q", got, want)
 	}
 }
+
+func TestRandom(t *testing.T) {
+	buf := make([]byte, 123)
+	mtest.Random(buf)
+	for _, b := range buf {
+		if b != 0 {
+			return // OK, probably worked
+		}
+	}
+	t.Error("All bytes zero after random fill")
+}
