@@ -282,7 +282,7 @@ func (t *Tree[T]) Get(key T) (_ T, ok bool) {
 // GetNearest reports whether there an element equal to or greater than key in
 // the tree, and if so returns the smallest such element.
 func (t *Tree[T]) GetNearest(key T) (found T, ok bool) {
-	t.root.inorderAfter(key, t.compare, func(k T) bool {
+	t.root.inorderAfter(key, t.limit(t.size), t.compare, func(k T) bool {
 		found, ok = k, true
 		return false
 	})
@@ -292,7 +292,7 @@ func (t *Tree[T]) GetNearest(key T) (found T, ok bool) {
 // GetNext reports whether there is an element strictly greater than key in the
 // tree, and if so returns the smallest such element.
 func (t *Tree[T]) GetNext(key T) (found T, ok bool) {
-	t.root.inorderAfter(key, t.compare, func(k T) bool {
+	t.root.inorderAfter(key, t.limit(t.size), t.compare, func(k T) bool {
 		if t.compare(k, key) == 0 {
 			return true // not found, keep going
 		}
@@ -307,7 +307,7 @@ func (t *Tree[T]) GetNext(key T) (found T, ok bool) {
 func (t *Tree[T]) Find(key T) *Cursor[T] {
 	var next T
 	var found bool
-	t.root.inorderAfter(key, t.compare, func(k T) bool {
+	t.root.inorderAfter(key, t.limit(t.size), t.compare, func(k T) bool {
 		next, found = k, true
 		return false
 	})
@@ -324,14 +324,14 @@ func (t *Tree[T]) Inorder(yield func(key T) bool) { t.root.inorder(yield) }
 // key, in order.
 func (t *Tree[T]) InorderAfter(key T) iter.Seq[T] {
 	return func(yield func(T) bool) {
-		t.root.inorderAfter(key, t.compare, yield)
+		t.root.inorderAfter(key, t.limit(t.size), t.compare, yield)
 	}
 }
 
 // Cursor constructs a [Cursor] to the specified key, or nil if key is not
 // present in the tree.
 func (t *Tree[T]) Cursor(key T) *Cursor[T] {
-	path := t.root.pathTo(key, t.compare)
+	path := t.root.appendPathTo(make([]*node[T], 0, max(t.limit(t.size), 1)), key, t.compare)
 	if len(path) == 0 || t.compare(path[len(path)-1].X, key) != 0 {
 		return nil
 	}
