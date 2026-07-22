@@ -5,6 +5,7 @@ package mstr
 
 import (
 	"cmp"
+	"slices"
 	"strings"
 
 	"github.com/creachadair/mds/value"
@@ -333,4 +334,37 @@ func jaroWinkler(A, B string, winkle bool) float64 {
 	}
 	win := lp / float64(len(B)+1) * (1 - sim)
 	return sim + win
+}
+
+// Next returns the next string in lexicographic order after s.
+func Next(s string) string {
+	next := []byte(s)
+	for i, b := range slices.Backward(next) {
+		if b < 255 {
+			next[i]++
+			return string(next)
+		}
+		next[i] = 0 // carry
+	}
+	next = append(next, 0)
+	return string(next)
+}
+
+// Next returns the previous string in lexicographic order before s.
+// If s == "", it returns "".
+func Prev(s string) string {
+	if s == "" {
+		return ""
+	}
+	prev := []byte(s)
+	for i, b := range slices.Backward(prev) {
+		if b > 0 {
+			prev[i]--
+			return string(prev)
+		}
+		prev[i] = 255 // borrow
+	}
+
+	// All digits are 255; reduce length by 1 (either end is fine).
+	return string(prev[1:])
 }

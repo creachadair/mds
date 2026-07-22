@@ -335,6 +335,31 @@ func TestSimilarity(t *testing.T) {
 	}
 }
 
+func TestPrevNext(t *testing.T) {
+	tests := []struct {
+		prev, next string
+	}{
+		{"", "\x00"},
+		{"\x00", "\x01"},
+		{"\xff\xfe", "\xff\xff"},
+		{"\xff", "\x00\x00"},
+		{"\xff\xff", "\x00\x00\x00"},
+		{"abc", "abd"},
+		{"ab\xff", "ac\x00"},
+	}
+	for _, tc := range tests {
+		if got := mstr.Next(tc.prev); got != tc.next {
+			t.Errorf("Next(%q): got %q, want %q", tc.prev, got, tc.next)
+		}
+		if got := mstr.Prev(tc.next); got != tc.prev {
+			t.Errorf("Prev(%q): got %q, want %q", tc.next, got, tc.prev)
+		}
+	}
+	if got := mstr.Prev(""); got != "" {
+		t.Errorf("Prev empty: got %q, want empty", got)
+	}
+}
+
 func BenchmarkMatch(b *testing.B) {
 	const text = "ohai aaaX_XaaaY_YaaaZ_ZaaaP_PaaaD_DaaaQ_QaaaZ_ZaaaV_VaaaM_MaaaO_OaaaM_MaaaG_GaaaW_WaaaT_TaaaF_Faaa_aaa_aaa kthxbai"
 	const pattern = "*a*a*a*a*a*a*a*a*a*a*a*a*a*"
