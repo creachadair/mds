@@ -7,9 +7,10 @@ This repository defines generic data structures and utility types in Go.
 
 The packages in this module are intended to be leaf libraries, and MUST NOT
 depend on packages outside this module, excepting only packages from the Go
-standard library, as well as selected golang.org/x/* packages on a case-by-case
-basis.  Separate-package tests in this repository _may_ depend on other
-packages, but such dependencies must be minimized.
+standard library, [creachadair/msync](https://godoc.org/github.com/creachadair/msync),
+and selected golang.org/x/* packages on a case-by-case basis.  Separate-package
+tests in this repository _may_ depend on other packages, but such dependencies
+must be minimized.
 
 Packages within the module _may_ depend on each other, where appropriate.
 

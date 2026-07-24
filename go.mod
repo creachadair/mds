@@ -2,7 +2,10 @@ module github.com/creachadair/mds
 
 go 1.25.0
 
-require github.com/google/go-cmp v0.7.0
+require (
+	github.com/creachadair/msync v0.10.0
+	github.com/google/go-cmp v0.7.0
+)
 
 require (
 	golang.org/x/exp/typeparams v0.0.0-20231108232855-2478ac86f678 // indirect
