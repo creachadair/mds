@@ -154,6 +154,7 @@ func TestSieve(t *testing.T) {
 
 	c := cache.New(cache.Sieve[string, string]().
 		WithLimit(3).
+
 		// Record evictions so we can verify they happened in the expected order.
 		OnEvict(func(key, _ string) {
 			victims = append(victims, key)
@@ -202,31 +203,36 @@ func TestSieve(t *testing.T) {
 	})
 
 	t.Run("EvictMore", func(t *testing.T) {
-		victims = nil
 		cachetest.Run(t, c,
 			"put k5 F = true",
 			"size = 3", "len = 3",
 			"has k2 = true", "has k3 = true", "has k5 = true",
 		)
-		wantVic(t, "k4")
+		wantVic(t, "k1", "k4")
 	})
 
 	t.Run("Remove", func(t *testing.T) {
-		t.Skip()
-		cachetest.Run(t, c, "remove k3 = true", "len = 2", "size = 20")
-		wantVic(t, "k3")
+		cachetest.Run(t, c,
+			"remove k3 = true",
+			"len = 2", "size = 2",
+			"has k2 = true", "has k5 = true",
+		)
+		wantVic(t, "k1", "k4", "k3")
 	})
 
 	t.Run("ReAdd", func(t *testing.T) {
-		t.Skip()
-		cachetest.Run(t, c, "put k3 stump = true", "len = 3", "size = 25")
+		cachetest.Run(t, c,
+			"put k3 stump = true",
+			"len = 3", "size = 3",
+			"has k3 = true", "has k5 = true",
+		)
+		wantVic(t, "k1", "k4", "k3")
 	})
 
 	t.Run("Clear", func(t *testing.T) {
-		// Clearing evicts everything, which at this point are k2, k3, and k6 in
-		// decreasing order of access time (the get of k2 above promoted it).
-		victims = nil
+		// Clearing evicts everything, which at this point are k2, k5, and k3 in
+		// decreasing order of visit time (the get of k2 above promoted it).
 		cachetest.Run(t, c, "clear", "len = 0", "size = 0")
-		wantVic(t, "k2", "k3", "k5")
+		wantVic(t, "k1", "k4", "k3", "k2", "k5", "k3")
 	})
 }
