@@ -25,7 +25,7 @@
 // implementation with a different policy using [Config.WithStore].
 // A [Cache] is safe for concurrent use by multiple goroutines.
 //
-// ## Key Methods
+// # Key Methods
 //
 // Add keys to the cache with [Cache.Put] or [Cache.PutWithExpiration].
 // Remove keys from the cache with [Cache.Remove] or [Cache.Clear].
