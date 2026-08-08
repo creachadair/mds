@@ -360,6 +360,29 @@ func TestPrevNext(t *testing.T) {
 	}
 }
 
+func TestAffixes(t *testing.T) {
+	tests := []struct {
+		input, affix           string
+		withPrefix, withSuffix string
+	}{
+		{"", "", "", ""},
+		{"", "x", "x", "x"},
+		{"x", "", "x", "x"},
+		{"x", "-", "-x", "x-"},
+		{"abc", "@", "@abc", "abc@"},
+		{"@", "abc", "abc@", "@abc"},
+		{"nut", "butter", "butternut", "nutbutter"},
+	}
+	for _, tc := range tests {
+		if got := mstr.WithPrefix(tc.input, tc.affix); got != tc.withPrefix {
+			t.Errorf("WantPrefix(%q, %q): got %q, want %q", tc.input, tc.affix, got, tc.withPrefix)
+		}
+		if got := mstr.WithSuffix(tc.input, tc.affix); got != tc.withSuffix {
+			t.Errorf("WantSuffix(%q, %q): got %q, want %q", tc.input, tc.affix, got, tc.withSuffix)
+		}
+	}
+}
+
 func BenchmarkMatch(b *testing.B) {
 	const text = "ohai aaaX_XaaaY_YaaaZ_ZaaaP_PaaaD_DaaaQ_QaaaZ_ZaaaV_VaaaM_MaaaO_OaaaM_MaaaG_GaaaW_WaaaT_TaaaF_Faaa_aaa_aaa kthxbai"
 	const pattern = "*a*a*a*a*a*a*a*a*a*a*a*a*a*"

@@ -368,3 +368,21 @@ func Prev(s string) string {
 	// All digits are 255; reduce length by 1 (either end is fine).
 	return string(prev[1:])
 }
+
+// WithPrefix returns a copy of s beginning with prefix. If s already begins
+// with prefix, it is returned unchanged.
+func WithPrefix(s, prefix string) string {
+	if !strings.HasPrefix(s, prefix) {
+		return prefix + s
+	}
+	return s
+}
+
+// WithSuffix returns a copy of s ending with suffix. If s already ends with
+// suffix, it is returned unchanged
+func WithSuffix(s, suffix string) string {
+	if !strings.HasSuffix(s, suffix) {
+		return s + suffix
+	}
+	return s
+}
