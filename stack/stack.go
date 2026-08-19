@@ -63,8 +63,8 @@ func (s *Stack[T]) Pop() (T, bool) {
 // Each is a range function that calls f with each value in s, in order from
 // newest to oldest.  If f returns false, Each returns immediately.
 func (s *Stack[T]) Each(f func(T) bool) {
-	for i := len(s.list) - 1; i >= 0; i-- {
-		if !f(s.list[i]) {
+	for _, v := range slices.Backward(s.list) {
+		if !f(v) {
 			return
 		}
 	}

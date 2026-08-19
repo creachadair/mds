@@ -2,6 +2,8 @@
 
 package stree
 
+import "slices"
+
 type node[T any] struct {
 	X           T
 	left, right *node[T]
@@ -195,8 +197,8 @@ func (n *node[T]) inorderAfter(key T, height int, compare func(a, b T) int, f fu
 	// Find the path from the root to key. Any nodes greater than or equal to
 	// key must be on or to the right of this path.
 	path := n.appendPathTo(make([]*node[T], 0, max(height, 1)), key, compare)
-	for i := len(path) - 1; i >= 0; i-- {
-		cur := path[i]
+	for _, cur := range slices.Backward(path) {
+
 		if compare(cur.X, key) < 0 {
 			continue
 		} else if ok := f(cur.X); !ok {

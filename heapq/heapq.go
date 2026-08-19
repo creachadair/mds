@@ -143,8 +143,8 @@ func (q *Queue[T]) Set(vs []T) *Queue[T] {
 		q.data = q.data[:len(vs)]
 	}
 	copy(q.data, vs)
-	for i := len(q.data) - 1; i >= 0; i-- {
-		q.move(q.data[i], i)
+	for i, v := range slices.Backward(q.data) {
+		q.move(v, i)
 		q.pushDown(i)
 	}
 	return q
