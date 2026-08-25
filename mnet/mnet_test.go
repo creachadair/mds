@@ -27,8 +27,7 @@ func checkAddr(t *testing.T, label string, addr net.Addr, wantNet, wantAddr stri
 func checkNetError(t *testing.T, label string, got, want error, isTimeout bool) bool {
 	t.Helper()
 	if got != nil {
-		var ne net.Error
-		if !errors.As(got, &ne) {
+		if ne, ok := errors.AsType[net.Error](got); !ok {
 			t.Errorf("%s error type %T is not net.Error", label, got)
 		} else if ne.Timeout() != isTimeout {
 			t.Errorf("%s net error: timeout=%v, want %v", label, ne.Timeout(), isTimeout)
