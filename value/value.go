@@ -4,7 +4,9 @@
 package value
 
 // Ptr returns a pointer to its argument type containing v.
-func Ptr[T any](v T) *T { return &v }
+//
+//go:fix inline
+func Ptr[T any](v T) *T { return new(v) }
 
 // At returns the value pointed to by p, or zero if p == nil.
 func At[T any](p *T) T {
