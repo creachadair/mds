@@ -4,6 +4,7 @@ package mstr_test
 
 import (
 	"cmp"
+	"iter"
 	"math"
 	"path"
 	"regexp"
@@ -52,22 +53,41 @@ func TestLines(t *testing.T) {
 		want  []string
 	}{
 		{"", nil},
-		{" ", []string{" "}},
-		{"\n", []string{""}},
-		{"\n ", []string{"", " "}},
-		{"a\n", []string{"a"}},
-		{"\na\n", []string{"", "a"}},
-		{"a\nb\n", []string{"a", "b"}},
-		{"a\nb", []string{"a", "b"}},
+		{"x", []string{"x"}},
+		{"x\n", []string{"x"}},
+		{"a\nb\nc", []string{"a", "b", "c"}},
+		{"a\nb\nc\n", []string{"a", "b", "c"}},
+		{"a\n\nb\n\nc", []string{"a", "", "b", "", "c"}},
+		{"a b\nc\nd\n\n", []string{"a b", "c", "d", ""}},
+		{"abc\ndef\n\nghi\n\n\n", []string{"abc", "def", "", "ghi", "", ""}},
 		{"\n\n\n", []string{"", "", ""}},
-		{"\n\nq", []string{"", "", "q"}},
-		{"\n\nq\n", []string{"", "", "q"}},
-		{"a b\nc\n\n", []string{"a b", "c", ""}},
-		{"a b\nc\n\nd\n", []string{"a b", "c", "", "d"}},
+		{"\n\nxyzzy", []string{"", "", "xyzzy"}},
 	}
 	for _, tc := range tests {
-		if diff := gocmp.Diff(mstr.Lines(tc.input), tc.want); diff != "" {
-			t.Errorf("Lines %q (-got, +want):\n%s", tc.input, diff)
+		// Verify every possible partition of the input into arguments by newlines.
+		for sp := range allSplits(tc.input, "\n") {
+			got := mstr.Lines(sp...)
+			if diff := gocmp.Diff(got, tc.want); diff != "" {
+				t.Errorf("Lines %q (-got, +want):\n%s", sp, diff)
+			}
+		}
+	}
+}
+
+func allSplits(s, sep string) iter.Seq[[]string] {
+	return func(yield func([]string) bool) {
+		first, rest, ok := strings.Cut(s, sep)
+		if !ok {
+			yield([]string{s})
+			return
+		}
+		for t := range allSplits(rest, sep) {
+			if !yield(append([]string{first + sep + t[0]}, t[1:]...)) {
+				return
+			}
+			if !yield(append([]string{first}, t...)) {
+				return
+			}
 		}
 	}
 }

@@ -36,14 +36,24 @@ func Trunc[String ~string | ~[]byte](s String, n int) String {
 	return s[:n]
 }
 
-// Lines splits its argument on newlines. It is a convenience function for
-// [strings.Split], except that it returns empty if s == "" and treats a
-// trailing newline as the end of the file rather than an empty line.
-func Lines(s string) []string {
-	if s == "" {
-		return nil
+// Lines splits its arguments on newlines and returns all the resulting lines,
+// without trailing newlines. Multiple arguments are split as if they were
+// concatenated into a single string separated by newlines.
+//
+// An empty string yields no lines, and a trailing newline on the is treated as
+// the end of the string rather than an empty line.
+func Lines(ss ...string) []string {
+	var out []string
+	for i, s := range ss {
+		if i+1 == len(ss) {
+			if s == "" {
+				break
+			}
+			s = strings.TrimSuffix(s, "\n")
+		}
+		out = append(out, strings.Split(s, "\n")...)
 	}
-	return strings.Split(strings.TrimSuffix(s, "\n"), "\n")
+	return out
 }
 
 // Split splits its argument on sep. It is a convenience function for
