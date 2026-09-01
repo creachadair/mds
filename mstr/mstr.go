@@ -5,6 +5,7 @@ package mstr
 
 import (
 	"cmp"
+	"iter"
 	"slices"
 	"strings"
 
@@ -36,24 +37,33 @@ func Trunc[String ~string | ~[]byte](s String, n int) String {
 	return s[:n]
 }
 
-// Lines splits its arguments on newlines and returns all the resulting lines,
-// without trailing newlines. Multiple arguments are split as if they were
-// concatenated into a single string separated by newlines.
-//
-// An empty string yields no lines, and a trailing newline on the is treated as
-// the end of the string rather than an empty line.
-func Lines(ss ...string) []string {
-	var out []string
-	for i, s := range ss {
-		if i+1 == len(ss) {
-			if s == "" {
-				break
+// Lines returns a slice of all the lines in the given strings.  Lines are
+// reported without trailing newlines. Multiple arguments are treated as if
+// they were concatenated into a single string separated by newlines.
+// See also [LinesSeq].
+func Lines(ss ...string) []string { return slices.Collect(LinesSeq(ss...)) }
+
+// LinesSeq returns an iterator over all the lines in the given strings.  Lines
+// are reported without trailing newlines. Multiple arguments are treated as if
+// they were concatenated into a single string separated by newlines.
+// A trailing newline on the final argument is treated as the end of the input
+// rather than an empty line.
+func LinesSeq(ss ...string) iter.Seq[string] {
+	return func(yield func(string) bool) {
+		for i, s := range ss {
+			if i+1 == len(ss) {
+				if s == "" {
+					return
+				}
+				s = strings.TrimSuffix(s, "\n")
 			}
-			s = strings.TrimSuffix(s, "\n")
+			for sl := range strings.SplitSeq(s, "\n") {
+				if !yield(sl) {
+					return
+				}
+			}
 		}
-		out = append(out, strings.Split(s, "\n")...)
 	}
-	return out
 }
 
 // Split splits its argument on sep. It is a convenience function for
