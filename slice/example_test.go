@@ -3,7 +3,6 @@
 package slice_test
 
 import (
-	"errors"
 	"fmt"
 	"slices"
 	"strings"
@@ -131,14 +130,21 @@ func ExampleEditScript() {
 }
 
 func ExampleMap() {
-	ss := []string{"apple", "pear", "plum", "cherry"}
-	errs := slice.Map(ss, func(s string) error {
-		if len(s) > 4 {
-			return errors.New("too long")
-		}
-		return nil
-	})
-	fmt.Println(errs)
+	type T struct {
+		Name string
+	}
+	ss := []T{
+		{Name: "apple"},
+		{Name: "pear"},
+		{Name: "plum"},
+		{Name: "cherry"},
+	}
+	for v := range slice.Map(ss, func(t T) int { return len(t.Name) }) {
+		fmt.Println(v)
+	}
 	// Output:
-	// [too long <nil> <nil> too long]
+	// 5
+	// 4
+	// 4
+	// 6
 }

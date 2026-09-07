@@ -369,8 +369,8 @@ func TestMap(t *testing.T) {
 		{[]string{"xx", "15", "yy", "30"}, atoi, []int{0, 15, 0, 30}},
 	}
 	for _, tc := range tests {
-		got := slice.Map(tc.input, tc.f)
-		if diff := cmp.Diff(got, tc.want); diff != "" {
+		got := slices.Collect(slice.Map(tc.input, tc.f))
+		if diff := cmp.Diff(got, tc.want, cmpopts.EquateEmpty()); diff != "" {
 			t.Errorf("Map %q (-got, +want):\n%s", tc.input, diff)
 		}
 	}
