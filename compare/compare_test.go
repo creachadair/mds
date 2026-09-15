@@ -129,3 +129,21 @@ func TestBool(t *testing.T) {
 		}
 	}
 }
+
+func TestEqual(t *testing.T) {
+	tests := []struct {
+		a, b string
+		eq   bool
+	}{
+		{"", "", true},
+		{"", "x", false},
+		{"x", "", false},
+		{"x", "x", true},
+		{"x", "X", false},
+	}
+	for _, tc := range tests {
+		if got := compare.Equal(tc.a, tc.b); got != tc.eq {
+			t.Errorf("Equal(%q, %q): got %v, want %v", tc.a, tc.b, got, tc.eq)
+		}
+	}
+}

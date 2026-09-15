@@ -70,3 +70,6 @@ func Bool(a, b bool) int {
 	}
 	return -1
 }
+
+// Equal reports whether its comparable arguments are equal.
+func Equal[T comparable](a, b T) bool { return a == b }
