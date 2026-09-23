@@ -146,6 +146,51 @@ func TestLRU(t *testing.T) {
 	})
 }
 
+func TestSetOnEvict(t *testing.T) {
+	var victims []string
+	c := cache.New(cache.LRU[string, string]().
+		WithLimit(1).
+
+		// Initial eviction callback.
+		OnEvict(func(key, _ string) {
+			victims = append(victims, key)
+		}),
+	)
+
+	// Initialize the cache, triggering no evictions.
+	cachetest.Run(t, c, "size = 0", "len = 0", "put k1 X = true")
+	if len(victims) != 0 {
+		t.Errorf("After setup: victims=%q, want empty", victims)
+	}
+
+	// Add another item, evicting k1.
+	cachetest.Run(t, c, "put k2 Y = true")
+	if diff := gocmp.Diff(victims, []string{"k1"}); diff != "" {
+		t.Errorf("Victims (-got, +want):\n%s", diff)
+	}
+
+	// Clear the eviction callback, and verify that additional evictions do not
+	// update the victims list.
+	c.SetOnEvict(nil)
+	cachetest.Run(t, c, "put k3 Z = true", "get k1 = '' false", "get k3 = Z true")
+	if diff := gocmp.Diff(victims, []string{"k1"}); diff != "" {
+		t.Errorf("Victims (-got, +want):\n%s", diff)
+	}
+
+	// Set a different eviction callback, and verify that it gets called by
+	// additional evictions occurring thereafter.
+	c.SetOnEvict(func(key, val string) {
+		if key != "k3" || val != "Z" {
+			t.Errorf("Evict got (%q, %q), want k3, Z", key, val)
+		}
+		victims = []string{key}
+	})
+	cachetest.Run(t, c, "put k4 A = true", "get k4 = A true", "get k3 = '' false")
+	if diff := gocmp.Diff(victims, []string{"k3"}); diff != "" {
+		t.Errorf("Victims (-got, +want):\n%s", diff)
+	}
+}
+
 func TestSieve(t *testing.T) {
 	var victims []string
 

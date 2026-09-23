@@ -86,10 +86,10 @@ type Cache[Key comparable, Value any] struct {
 	store       Store[Key, Value]
 	size, limit int64
 	count       int
+	onEvict     func(Key, Value)
 
 	// Set once at construction, read-only thereafter.
 	sizeOf  func(Value) int64
-	onEvict func(Key, Value)
 	expirer *expirer.Expirer[Key]
 
 	// TODO(creachadair): add metrics
@@ -263,6 +263,18 @@ func (c *Cache[K, V]) Size() int64 {
 	c.μ.Lock()
 	defer c.μ.Unlock()
 	return c.size
+}
+
+// SetOnEvict sets the eviction callback for c. If f == nil, any eviction
+// callback is removed. See [Config.OnEvict].
+func (c *Cache[K, V]) SetOnEvict(f func(K, V)) {
+	c.μ.Lock()
+	defer c.μ.Unlock()
+	if f == nil {
+		c.onEvict = func(K, V) {} // disable
+	} else {
+		c.onEvict = f
+	}
 }
 
 // New constructs a new empty cache with the specified settings.
