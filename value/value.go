@@ -5,6 +5,8 @@ package value
 
 // Ptr returns a pointer to its argument type containing v.
 //
+// Deprecated: use new(v) instead.
+//
 //go:fix inline
 func Ptr[T any](v T) *T { return new(v) }
 
